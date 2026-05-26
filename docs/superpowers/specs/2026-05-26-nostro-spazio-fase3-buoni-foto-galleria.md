@@ -144,6 +144,20 @@ Tre viste (tab): **Ricevuti** (da riscattare), **Inviati**, **Richieste** (in at
 
 ---
 
+## 3.6 Scelte UI (approvate dal mockup)
+
+Mockup di riferimento: `mockups/fase3.html` (mood "Velluto notturno", coerente con `styles.css`).
+
+- **Foto spicy sfocate di default**: le miniature partono con blur; si rivelano al tap.
+  Privacy in più contro sguardi sullo schermo. Vale in card buono e in Galleria.
+- **Galleria a 3 colonne** di miniature quadrate; tag di contesto in overlay.
+- **Viewer inline** (non modale a tutto schermo): foto grande + didascalia + chip
+  "↩ vai all'origine".
+- Filtri Galleria: `Tutte` · `Esperienze` · `Buoni` · `Mie` (il filtro autore è incluso).
+- Editor foto = blocco `＋ aggiungi / ✕ rimuovi / didascalia`, identico in Buoni ed Esperienze.
+- Buoni: tre viste come tab a pillola; bundle reso come card con badge "🎁 Bundle · N";
+  stato come `pill` (attivo/riscattato/in_attesa/rifiutato).
+
 ## 4. Migrazione (refactor Fase 2)
 
 Script SQL `supabase/migrate_foto.sql`, idempotente, da eseguire nel SQL Editor:

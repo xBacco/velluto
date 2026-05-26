@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Velluto · Mockup Fase 3</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a;
+  --ok:#7fb069; --err:#e0556a; --shadow:rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+             linear-gradient(170deg,var(--bg),var(--bg2));background-attachment:fixed;}
+.sans,input,button,.nav button,.muted{font-family:Arial,Helvetica,sans-serif;}
+
+/* mockup helper: due telefoni affiancati su desktop */
+.stage{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;padding:34px 14px 80px;}
+.phone{width:380px;max-width:94vw;border:1px solid rgba(212,168,108,.25);border-radius:30px;
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),linear-gradient(170deg,var(--bg),var(--bg2));
+  box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden;position:relative;}
+.phone-cap{text-align:center;font-family:Arial;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);padding:12px 0 0;opacity:.8;}
+.wrap{padding:14px 16px 26px;}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.brand{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);}
+.me-chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(212,168,108,.3);border-radius:999px;padding:6px 13px;color:var(--cream);font-size:13px;}
+
+.nav{display:flex;gap:6px;overflow-x:auto;padding:12px 0;margin:4px 0 12px;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.nav button{flex:0 0 auto;font-size:12px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(212,168,108,.22);color:#d9b9a6;padding:10px 13px;border-radius:12px;cursor:pointer;white-space:nowrap;}
+.nav button.on{color:#fff;border-color:var(--wine2);background:linear-gradient(180deg,rgba(122,21,51,.6),rgba(92,16,38,.3));}
+
+.ptitle{font-size:25px;margin:0 0 2px;}
+.psub{font-size:12px;color:#b89aa2;margin:0 0 14px;line-height:1.5;}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.filters button{font-size:12px;background:rgba(255,255,255,.03);border:1px solid rgba(212,168,108,.22);
+  color:#cbab9e;padding:8px 13px;border-radius:999px;cursor:pointer;}
+.filters button.on{background:var(--wine);color:#fff;border-color:var(--wine2);}
+
+.card{background:linear-gradient(160deg,rgba(92,16,38,.35),rgba(20,4,9,.4));
+  border:1px solid rgba(212,168,108,.22);border-radius:16px;padding:14px 15px;margin-bottom:12px;
+  box-shadow:0 6px 18px var(--shadow);}
+.row{display:flex;align-items:center;gap:10px;}
+.spread{justify-content:space-between;}
+.pill{font-family:Arial;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 9px;border-radius:999px;border:1px solid rgba(212,168,108,.35);color:var(--gold-soft);}
+.pill.ok{color:var(--ok);border-color:rgba(127,176,105,.5);background:rgba(127,176,105,.12);}
+.pill.wait{color:var(--gold-soft);border-color:rgba(212,168,108,.5);background:rgba(212,168,108,.1);}
+.pill.no{color:var(--err);border-color:rgba(224,85,106,.5);background:rgba(224,85,106,.1);}
+.muted{color:#9c7f88;font-size:12px;}
+.bemoji{font-size:30px;line-height:1;}
+.btitle{font-size:18px;margin:0;}
+.bdesc{font-size:13px;color:#d9b9a6;margin:7px 0 0;line-height:1.5;}
+.actions{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap;}
+
+.btn{appearance:none;border:none;cursor:pointer;font-family:inherit;
+  background:linear-gradient(180deg,var(--wine2),var(--wine));color:#fff;font-size:14px;font-weight:600;
+  padding:9px 16px;border-radius:10px;box-shadow:0 6px 16px rgba(92,16,38,.4),inset 0 1px 0 rgba(255,255,255,.18);}
+.btn:active{transform:scale(.96);}
+.btn.gold{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;}
+.btn.ghost{background:transparent;border:1px solid rgba(212,168,108,.45);color:var(--gold-soft);box-shadow:none;}
+.btn.sm{font-size:12px;padding:8px 13px;}
+
+/* thumbs foto su una card */
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.thumb{position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;border:1px solid rgba(212,168,108,.3);}
+.ph{width:100%;height:100%;background-size:cover;background-position:center;display:block;}
+.lockmark{position:absolute;left:0;right:0;bottom:0;font-size:9px;font-family:Arial;text-align:center;
+  background:rgba(8,2,5,.7);color:var(--gold-soft);padding:2px 0;}
+.spicy{filter:blur(7px) saturate(1.1);}
+.thumb .badge{position:absolute;top:3px;right:3px;font-size:11px;background:rgba(8,2,5,.72);
+  border-radius:6px;padding:1px 4px;}
+
+/* galleria grid */
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.gtile{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;border:1px solid rgba(212,168,108,.2);cursor:pointer;}
+.gtile .ph{transition:transform .3s ease;}
+.gtile:active .ph{transform:scale(1.04);}
+.gtag{position:absolute;left:5px;bottom:5px;font-family:Arial;font-size:9px;letter-spacing:.05em;
+  text-transform:uppercase;background:rgba(8,2,5,.66);color:var(--gold-soft);padding:2px 6px;border-radius:6px;}
+.glabel{font-family:Arial;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
+  margin:18px 0 8px;}
+
+/* FAB */
+.fab{position:absolute;right:16px;bottom:18px;width:54px;height:54px;border-radius:50%;font-size:28px;
+  display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;
+  background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;
+  box-shadow:0 10px 26px rgba(212,168,108,.45);}
+
+/* bottom sheet (editor) */
+.sheet{background:linear-gradient(180deg,#2a0813,#1c0610);border:1px solid rgba(212,168,108,.25);
+  border-radius:18px;padding:18px 16px 20px;}
+.sheet h3{font-size:20px;margin:0 0 14px;}
+label.lbl{display:block;font-family:Arial;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);margin:0 0 5px 2px;}
+input,textarea,select{font-family:Arial;font-size:15px;width:100%;background:rgba(255,255,255,.05);
+  border:1px solid rgba(212,168,108,.3);color:var(--cream);border-radius:10px;padding:11px;margin-bottom:11px;}
+textarea{min-height:60px;resize:vertical;}
+.addfoto{display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:10px;
+  border:1px dashed rgba(212,168,108,.5);color:var(--gold-soft);font-size:24px;cursor:pointer;background:rgba(255,255,255,.03);}
+.note{font-family:Arial;font-size:11px;color:#9c7f88;line-height:1.5;margin-top:6px;display:flex;gap:6px;align-items:flex-start;}
+.note b{color:var(--gold-soft);font-weight:600;}
+
+/* viewer grande */
+.viewer{margin-top:6px;border-radius:14px;overflow:hidden;border:1px solid rgba(212,168,108,.25);position:relative;}
+.viewer .big{width:100%;aspect-ratio:3/4;background-size:cover;background-position:center;}
+.viewer .cap{font-family:Arial;font-size:13px;color:var(--cream);padding:10px 12px;background:rgba(8,2,5,.5);}
+.viewer .origin{display:inline-block;margin:0 12px 12px;font-family:Arial;font-size:12px;color:var(--gold-soft);
+  border:1px solid rgba(212,168,108,.4);border-radius:999px;padding:6px 12px;cursor:pointer;}
+
+.legend{max-width:820px;margin:0 auto;padding:0 18px 60px;font-family:Arial;color:#b89aa2;font-size:13px;line-height:1.7;}
+.legend h2{color:var(--gold);font-family:Georgia;font-size:18px;letter-spacing:.04em;}
+.legend code{color:var(--gold-soft);background:rgba(212,168,108,.1);padding:1px 5px;border-radius:5px;}
+</style>
+</head>
+<body>
+
+<div class="phone-cap" style="padding-top:26px;">Mockup Fase 3 · Velluto notturno · tocca i tab e il ＋</div>
+<div class="stage">
+
+  <!-- ============ TELEFONO 1: BUONI ============ -->
+  <div class="phone">
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand">Velluto</div>
+        <div class="me-chip">🌙 Tomas</div>
+      </div>
+      <div class="nav">
+        <button>🔥 Desideri</button>
+        <button>📅 Calendario</button>
+        <button class="on">🎟️ Buoni</button>
+        <button>🖼️ Galleria</button>
+        <button>🎲 Giochi</button>
+      </div>
+
+      <h1 class="ptitle">Buoni</h1>
+      <p class="psub">Regali, bundle e richieste — da riscattare quando vuoi.</p>
+
+      <div class="filters">
+        <button class="on">Ricevuti</button>
+        <button>Inviati</button>
+        <button>Richieste <span class="pill wait" style="margin-left:4px">1</span></button>
+      </div>
+
+      <!-- buono regalo con foto -->
+      <div class="card">
+        <div class="row spread">
+          <div class="row">
+            <span class="bemoji">💆</span>
+            <div>
+              <p class="btitle">Massaggio completo</p>
+              <span class="muted">da Giulia · 3 giorni fa</span>
+            </div>
+          </div>
+          <span class="pill ok">attivo</span>
+        </div>
+        <p class="bdesc">30 minuti, olio caldo, scegli tu la musica. Senza fretta.</p>
+        <div class="thumbs">
+          <div class="thumb"><span class="ph spicy" style="background-image:linear-gradient(135deg,#7a1533,#3d0a1a)"></span><span class="lockmark">🔒 privata</span></div>
+          <div class="thumb"><span class="ph" style="background-image:linear-gradient(135deg,#5c1026,#2a0813)"></span></div>
+        </div>
+        <div class="actions">
+          <button class="btn gold sm">Riscatta 🔓</button>
+          <button class="btn ghost sm">Foto</button>
+        </div>
+      </div>
+
+      <!-- bundle -->
+      <div class="card" style="border-color:rgba(212,168,108,.45)">
+        <div class="row spread">
+          <span class="pill" style="border-color:var(--gold);color:var(--gold)">🎁 Bundle · 3 buoni</span>
+          <span class="pill ok">attivo</span>
+        </div>
+        <p class="bdesc" style="margin-top:10px">“Serata tutta per te” — cena, film a scelta e…</p>
+        <div class="row" style="gap:14px;margin-top:10px;font-size:22px">🍷 🎬 🤫</div>
+        <div class="actions">
+          <button class="btn sm">Apri bundle</button>
+        </div>
+      </div>
+
+      <!-- riscattato -->
+      <div class="card" style="opacity:.62">
+        <div class="row spread">
+          <div class="row"><span class="bemoji">🛁</span>
+            <div><p class="btitle">Bagno insieme</p><span class="muted">riscattato il 18 mag</span></div>
+          </div>
+          <span class="pill">riscattato</span>
+        </div>
+      </div>
+    </div>
+    <button class="fab" onclick="document.getElementById('sheet').scrollIntoView({behavior:'smooth'})">＋</button>
+  </div>
+
+  <!-- ============ TELEFONO 2: GALLERIA ============ -->
+  <div class="phone">
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand">Velluto</div>
+        <div class="me-chip">🌙 Tomas</div>
+      </div>
+      <div class="nav">
+        <button>🔥 Desideri</button>
+        <button>📅 Calendario</button>
+        <button>🎟️ Buoni</button>
+        <button class="on">🖼️ Galleria</button>
+        <button>🎲 Giochi</button>
+      </div>
+
+      <h1 class="ptitle">Galleria</h1>
+      <p class="psub">Tutte le vostre foto, raccolte. Solo voi due le vedete.</p>
+
+      <div class="filters">
+        <button class="on">Tutte</button>
+        <button>📅 Esperienze</button>
+        <button>🎟️ Buoni</button>
+        <button>👤 Mie</button>
+      </div>
+
+      <div class="gallery">
+        <div class="gtile"><span class="ph spicy" style="background-image:linear-gradient(135deg,#7a1533,#3d0a1a)"></span><span class="gtag">buono</span></div>
+        <div class="gtile"><span class="ph" style="background-image:linear-gradient(160deg,#5c1026,#160409)"></span><span class="gtag">esperienza</span></div>
+        <div class="gtile"><span class="ph spicy" style="background-image:linear-gradient(135deg,#c2557a,#5c1026)"></span><span class="gtag">esperienza</span></div>
+        <div class="gtile"><span class="ph" style="background-image:linear-gradient(135deg,#2a0813,#7a1533)"></span><span class="gtag">esperienza</span></div>
+        <div class="gtile"><span class="ph spicy" style="background-image:linear-gradient(135deg,#7a1533,#c2557a)"></span><span class="gtag">buono</span></div>
+        <div class="gtile"><span class="ph" style="background-image:linear-gradient(160deg,#3d0a1a,#2a0813)"></span><span class="gtag">esperienza</span></div>
+      </div>
+
+      <div class="glabel">— Tocca una foto —</div>
+      <!-- viewer grande -->
+      <div class="viewer">
+        <div class="big spicy" style="background-image:linear-gradient(135deg,#7a1533,#3d0a1a)"></div>
+        <div class="cap">“Il nostro weekend al lago 💋”</div>
+        <span class="origin">↩ Vai all'esperienza · 14 mag</span>
+      </div>
+      <div class="note"><span>🔒</span><span><b>Privata davvero.</b> Caricata cifrata-in-transito, salvata in un bucket non pubblico, mostrata solo a chi è loggato come voi due e con link che scade in 1 ora. Niente indicizzazione, niente terzi.</span></div>
+    </div>
+  </div>
+
+  <!-- ============ TELEFONO 3: EDITOR / SHEET ============ -->
+  <div class="phone" id="sheet">
+    <div class="phone-cap">Nuovo buono · editor con foto</div>
+    <div class="wrap">
+      <div class="sheet">
+        <h3>Nuovo buono</h3>
+        <label class="lbl">Tipo</label>
+        <div class="filters" style="margin-bottom:14px">
+          <button class="on">🎁 Regalo</button>
+          <button>🙏 Richiesta</button>
+          <button>📦 Bundle</button>
+        </div>
+        <label class="lbl">Emoji + Titolo</label>
+        <div class="row" style="gap:8px">
+          <input style="width:64px;text-align:center" value="💆">
+          <input style="flex:1" value="Massaggio completo">
+        </div>
+        <label class="lbl">Descrizione</label>
+        <textarea>30 minuti, olio caldo, scegli tu la musica.</textarea>
+
+        <label class="lbl">Foto (opzionale)</label>
+        <div class="thumbs">
+          <div class="thumb"><span class="ph spicy" style="background-image:linear-gradient(135deg,#7a1533,#3d0a1a)"></span><button class="badge" style="border:none;cursor:pointer;color:#fff">✕</button></div>
+          <div class="addfoto">＋</div>
+        </div>
+        <div class="note"><span>📷</span><span>Dalla fotocamera o galleria del telefono. Una foto spicy resta <b>privata</b>: stessa protezione di tutto il resto.</span></div>
+
+        <label class="lbl" style="margin-top:14px">Didascalia foto (opzionale)</label>
+        <input value="Un assaggio…">
+
+        <div class="actions" style="margin-top:16px">
+          <button class="btn gold">Crea buono</button>
+          <button class="btn ghost">Annulla</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="legend">
+  <h2>Cosa stai guardando</h2>
+  <p><b>Telefono 1 — Buoni.</b> Tre viste (<code>Ricevuti</code> / <code>Inviati</code> / <code>Richieste</code>), card con emoji, stato (<code>attivo</code>, <code>riscattato</code>…), bundle raggruppati, e <b>foto allegate</b> al buono. Le foto spicy appaiono sfocate finché non le apri (qui simulato col blur).</p>
+  <p><b>Telefono 2 — Galleria.</b> Griglia di tutte le foto con filtro per <b>contesto</b> (<code>Tutte / Esperienze / Buoni / Mie</code>) — i contesti futuri (messaggio, premio…) compariranno da soli. Tap → vista grande con didascalia e <b>“vai all'origine”</b>. In basso il promemoria di privacy.</p>
+  <p><b>Telefono 3 — Editor.</b> Il blocco foto riutilizzabile (＋ aggiungi, ✕ rimuovi, didascalia) che compare identico dentro Buoni ed Esperienze.</p>
+  <p style="color:#9c7f88;margin-top:18px">⚠️ Mockup statico: blur, gradienti e dati sono finti, servono solo a mostrarti layout e mood. Niente foto reali.</p>
+</div>
+
+<script>
+// tab interattivi (solo visivi)
+document.querySelectorAll('.filters').forEach(group=>{
+  group.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    group.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+  }));
+});
+document.querySelectorAll('.nav').forEach(group=>{
+  group.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    group.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+  }));
+});
+</script>
+</body>
+</html>
