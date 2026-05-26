@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#160409">
+<title>Velluto</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- GATE LOGIN -->
+  <div id="login">
+    <div class="candle">🕯️</div>
+    <div class="login-kick">il nostro spazio</div>
+    <div class="login-title">Velluto</div>
+    <form id="loginForm" autocomplete="on">
+      <input id="email" type="email" placeholder="Email" autocomplete="username" required>
+      <input id="password" type="password" placeholder="Password" autocomplete="current-password" required>
+      <button class="btn" type="submit">Entra</button>
+    </form>
+    <div id="loginErr" class="login-err"></div>
+  </div>
+
+  <!-- APP -->
+  <div class="wrap" id="app" style="display:none">
+    <div class="topbar">
+      <div class="brand">Velluto</div>
+      <button class="me-chip" id="meChip"></button>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <section class="panel" id="p-desideri"></section>
+  </div>
+
+  <button class="fab" id="fab" style="display:none">＋</button>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
