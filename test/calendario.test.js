@@ -49,7 +49,7 @@ test('fiammeLabel: voto -> 5 simboli', () => {
   assert.equal(fiammeLabel(9), '🔥🔥🔥🔥🔥'); // clamp
 });
 
-test('fotoPath: <couple>/<esp>/<now>-<file sanificato>', () => {
-  const p = fotoPath('cpl', 'esp', 'La mia foto!.JPG', 1700000000000);
-  assert.equal(p, 'cpl/esp/1700000000000-La_mia_foto_.JPG');
+test('fotoPath: <couple>/<contesto>/<ref>/<now>-<file sanificato>', () => {
+  const p = fotoPath('cpl', 'esperienza', 'esp', 'La mia foto!.JPG', 1700000000000);
+  assert.equal(p, 'cpl/esperienza/esp/1700000000000-La_mia_foto_.JPG');
 });

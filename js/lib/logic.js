@@ -53,7 +53,13 @@ export function fiammeLabel(voto) {
 }
 
 // Path deterministico nel bucket 'foto'. `now` iniettabile per i test.
-export function fotoPath(coupleId, esperienzaId, filename, now = Date.now()) {
+export function fotoPath(coupleId, contesto, refId, filename, now = Date.now()) {
   const safe = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
-  return `${coupleId}/${esperienzaId}/${now}-${safe}`;
+  return `${coupleId}/${contesto}/${refId}/${now}-${safe}`;
+}
+
+export function groupFotoByContesto(rows) {
+  const m = {};
+  for (const r of rows) (m[r.contesto] ||= []).push(r);
+  return m;
 }

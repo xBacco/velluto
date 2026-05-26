@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { sortByRecent, filterDesideri } from '../js/lib/logic.js';
+import { fotoPath, groupFotoByContesto } from '../js/lib/logic.js';
 
 const sample = [
   { id: 'a', stato: 'da_provare', autore_id: 'u1', creato: '2026-01-01T00:00:00Z' },
@@ -41,4 +42,17 @@ test('filterDesideri mine filtra per autore loggato', () => {
 test('filterDesideri ritorna ordinato per recente', () => {
   const out = filterDesideri(sample, { tipo: 'tutti', me: 'u1' });
   assert.deepEqual(out.map(x => x.id), ['b', 'c', 'a']);
+});
+
+test('fotoPath usa couple/contesto/ref e sanifica il filename', () => {
+  const p = fotoPath('cpl', 'buono', 'b1', 'fo to!@#.jpg', 1000);
+  assert.equal(p, 'cpl/buono/b1/1000-fo_to___.jpg');
+});
+
+test('groupFotoByContesto raggruppa per contesto', () => {
+  const g = groupFotoByContesto([
+    { id: '1', contesto: 'esperienza' }, { id: '2', contesto: 'buono' }, { id: '3', contesto: 'esperienza' },
+  ]);
+  assert.equal(g.esperienza.length, 2);
+  assert.equal(g.buono.length, 1);
 });
