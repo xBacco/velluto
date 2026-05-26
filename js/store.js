@@ -100,3 +100,29 @@ export async function deleteFotoDi(client, { contesto, refId }) {
   }
   return fallite;
 }
+
+// ---- BUONI ----
+export async function listBuoni(client, coupleId) {
+  const res = await client.from('buoni').select('*')
+    .eq('couple_id', coupleId).order('creato', { ascending: false });
+  return check(res);
+}
+
+export async function addBuono(client, { couple_id, da_id, a_id, emoji, titolo, descrizione, tipo, stato, bundle_id }) {
+  const res = await client.from('buoni').insert({
+    couple_id, da_id, a_id,
+    emoji: emoji || '🎟️', titolo, descrizione: descrizione || null,
+    tipo, stato, bundle_id: bundle_id || null,
+  }).select().single();
+  return check(res);
+}
+
+export async function updateStatoBuono(client, id, patch) {
+  const res = await client.from('buoni').update(patch).eq('id', id);
+  return check(res);
+}
+
+export async function deleteBuono(client, id) {
+  const res = await client.from('buoni').delete().eq('id', id);
+  return check(res);
+}
