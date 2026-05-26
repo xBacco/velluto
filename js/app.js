@@ -3,10 +3,14 @@ import { login, logout, currentProfile } from './auth.js';
 import { mk, add, clear, toast } from './ui.js';
 import { renderDesideri } from './modules/desideri.js';
 import { renderCalendario } from './modules/calendario.js';
+import { renderBuoni } from './modules/buoni.js';
+import { renderGalleria } from './modules/galleria.js';
 
 const TABS = [
   ['desideri', '🔥', 'Desideri'],
   ['calendario', '📅', 'Esperienze'],
+  ['buoni', '🎟️', 'Buoni'],
+  ['galleria', '🖼️', 'Galleria'],
 ];
 
 let me = null;     // profilo loggato
@@ -67,9 +71,14 @@ function go(k) {
 function render() {
   if (cur === 'desideri') renderDesideri({ client, me, panel: $('p-desideri') }).catch(err => toast('Errore: ' + err.message, 'err'));
   else if (cur === 'calendario') renderCalendario({ client, me, panel: $('p-calendario') }).catch(err => toast('Errore: ' + err.message, 'err'));
+  else if (cur === 'buoni') renderBuoni({ client, me, panel: $('p-buoni') }).catch(err => toast('Errore: ' + err.message, 'err'));
+  else if (cur === 'galleria') renderGalleria({ client, me, panel: $('p-galleria') }).catch(err => toast('Errore: ' + err.message, 'err'));
 }
 
 // il FAB delega al modulo corrente tramite evento
 $('fab').onclick = () => document.dispatchEvent(new CustomEvent('fab:' + cur));
+
+// la Galleria chiede di navigare alla sezione d'origine di una foto
+document.addEventListener('goto', e => go(e.detail));
 
 boot().catch(err => toast('Errore avvio: ' + err.message, 'err'));
