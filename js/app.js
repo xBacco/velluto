@@ -2,8 +2,12 @@ import { client } from './supabase.js';
 import { login, logout, currentProfile } from './auth.js';
 import { mk, add, clear, toast } from './ui.js';
 import { renderDesideri } from './modules/desideri.js';
+import { renderCalendario } from './modules/calendario.js';
 
-const TABS = [['desideri', '🔥', 'Desideri']]; // altri moduli nelle fasi successive
+const TABS = [
+  ['desideri', '🔥', 'Desideri'],
+  ['calendario', '📅', 'Esperienze'],
+];
 
 let me = null;     // profilo loggato
 let cur = 'desideri';
@@ -62,6 +66,7 @@ function go(k) {
 
 function render() {
   if (cur === 'desideri') renderDesideri({ client, me, panel: $('p-desideri') }).catch(err => toast('Errore: ' + err.message, 'err'));
+  else if (cur === 'calendario') renderCalendario({ client, me, panel: $('p-calendario') }).catch(err => toast('Errore: ' + err.message, 'err'));
 }
 
 // il FAB delega al modulo corrente tramite evento
