@@ -1,9 +1,7 @@
 import { mk, add, clear, toast, openSheet } from '../ui.js';
 import { monthMatrix, monthLabel, groupByDay, sortByDateDesc, fiammeLabel, fotoPath } from '../lib/logic.js';
-import {
-  listEsperienze, addEsperienza, updateEsperienza, deleteEsperienza,
-  uploadFoto, listFotoRows, signedUrl, deleteFoto,
-} from '../store.js';
+import { listEsperienze, addEsperienza, updateEsperienza, deleteEsperienza, deleteFotoDi } from '../store.js';
+import { fotoEditor, loadThumbsInto } from './foto.js';
 
 let ctx = null;        // { client, me, panel }
 let rows = [];         // esperienze della coppia
@@ -88,7 +86,7 @@ function cardOf(e) {
   if (e.testo) { const tx = mk('p', 'muted', e.testo); tx.style.fontSize = '13px'; c.appendChild(tx); }
 
   const thumbs = mk('div', 'thumbs'); c.appendChild(thumbs);
-  loadThumbs(e.id, thumbs, false);
+  loadThumbsInto(ctx, { contesto: 'esperienza', refId: e.id }, thumbs, false);
 
   const act = mk('div', 'row'); act.style.cssText = 'justify-content:flex-end;margin-top:10px;';
   const edit = mk('button', 'btn sm ghost', 'Modifica'); edit.onclick = () => openEdit(e, e.data);
@@ -106,36 +104,8 @@ function cardOf(e) {
   return c;
 }
 
-// Carica le thumbnail via signed URL. withRemove=true aggiunge la ✕ per eliminare la foto.
-async function loadThumbs(esperienzaId, container, withRemove) {
-  try {
-    const foto = await listFotoRows(ctx.client, esperienzaId);
-    for (const f of foto) {
-      const url = await signedUrl(ctx.client, f.storage_path);
-      const wrap = mk('div', 'thumb');
-      const img = mk('img'); img.src = url; img.alt = '';
-      wrap.appendChild(img);
-      if (withRemove) {
-        const rm = mk('button', 'rm', '✕');
-        rm.onclick = async () => {
-          try { await deleteFoto(ctx.client, { id: f.id, storagePath: f.storage_path }); wrap.remove(); }
-          catch (err) { toast('Errore rimozione foto: ' + err.message, 'err'); }
-        };
-        wrap.appendChild(rm);
-      }
-      container.appendChild(wrap);
-    }
-  } catch (err) {
-    if (withRemove) toast('Errore foto: ' + err.message, 'err'); // nelle card non disturbo lo scroll
-  }
-}
-
 async function removeEsperienzaConFoto(esperienzaId) {
-  const foto = await listFotoRows(ctx.client, esperienzaId);
-  let fallite = 0;
-  for (const f of foto) {
-    try { await deleteFoto(ctx.client, { id: f.id, storagePath: f.storage_path }); } catch { fallite++; }
-  }
+  const fallite = await deleteFotoDi(ctx.client, { contesto: 'esperienza', refId: esperienzaId });
   await deleteEsperienza(ctx.client, esperienzaId);
   if (fallite) toast('Esperienza eliminata, ma ' + fallite + ' foto non rimosse dallo storage', 'err');
 }
@@ -143,12 +113,11 @@ async function removeEsperienzaConFoto(esperienzaId) {
 function openEdit(esp, presetData) {
   const isNew = !esp;
   let voto = esp ? esp.voto : 0;
-  const pending = []; // File[] selezionati, caricati al salvataggio
 
   openSheet(isNew ? 'Nuova esperienza' : 'Modifica esperienza', s => {
     const titolo = mk('input'); titolo.placeholder = 'Titolo'; titolo.value = esp ? esp.titolo : '';
     const data = mk('input'); data.type = 'date'; data.value = esp ? esp.data : presetData;
-    const testo = mk('textarea'); testo.placeholder = "Com’è andata…"; testo.value = esp && esp.testo ? esp.testo : '';
+    const testo = mk('textarea'); testo.placeholder = "Com'è andata…"; testo.value = esp && esp.testo ? esp.testo : '';
 
     const votoPick = mk('div', 'voto-pick');
     const flames = [];
@@ -158,14 +127,7 @@ function openEdit(esp, presetData) {
       flames.push(f); votoPick.appendChild(f);
     }
 
-    const file = mk('input', 'file-row'); file.type = 'file'; file.accept = 'image/*'; file.multiple = true;
-    file.onchange = () => {
-      for (const f of file.files) if (!pending.some(x => x.name === f.name && x.size === f.size)) pending.push(f);
-      file.value = ''; toast(pending.length + ' foto pronte da caricare');
-    };
-
-    const existing = mk('div', 'thumbs');
-    if (!isNew) loadThumbs(esp.id, existing, true);
+    const foto = fotoEditor(ctx, { contesto: 'esperienza', refId: esp ? esp.id : null });
 
     const save = mk('button', 'btn', 'Salva'); save.style.cssText = 'width:100%;margin-top:6px;';
     save.onclick = async () => {
@@ -185,10 +147,7 @@ function openEdit(esp, presetData) {
           });
           id = esp.id;
         }
-        for (const f of pending) {
-          const path = fotoPath(ctx.me.couple_id, id, f.name);
-          await uploadFoto(ctx.client, { coupleId: ctx.me.couple_id, esperienzaId: id, file: f, path });
-        }
+        await foto.flush(id);
         s.closest('.modal').remove();
         await renderCalendario(ctx);
       } catch (err) { save.disabled = false; toast('Errore salvataggio: ' + err.message, 'err'); }
@@ -199,7 +158,7 @@ function openEdit(esp, presetData) {
       mk('label', 'lbl', 'Data'), data,
       mk('label', 'lbl', 'Voto'), votoPick,
       mk('label', 'lbl', 'Racconto'), testo,
-      mk('label', 'lbl', 'Foto'), file, existing,
+      mk('label', 'lbl', 'Foto'), foto.el,
       save);
   });
 }

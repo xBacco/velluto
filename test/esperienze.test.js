@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   listEsperienze, addEsperienza, updateEsperienza, deleteEsperienza,
-  uploadFoto, listFotoRows, signedUrl, deleteFoto,
 } from '../js/store.js';
 
 // --- fake client: query builder (con single) + storage ---
@@ -84,41 +83,6 @@ test('deleteEsperienza elimina per id', async () => {
   await deleteEsperienza(c, 'e1');
   const del = c._calls.find(x => x.op === 'delete');
   assert.equal(del.filters.id, 'e1');
-});
-
-test('listFotoRows filtra per esperienza_id', async () => {
-  const c = fakeClient({ esperienza_foto: [{ id: 'f1', esperienza_id: 'e1', storage_path: 'cpl/e1/x.jpg' }] });
-  const data = await listFotoRows(c, 'e1');
-  assert.equal(data.length, 1);
-  assert.equal(c._calls[0].filters.esperienza_id, 'e1');
-});
-
-test('uploadFoto carica su storage e registra la riga', async () => {
-  const c = fakeClient();
-  const fileLike = { name: 'foto.jpg' };
-  const row = await uploadFoto(c, { coupleId: 'cpl', esperienzaId: 'e1', file: fileLike, path: 'cpl/e1/123-foto.jpg' });
-  const up = c._storage.ops.find(o => o.op === 'upload');
-  assert.equal(up.bucket, 'foto');
-  assert.equal(up.path, 'cpl/e1/123-foto.jpg');
-  const ins = c._calls.find(x => x.op === 'insert');
-  assert.equal(ins.payload.storage_path, 'cpl/e1/123-foto.jpg');
-  assert.equal(ins.payload.esperienza_id, 'e1');
-  assert.ok(row.id);
-});
-
-test('signedUrl ritorna l’URL firmato', async () => {
-  const c = fakeClient();
-  const url = await signedUrl(c, 'cpl/e1/x.jpg', 3600);
-  assert.equal(url, 'https://signed/cpl/e1/x.jpg?e=3600');
-});
-
-test('deleteFoto rimuove dallo storage e cancella la riga', async () => {
-  const c = fakeClient();
-  await deleteFoto(c, { id: 'f1', storagePath: 'cpl/e1/x.jpg' });
-  const rm = c._storage.ops.find(o => o.op === 'remove');
-  assert.deepEqual(rm.paths, ['cpl/e1/x.jpg']);
-  const del = c._calls.find(x => x.op === 'delete');
-  assert.equal(del.filters.id, 'f1');
 });
 
 test('addEsperienza propaga errore', async () => {
