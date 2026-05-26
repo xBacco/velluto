@@ -63,3 +63,50 @@ export function groupFotoByContesto(rows) {
   for (const r of rows) (m[r.contesto] ||= []).push(r);
   return m;
 }
+
+// ---- BUONI (pure) ----
+// Ritorna la patch da applicare alla riga buono, o lancia se la transizione è illegale.
+// `nowISO` iniettabile per i test.
+export function applicaTransizioneBuono(buono, azione, nowISO = () => new Date().toISOString()) {
+  if (azione === 'riscatta') {
+    if (buono.stato !== 'attivo') throw new Error('Solo un buono attivo può essere riscattato');
+    return { stato: 'riscattato', riscattato_il: nowISO() };
+  }
+  if (azione === 'accetta') {
+    if (buono.tipo !== 'richiesta' || buono.stato !== 'in_attesa')
+      throw new Error('Solo una richiesta in attesa può essere accettata');
+    return { tipo: 'regalo', stato: 'attivo' };
+  }
+  if (azione === 'rifiuta') {
+    if (buono.tipo !== 'richiesta' || buono.stato !== 'in_attesa')
+      throw new Error('Solo una richiesta in attesa può essere rifiutata');
+    return { stato: 'rifiutato' };
+  }
+  throw new Error('Azione sconosciuta: ' + azione);
+}
+
+// Raggruppa i buoni: i singoli (bundle_id null) restano gruppi da uno; quelli con
+// stesso bundle_id finiscono insieme. Ordine di prima apparizione preservato.
+export function gruppoBundle(buoni) {
+  const groups = [];
+  const byBundle = {};
+  for (const b of buoni) {
+    if (!b.bundle_id) { groups.push({ bundle_id: null, buoni: [b] }); continue; }
+    if (!byBundle[b.bundle_id]) { byBundle[b.bundle_id] = { bundle_id: b.bundle_id, buoni: [] }; groups.push(byBundle[b.bundle_id]); }
+    byBundle[b.bundle_id].buoni.push(b);
+  }
+  return groups;
+}
+
+export function buoniRicevuti(buoni, me) {
+  return buoni.filter(b => b.a_id === me && b.tipo === 'regalo');
+}
+export function buoniInviati(buoni, me) {
+  return buoni.filter(b => b.da_id === me && b.tipo === 'regalo');
+}
+export function richiesteDaConcedere(buoni, me) {
+  return buoni.filter(b => b.tipo === 'richiesta' && b.stato === 'in_attesa' && b.da_id === me);
+}
+export function richiesteInviate(buoni, me) {
+  return buoni.filter(b => b.tipo === 'richiesta' && b.stato === 'in_attesa' && b.a_id === me);
+}
