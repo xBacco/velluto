@@ -52,6 +52,11 @@ function cardOf(d) {
   }
   const del = mk('button', 'btn sm ghost', 'Elimina');
   del.onclick = async () => {
+    if (del.dataset.confirm !== '1') {
+      del.textContent = 'Sicuro?'; del.dataset.confirm = '1';
+      setTimeout(() => { del.textContent = 'Elimina'; del.dataset.confirm = ''; }, 2000);
+      return;
+    }
     try { await deleteDesiderio(ctx.client, d.id); await renderDesideri(ctx); }
     catch (e) { toast('Errore: ' + e.message, 'err'); }
   };

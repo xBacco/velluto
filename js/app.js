@@ -29,13 +29,17 @@ async function onLogin(e) {
 
 async function enterApp() {
   me = await currentProfile();
+  if (!me) { location.reload(); return; } // token scaduto/non valido → torna al login
   $('login').classList.add('gone');
   $('app').style.display = '';
   $('fab').style.display = '';
   const chip = $('meChip');
   clear(chip);
   add(chip, mk('span', null, me.avatar), mk('span', null, me.display_name + ' · esci'));
-  chip.onclick = async () => { await logout(); location.reload(); };
+  chip.onclick = async () => {
+    try { await logout(); } catch { /* la sessione locale si pulisce comunque */ }
+    location.reload();
+  };
   buildNav();
   go('desideri');
 }
@@ -57,7 +61,7 @@ function go(k) {
 }
 
 function render() {
-  if (cur === 'desideri') renderDesideri({ client, me, panel: $('p-desideri') });
+  if (cur === 'desideri') renderDesideri({ client, me, panel: $('p-desideri') }).catch(err => toast('Errore: ' + err.message, 'err'));
 }
 
 // il FAB delega al modulo corrente tramite evento

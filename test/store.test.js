@@ -35,9 +35,13 @@ function fakeClient(initialRows = []) {
 }
 
 test('listDesideri seleziona per couple_id', async () => {
-  const c = fakeClient([{ id: 'a', couple_id: 'cpl', testo: 'x' }]);
+  const c = fakeClient([
+    { id: 'a', couple_id: 'cpl', testo: 'x' },
+    { id: 'z', couple_id: 'altra', testo: 'y' },
+  ]);
   const data = await listDesideri(c, 'cpl');
   assert.equal(data.length, 1);
+  assert.equal(data[0].id, 'a');
   assert.equal(c._calls[0].table, 'desideri');
   assert.equal(c._calls[0].filters.couple_id, 'cpl');
 });
