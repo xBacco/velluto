@@ -135,8 +135,9 @@ async function transizione(b, azioneNome) {
 }
 
 async function elimina(b) {
-  await deleteFotoDi(ctx.client, { contesto: 'buono', refId: b.id });
+  const fallite = await deleteFotoDi(ctx.client, { contesto: 'buono', refId: b.id });
   await deleteBuono(ctx.client, b.id);
+  if (fallite) toast('Buono eliminato, ma ' + fallite + ' foto non rimosse dallo storage', 'err');
   await renderBuoni(ctx);
 }
 
@@ -157,11 +158,6 @@ function openCrea() {
     const tabs = mk('div', 'filters');
     const voci = [['regalo', '🎁 Regalo'], ['richiesta', '🙏 Richiesta'], ['bundle', '📦 Bundle']];
     const btns = [];
-    for (const [k, label] of voci) {
-      const b = mk('button', tipo === k ? 'on' : null, label);
-      b.onclick = () => { tipo = k; btns.forEach(x => x.classList.toggle('on', x.dataset.k === k)); bundleExtra.style.display = (k === 'bundle') ? '' : 'none'; foto.el.style.display = (k === 'bundle') ? 'none' : ''; };
-      b.dataset.k = k; btns.push(b); tabs.appendChild(b);
-    }
 
     const emoji = mk('input'); emoji.value = '🎟️'; emoji.style.cssText = 'width:64px;text-align:center;display:inline-block;';
     const titolo = mk('input'); titolo.placeholder = 'Titolo (es. Massaggio)';
@@ -179,6 +175,12 @@ function openCrea() {
     }
     addRiga(); addRiga();
     const piu = mk('button', 'btn ghost sm', '＋ aggiungi buono'); piu.onclick = addRiga; bundleExtra.appendChild(piu);
+
+    for (const [k, label] of voci) {
+      const b = mk('button', tipo === k ? 'on' : null, label);
+      b.onclick = () => { tipo = k; btns.forEach(x => x.classList.toggle('on', x.dataset.k === k)); bundleExtra.style.display = (k === 'bundle') ? '' : 'none'; foto.el.style.display = (k === 'bundle') ? 'none' : ''; };
+      b.dataset.k = k; btns.push(b); tabs.appendChild(b);
+    }
 
     const save = mk('button', 'btn gold', 'Crea'); save.style.cssText = 'width:100%;margin-top:14px;';
     save.onclick = async () => {
