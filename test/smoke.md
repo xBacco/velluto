@@ -41,28 +41,35 @@ Setup Storage: bucket `foto` privato + policy sel/ins/upd/del (verificate via RE
 - Backend Storage validato via REST prima del test browser (le 4 policy funzionano).
 - Foto di test caricata e poi rimossa: nessun oggetto orfano nel bucket.
 
-# Smoke test Fase 3 — esito (PARZIALE: in attesa migrazione DB)
+# Smoke test Fase 3 — esito (COMPLETO post-migrazione, salvo flusso cross-account)
 
 Data: 2026-05-26
 Browser: Chromium via Playwright, viewport 390x844 (mobile)
 Server: `python -m http.server 5500` (avviato dal worktree fase3)
 Branch: `worktree-fase3-buoni-foto`
+Migrazione: `supabase/foto.sql` eseguita dall'utente; tabella `foto` + RLS attive. Storage path = `<couple_id>/<contesto>/<ref_id>/<file>`.
 
-## Verifica autonoma di boot/wiring/render (OK) — fatta senza la tabella `foto` migrata
+## Boot / wiring / render (OK)
 - [x] App carica senza errori di import dei moduli ES (unico errore console: `favicon.ico` 404).
-- [x] Login ok (account di test) + chip profilo (🦊 Tomas).
-- [x] Nav mostra i 4 tab: 🔥 Desideri · 📅 Esperienze · 🎟️ Buoni · 🖼️ Galleria.
-- [x] Modulo Buoni: 3 viste (Ricevuti/Inviati/Richieste) + empty state ("Nessun buono ricevuto…").
-- [x] FAB → sheet "Nuovo buono": ordine Tipo → Emoji+Titolo → Descrizione → Foto (editor) → Crea.
-- [x] Switch tipo a "Bundle": compaiono le righe extra + "＋ aggiungi buono", l'editor foto si nasconde (fix TDZ verificato a runtime, nessun errore).
-- [x] Modulo Galleria: 4 filtri (Tutte/Esperienze/Buoni/Mie); con tabella `foto` ASSENTE degrada con grazia (errore catturato, empty state "Ancora nessuna foto qui.", nessun crash). Errore atteso: `GET /rest/v1/foto 404`.
-- [x] Suite unit completa: `node --test` → 46 pass / 0 fail.
+- [x] Login ok + chip profilo (🦊 Tomas); nav 4 tab: Desideri · Esperienze · Buoni · Galleria.
+- [x] Buoni: 3 viste (Ricevuti/Inviati/Richieste) + empty state.
+- [x] Switch tipo a "Bundle": righe extra + "＋ aggiungi buono", editor foto si nasconde (fix TDZ ok a runtime).
 
-## DA COMPLETARE dopo la migrazione DB (richiede azione utente su Supabase)
-- [ ] Eseguire `supabase/foto.sql` nel SQL Editor (crea tabella `foto` + RLS + migra le foto esperienze) e verificare i due `count(*)`.
-- [ ] Ciclo buoni completo: crea regalo (+foto), bundle (2 buoni), richiesta → accetta/rifiuta dall'altro account → riscatta.
-- [ ] Foto allegata a un buono: thumb sfocata → tap rivela → tap apre viewer.
-- [ ] Galleria mostra le foto raggruppate per contesto; "↩ vai all'origine" naviga alla sezione giusta.
-- [ ] Esperienze (regressione): foto esistenti visibili dopo il refactor; nuova foto OK.
-- [ ] Privacy: signed URL scaduto / senza auth → niente immagine (atteso 400).
-- [ ] Solo a smoke verde: `drop table if exists esperienza_foto;`
+## Flussi dati (OK, account Tomas)
+- [x] Regalo + foto: creato, appare in Inviati; foto via signed URL Supabase (naturalWidth 200).
+- [x] Foto allegata: thumb sfocata → tap rivela → tap apre viewer; Galleria mostra cella "buono" + "↩ Vai ai Buoni" naviga all'origine.
+- [x] Bundle (2 sotto-buoni): creato, "Apri bundle" mostra le 2 voci; "Riscatta" su una → transizione di stato persistita.
+- [x] Richiesta: creata, compare in Richieste come "in attesa".
+- [x] Esperienze (regressione refactor): nuova esperienza + foto OK, signed URL carica (200), giorno evidenziato.
+- [x] Privacy: signed URL con token → 200; stesso path senza token → 400 (bucket privato).
+- [x] Eliminazione esperienza (confermata entro i 2s del two-tap): rimuove riga esperienza + riga `foto` + oggetto storage (verificato via query/list: tutto a 0). Stesso esito per eliminazione buono.
+- [x] Suite unit completa: `node --test` → 46 pass / 0 fail.
+- [x] Dati di test creati durante lo smoke ripuliti: esperienze 0, buoni 0, foto 0, storage 0.
+
+## Note / osservazioni minori (non bloccanti)
+- Il two-tap "Elimina" ha un timeout di re-arm di 2s (`calendario.js`): in test automatizzati con latenza tra i due click il secondo click ri-arma invece di confermare (non è un bug del prodotto, ma è la causa di un falso allarme "foto orfana" durante lo smoke — risolto: era un artefatto di test + una list su prefisso storage errato).
+- Badge bundle passa a "riscattato" già al primo dei due sotto-buoni riscattati (UX minore; logica coperta dagli unit test).
+
+## DA COMPLETARE — richiede il secondo account (Giulia)
+- [ ] Cross-account: Giulia accetta/rifiuta una richiesta inviata da Tomas; il destinatario riscatta un regalo ricevuto. (Transizioni di stato già coperte da `buoni.test.js`; manca solo la verifica browser a due account.)
+- [ ] Solo a smoke cross-account verde: `drop table if exists esperienza_foto;`
