@@ -132,10 +132,12 @@ async function loadThumbs(esperienzaId, container, withRemove) {
 
 async function removeEsperienzaConFoto(esperienzaId) {
   const foto = await listFotoRows(ctx.client, esperienzaId);
+  let fallite = 0;
   for (const f of foto) {
-    try { await deleteFoto(ctx.client, { id: f.id, storagePath: f.storage_path }); } catch { /* continua comunque */ }
+    try { await deleteFoto(ctx.client, { id: f.id, storagePath: f.storage_path }); } catch { fallite++; }
   }
   await deleteEsperienza(ctx.client, esperienzaId);
+  if (fallite) toast('Esperienza eliminata, ma ' + fallite + ' foto non rimosse dallo storage', 'err');
 }
 
 function openEdit(esp, presetData) {
@@ -157,7 +159,10 @@ function openEdit(esp, presetData) {
     }
 
     const file = mk('input', 'file-row'); file.type = 'file'; file.accept = 'image/*'; file.multiple = true;
-    file.onchange = () => { for (const f of file.files) pending.push(f); file.value = ''; toast(pending.length + ' foto pronte da caricare'); };
+    file.onchange = () => {
+      for (const f of file.files) if (!pending.some(x => x.name === f.name && x.size === f.size)) pending.push(f);
+      file.value = ''; toast(pending.length + ' foto pronte da caricare');
+    };
 
     const existing = mk('div', 'thumbs');
     if (!isNew) loadThumbs(esp.id, existing, true);

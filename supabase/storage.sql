@@ -9,5 +9,8 @@ create policy "foto_sel" on storage.objects for select
 create policy "foto_ins" on storage.objects for insert
   with check ( bucket_id = 'foto' and is_member( ((storage.foldername(name))[1])::uuid ) );
 
+create policy "foto_upd" on storage.objects for update
+  using ( bucket_id = 'foto' and is_member( ((storage.foldername(name))[1])::uuid ) );
+
 create policy "foto_del" on storage.objects for delete
   using ( bucket_id = 'foto' and is_member( ((storage.foldername(name))[1])::uuid ) );
