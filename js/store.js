@@ -53,19 +53,27 @@ export async function deleteEsperienza(client, id) {
   return check(res);
 }
 
-// ---- FOTO (Storage privato bucket 'foto' + tabella esperienza_foto) ----
-export async function uploadFoto(client, { coupleId, esperienzaId, file, path }) {
+// ---- FOTO (Storage privato bucket 'foto' + tabella 'foto' generica) ----
+// path = '<couple_id>/<contesto>/<ref_id>/<file>' (vedi lib/logic.fotoPath)
+export async function uploadFoto(client, { coupleId, autoreId, contesto, refId, file, path, didascalia }) {
   const up = await client.storage.from('foto').upload(path, file);
   if (up.error) throw new Error('Upload foto: ' + up.error.message);
-  const res = await client.from('esperienza_foto')
-    .insert({ esperienza_id: esperienzaId, couple_id: coupleId, storage_path: path })
-    .select().single();
+  const res = await client.from('foto').insert({
+    couple_id: coupleId, autore_id: autoreId, contesto, ref_id: refId,
+    storage_path: path, didascalia: didascalia || null,
+  }).select().single();
   return check(res);
 }
 
-export async function listFotoRows(client, esperienzaId) {
-  const res = await client.from('esperienza_foto').select('*')
-    .eq('esperienza_id', esperienzaId).order('creato', { ascending: true });
+export async function listFoto(client, { contesto, refId }) {
+  const res = await client.from('foto').select('*')
+    .eq('contesto', contesto).eq('ref_id', refId).order('creato', { ascending: true });
+  return check(res);
+}
+
+export async function listFotoGalleria(client, coupleId) {
+  const res = await client.from('foto').select('*')
+    .eq('couple_id', coupleId).order('creato', { ascending: false });
   return check(res);
 }
 
@@ -78,6 +86,17 @@ export async function signedUrl(client, storagePath, expiresIn = 3600) {
 export async function deleteFoto(client, { id, storagePath }) {
   const rm = await client.storage.from('foto').remove([storagePath]);
   if (rm.error) throw new Error('Rimozione foto: ' + rm.error.message);
-  const res = await client.from('esperienza_foto').delete().eq('id', id);
+  const res = await client.from('foto').delete().eq('id', id);
   return check(res);
+}
+
+// Cancella tutte le foto di un genitore (usata quando si elimina un buono/esperienza).
+// Ritorna il numero di foto NON rimosse dallo storage (per avvisare l'utente).
+export async function deleteFotoDi(client, { contesto, refId }) {
+  const foto = await listFoto(client, { contesto, refId });
+  let fallite = 0;
+  for (const f of foto) {
+    try { await deleteFoto(client, { id: f.id, storagePath: f.storage_path }); } catch { fallite++; }
+  }
+  return fallite;
 }
