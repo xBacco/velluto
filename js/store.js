@@ -101,6 +101,24 @@ export async function deleteFotoDi(client, { contesto, refId }) {
   return fallite;
 }
 
+// ---- DADI (facce editabili per coppia) ----
+export async function listDadiFacce(client, coupleId) {
+  const res = await client.from('dadi_facce').select('*')
+    .eq('couple_id', coupleId).order('dado', { ascending: true }).order('ordine', { ascending: true });
+  return check(res);
+}
+
+// Inserisce le righe default (vedi logic.facceDefaultRows) la prima volta per la coppia.
+export async function seedDadiFacce(client, rows) {
+  const res = await client.from('dadi_facce').insert(rows);
+  return check(res);
+}
+
+export async function updateDadiFaccia(client, id, { emoji, testo }) {
+  const res = await client.from('dadi_facce').update({ emoji, testo }).eq('id', id);
+  return check(res);
+}
+
 // ---- BUONI ----
 export async function listBuoni(client, coupleId) {
   const res = await client.from('buoni').select('*')

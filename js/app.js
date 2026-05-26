@@ -5,12 +5,14 @@ import { renderDesideri } from './modules/desideri.js';
 import { renderCalendario } from './modules/calendario.js';
 import { renderBuoni } from './modules/buoni.js';
 import { renderGalleria } from './modules/galleria.js';
+import { renderGiochi } from './modules/giochi.js';
 
 const TABS = [
   ['desideri', '🔥', 'Desideri'],
   ['calendario', '📅', 'Esperienze'],
   ['buoni', '🎟️', 'Buoni'],
   ['galleria', '🖼️', 'Galleria'],
+  ['giochi', '🎲', 'Giochi'],
 ];
 
 let me = null;     // profilo loggato
@@ -73,6 +75,7 @@ function render() {
   else if (cur === 'calendario') renderCalendario({ client, me, panel: $('p-calendario') }).catch(err => toast('Errore: ' + err.message, 'err'));
   else if (cur === 'buoni') renderBuoni({ client, me, panel: $('p-buoni') }).catch(err => toast('Errore: ' + err.message, 'err'));
   else if (cur === 'galleria') renderGalleria({ client, me, panel: $('p-galleria') }).catch(err => toast('Errore: ' + err.message, 'err'));
+  else if (cur === 'giochi') renderGiochi({ client, me, panel: $('p-giochi') }).catch(err => toast('Errore: ' + err.message, 'err'));
 }
 
 // il FAB delega al modulo corrente tramite evento

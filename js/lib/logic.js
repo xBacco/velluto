@@ -98,6 +98,59 @@ export function gruppoBundle(buoni) {
   return groups;
 }
 
+// ---- DADI (puri) ----
+// Tre dadi: az=azione, co=corpo, lu=dove. Sei facce ciascuno.
+export const DADI_ORDER = ['az', 'co', 'lu'];
+export const DADI_LABEL = { az: 'Azione', co: 'Corpo', lu: 'Dove' };
+export const DADI_CHIP = { az: '💋', co: '🫦', lu: '📍' };
+export const DADI_DEFAULT = {
+  az: [{ e: '💋', t: 'Bacia' }, { e: '👅', t: 'Lecca' }, { e: '🫦', t: 'Mordi' },
+       { e: '💆', t: 'Massaggia' }, { e: '✋', t: 'Sfiora' }, { e: '💨', t: 'Soffia su' }],
+  co: [{ e: '👄', t: 'il collo' }, { e: '👂', t: "l'orecchio" }, { e: '🦵', t: "l'interno coscia" },
+       { e: '🍑', t: 'il lato B' }, { e: '🫀', t: 'il petto' }, { e: '🤚', t: 'la schiena' }],
+  lu: [{ e: '🛋️', t: 'sul divano' }, { e: '🚿', t: 'sotto la doccia' }, { e: '🍳', t: 'in cucina' },
+       { e: '🚗', t: 'in macchina' }, { e: '🛏️', t: 'a letto' }, { e: '🌃', t: 'sul balcone' }],
+};
+
+// Righe DB piatte → { az:[6 facce ordinate], co:[...], lu:[...] }.
+export function raggruppaFacce(rows) {
+  const out = { az: [], co: [], lu: [] };
+  for (const r of rows) if (out[r.dado]) out[r.dado].push(r);
+  for (const k of DADI_ORDER) out[k].sort((a, b) => a.ordine - b.ordine);
+  return out;
+}
+
+// Righe default (piatte) per il seeding di una coppia: 3 dadi × 6 facce = 18 righe.
+export function facceDefaultRows(coupleId) {
+  const rows = [];
+  for (const dado of DADI_ORDER)
+    DADI_DEFAULT[dado].forEach((f, i) => rows.push({ couple_id: coupleId, dado, ordine: i, emoji: f.e, testo: f.t }));
+  return rows;
+}
+
+// Tira i dadi attivi. `rnd` (∈[0,1)) iniettabile. Ritorna {dado: indice 0–5} solo per gli attivi.
+export function tiraDadi(attivi, rnd = Math.random) {
+  const picks = {};
+  for (const k of DADI_ORDER) if (attivi[k]) picks[k] = Math.floor(rnd() * 6);
+  return picks;
+}
+
+// Compone la frase dal tiro: facce raggruppate + picks → { emos:[…], act, rest:[…] }.
+// L'azione fa da verbo; se il dado azione è spento, il primo "resto" diventa verbo.
+export function componiFrase(facce, picks) {
+  const emos = [], rest = [];
+  let act = '';
+  for (const k of DADI_ORDER) {
+    if (picks[k] == null) continue;
+    const f = facce[k] && facce[k][picks[k]];
+    if (!f) continue;
+    emos.push(f.emoji);
+    if (k === 'az') act = f.testo; else rest.push(f.testo);
+  }
+  if (!act) act = rest.shift() || '';
+  return { emos, act, rest };
+}
+
 export function buoniRicevuti(buoni, me) {
   return buoni.filter(b => b.a_id === me && b.tipo === 'regalo');
 }

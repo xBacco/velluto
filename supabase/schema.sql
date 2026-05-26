@@ -94,6 +94,18 @@ create table if not exists ruota_giri (
   creato timestamptz not null default now()
 );
 
+-- 8. DADI (facce editabili per coppia — Fase 4a; vedi anche supabase/dadi.sql)
+create table if not exists dadi_facce (
+  id uuid primary key default gen_random_uuid(),
+  couple_id uuid not null references couples(id),
+  dado text not null check (dado in ('az','co','lu')),
+  ordine int not null check (ordine between 0 and 5),
+  emoji text not null,
+  testo text not null,
+  creato timestamptz not null default now()
+);
+create unique index if not exists dadi_facce_slot_idx on dadi_facce (couple_id, dado, ordine);
+
 -- ============ RLS ============
 alter table couples        enable row level security;
 alter table profiles       enable row level security;
@@ -103,6 +115,7 @@ alter table esperienza_foto enable row level security;
 alter table buoni          enable row level security;
 alter table carte          enable row level security;
 alter table ruota_giri     enable row level security;
+alter table dadi_facce     enable row level security;
 
 -- couples: leggibile dai membri
 create policy couples_sel on couples for select using (membro_a = auth.uid() or membro_b = auth.uid());
@@ -119,3 +132,4 @@ create policy expfoto_all    on esperienza_foto  for all using (is_member(couple
 create policy buoni_all      on buoni            for all using (is_member(couple_id)) with check (is_member(couple_id));
 create policy carte_all      on carte            for all using (is_member(couple_id)) with check (is_member(couple_id));
 create policy ruota_all      on ruota_giri       for all using (is_member(couple_id)) with check (is_member(couple_id));
+create policy dadi_facce_all on dadi_facce        for all using (is_member(couple_id)) with check (is_member(couple_id));
