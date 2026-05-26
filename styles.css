@@ -138,3 +138,36 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
 .thumb .rm{position:absolute;top:2px;right:2px;background:rgba(8,2,5,.8);color:#fff;
   width:22px;height:22px;border-radius:50%;border:none;cursor:pointer;font-size:13px;line-height:1;}
 .file-row{margin:4px 0 12px;}
+
+/* ===== Buoni ===== */
+.bemoji{font-size:30px;line-height:1;}
+.btitle{font-size:18px;margin:0;}
+.bdesc{font-size:13px;color:#d9b9a6;margin:7px 0 0;line-height:1.5;}
+.actions{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap;}
+.pill.ok{color:var(--ok);border-color:rgba(127,176,105,.5);background:rgba(127,176,105,.12);}
+.pill.wait{color:var(--gold-soft);border-color:rgba(212,168,108,.5);background:rgba(212,168,108,.1);}
+.pill.no{color:var(--err);border-color:rgba(224,85,106,.5);background:rgba(224,85,106,.1);}
+
+/* ===== Galleria ===== */
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.gtile{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;
+  border:1px solid rgba(212,168,108,.2);cursor:pointer;background:rgba(255,255,255,.03);}
+.gtile img{width:100%;height:100%;object-fit:cover;display:block;}
+.gtag{position:absolute;left:5px;bottom:5px;font-family:Arial;font-size:9px;letter-spacing:.05em;
+  text-transform:uppercase;background:rgba(8,2,5,.66);color:var(--gold-soft);padding:2px 6px;border-radius:6px;}
+
+/* ===== Foto: blur privacy di default + viewer ===== */
+.thumb-blur img{filter:blur(9px) saturate(1.05);}
+.thumb-blur::after{content:'🔒';position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-size:18px;pointer-events:none;}
+.gtile.thumb-blur::after{content:'🔒';position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-size:20px;pointer-events:none;}
+.viewer-big{width:100%;aspect-ratio:3/4;background-size:cover;background-position:center;border-radius:14px;}
+.viewer-cap{font-family:Arial,sans-serif;font-size:13px;color:var(--cream);margin:10px 2px 0;}
+
+/* viewer inline della Galleria */
+.gviewer-slot{margin:6px 0 14px;}
+.gviewer-slot:empty{display:none;}
+.gorigin{display:inline-block;margin-top:10px;font-family:Arial,sans-serif;font-size:12px;
+  color:var(--gold-soft);background:transparent;border:1px solid rgba(212,168,108,.4);
+  border-radius:999px;padding:7px 13px;cursor:pointer;min-height:38px;}
