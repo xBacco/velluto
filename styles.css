@@ -106,3 +106,35 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
   opacity:0;transition:all .3s ease;max-width:90vw;text-align:center;}
 .toast.show{opacity:1;transform:translate(-50%,0);}
 .toast-err{border-color:var(--err);color:#ffd9de;}
+
+/* ===== Calendario & esperienze ===== */
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin:4px 0 12px;}
+.cal-head button{background:rgba(255,255,255,.04);border:1px solid rgba(212,168,108,.3);
+  color:var(--gold-soft);width:40px;height:40px;border-radius:10px;font-size:18px;cursor:pointer;}
+.cal-month{font-size:18px;color:var(--cream);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:22px;}
+.cal-dow{text-align:center;font-family:Arial,sans-serif;font-size:10px;letter-spacing:.06em;
+  text-transform:uppercase;color:#9c7f88;padding-bottom:2px;}
+.cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border-radius:10px;font-size:14px;color:#cbab9e;border:1px solid transparent;}
+.cal-cell.empty{visibility:hidden;}
+.cal-cell.has{background:linear-gradient(180deg,rgba(122,21,51,.45),rgba(92,16,38,.25));
+  border-color:rgba(212,168,108,.35);color:#fff;cursor:pointer;}
+.cal-cell.today{border-color:var(--gold);}
+.cal-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);margin-top:3px;}
+.section-label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
+  margin:6px 0 10px;font-family:Arial,sans-serif;}
+
+/* voto fiamme */
+.fiamme{font-size:18px;letter-spacing:2px;}
+.voto-pick{display:flex;gap:6px;margin-bottom:12px;font-size:26px;}
+.voto-pick span{cursor:pointer;}
+
+/* thumbnails foto */
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.thumb{position:relative;width:74px;height:74px;border-radius:10px;overflow:hidden;
+  border:1px solid rgba(212,168,108,.3);}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.thumb .rm{position:absolute;top:2px;right:2px;background:rgba(8,2,5,.8);color:#fff;
+  width:22px;height:22px;border-radius:50%;border:none;cursor:pointer;font-size:13px;line-height:1;}
+.file-row{margin:4px 0 12px;}
