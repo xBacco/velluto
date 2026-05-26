@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#160409">
+<title>Nostro Spazio · prototipo</title>
+<style>
+  :root{
+    --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+    --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0;
+    --rose:#c2557a; --blue:#5a89c2; --ok:#7fb069; --shadow:rgba(0,0,0,.55);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:Georgia,"Times New Roman",serif;
+    background:
+      radial-gradient(120% 70% at 50% -5%, #3d0a1a 0%, transparent 55%),
+      linear-gradient(170deg,var(--bg) 0%, var(--bg2) 100%);
+    background-attachment:fixed;color:var(--cream);min-height:100vh;
+    overflow-x:hidden;-webkit-font-smoothing:antialiased;
+  }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:radial-gradient(rgba(255,255,255,.02) 1px, transparent 1px);
+    background-size:3px 3px;opacity:.5;}
+  .demo-flag{position:fixed;top:0;left:0;right:0;z-index:99;text-align:center;
+    background:rgba(212,168,108,.14);color:var(--gold-soft);font-size:11px;
+    letter-spacing:.14em;text-transform:uppercase;padding:5px;font-family:Arial,sans-serif;
+    border-bottom:1px solid rgba(212,168,108,.25);}
+  .wrap{position:relative;z-index:1;max-width:540px;margin:0 auto;padding:34px 16px 110px;}
+  h1,h2,h3{font-weight:600;margin:0;}
+  .sans{font-family:Arial,Helvetica,sans-serif;}
+
+  /* buttons / inputs */
+  .btn{appearance:none;border:none;cursor:pointer;font-family:inherit;
+    background:linear-gradient(180deg,var(--wine2),var(--wine));color:#fff;
+    font-size:16px;font-weight:600;padding:12px 22px;border-radius:12px;
+    box-shadow:0 8px 22px rgba(92,16,38,.45), inset 0 1px 0 rgba(255,255,255,.18);
+    transition:transform .14s ease,box-shadow .14s ease;}
+  .btn:active{transform:scale(.96);}
+  .btn.gold{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;}
+  .btn.ghost{background:transparent;border:1px solid rgba(212,168,108,.45);color:var(--gold-soft);box-shadow:none;}
+  .btn.sm{font-size:13px;padding:8px 14px;border-radius:9px;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  input,textarea,select{font-family:inherit;font-size:16px;width:100%;
+    background:rgba(255,255,255,.04);border:1px solid rgba(212,168,108,.3);
+    color:var(--cream);border-radius:10px;padding:11px 13px;margin-bottom:10px;}
+  textarea{min-height:70px;resize:vertical;}
+  label.lbl{display:block;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--gold);margin:0 0 5px 2px;}
+
+  /* LOGIN */
+  #login{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;padding:30px;
+    background:radial-gradient(120% 80% at 50% 25%,#3d0a1a,var(--bg) 65%);
+    transition:opacity .6s ease,visibility .6s ease;}
+  #login.gone{opacity:0;visibility:hidden;}
+  .candle{font-size:46px;margin-bottom:6px;filter:drop-shadow(0 0 16px rgba(212,168,108,.5));
+    animation:flick 3s ease-in-out infinite;}
+  @keyframes flick{0%,100%{opacity:1;transform:translateY(0)}50%{opacity:.85;transform:translateY(-1px)}}
+  .login-kick{letter-spacing:.5em;text-transform:uppercase;font-size:11px;color:var(--gold);
+    font-family:Arial,sans-serif;margin-bottom:10px;}
+  .login-title{font-size:40px;background:linear-gradient(180deg,var(--cream),var(--gold-soft));
+    -webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:28px;}
+  .who{display:flex;gap:16px;}
+  .who-card{cursor:pointer;background:rgba(255,255,255,.03);border:1px solid rgba(212,168,108,.3);
+    border-radius:18px;padding:22px 26px;transition:all .2s;width:130px;}
+  .who-card:active{transform:scale(.95);}
+  .who-card .av{font-size:42px;display:block;margin-bottom:8px;}
+  .who-card .nm{font-size:20px;}
+  .login-note{margin-top:26px;font-size:12px;color:#a07a86;font-family:Arial,sans-serif;max-width:300px;line-height:1.5;}
+
+  /* HEADER */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .brand{font-size:15px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);font-family:Arial,sans-serif;}
+  .me-chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.04);
+    border:1px solid rgba(212,168,108,.3);border-radius:999px;padding:4px 12px 4px 6px;cursor:pointer;font-size:14px;}
+  .me-chip .av{font-size:20px;}
+
+  /* NAV */
+  .nav{display:flex;gap:6px;overflow-x:auto;padding:12px 0 4px;margin:6px -16px 14px;
+    padding-left:16px;padding-right:16px;scrollbar-width:none;}
+  .nav::-webkit-scrollbar{display:none;}
+  .nav button{flex:0 0 auto;font-family:Arial,sans-serif;font-size:12px;letter-spacing:.04em;
+    background:rgba(255,255,255,.03);border:1px solid rgba(212,168,108,.22);color:#d9b9a6;
+    padding:10px 14px;border-radius:12px;cursor:pointer;white-space:nowrap;transition:all .2s;}
+  .nav button .i{font-size:16px;margin-right:5px;}
+  .nav button.on{color:#fff;border-color:var(--wine2);
+    background:linear-gradient(180deg,rgba(122,21,51,.6),rgba(92,16,38,.3));}
+
+  .panel{display:none;animation:fade .35s ease;}
+  .panel.on{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .ptitle{font-size:27px;margin-bottom:3px;}
+  .ptitle em{font-style:italic;color:var(--rose);}
+  .psub{font-family:Arial,sans-serif;font-size:13px;color:#b89aa2;margin-bottom:16px;line-height:1.5;}
+
+  .card{background:linear-gradient(160deg,rgba(92,16,38,.35),rgba(20,4,9,.4));
+    border:1px solid rgba(212,168,108,.22);border-radius:16px;padding:15px 16px;margin-bottom:12px;
+    box-shadow:0 6px 18px var(--shadow);}
+  .row{display:flex;align-items:center;gap:10px;}
+  .spread{justify-content:space-between;}
+  .pill{font-family:Arial,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;border:1px solid rgba(212,168,108,.35);color:var(--gold-soft);}
+  .pill.done{color:var(--ok);border-color:rgba(127,176,105,.5);background:rgba(127,176,105,.12);}
+  .pill.todo{color:var(--gold-soft);}
+  .pill.t{color:#fff;}
+  .av-mini{font-size:16px;}
+  .muted{color:#9c7f88;font-family:Arial,sans-serif;font-size:12px;}
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+  .filters button{font-family:Arial,sans-serif;font-size:12px;background:rgba(255,255,255,.03);
+    border:1px solid rgba(212,168,108,.22);color:#cbab9e;padding:7px 12px;border-radius:999px;cursor:pointer;}
+  .filters button.on{background:var(--wine);color:#fff;border-color:var(--wine2);}
+  .fab{position:fixed;right:18px;bottom:22px;z-index:30;width:58px;height:58px;border-radius:50%;
+    font-size:30px;line-height:1;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;border:none;cursor:pointer;
+    box-shadow:0 10px 26px rgba(212,168,108,.45);}
+  .fab:active{transform:scale(.92);}
+  .empty{text-align:center;color:#9c7f88;font-family:Arial,sans-serif;font-size:14px;padding:34px 10px;line-height:1.6;}
+
+  /* fiamme */
+  .flames .fl{font-size:18px;filter:grayscale(1);opacity:.35;cursor:pointer;}
+  .flames .fl.on{filter:none;opacity:1;}
+
+  /* CALENDAR */
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .cal-head .mname{font-size:19px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:8px;}
+  .cal-dow{text-align:center;font-family:Arial,sans-serif;font-size:10px;color:var(--gold);text-transform:uppercase;}
+  .cal-day{aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;position:relative;
+    background:rgba(255,255,255,.03);border:1px solid transparent;font-size:13px;color:#cbab9e;cursor:pointer;}
+  .cal-day.other{opacity:.25;}
+  .cal-day.has{border-color:var(--wine2);background:rgba(122,21,51,.3);color:#fff;}
+  .cal-day .dot{position:absolute;bottom:4px;width:5px;height:5px;border-radius:50%;background:var(--rose);}
+  .cal-day.today{outline:1px solid var(--gold);}
+  .photos{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .photo{width:46px;height:46px;border-radius:8px;background:rgba(212,168,108,.12);
+    border:1px dashed rgba(212,168,108,.4);display:flex;align-items:center;justify-content:center;font-size:20px;}
+
+  /* BUONI */
+  .tabs2{display:flex;gap:6px;margin-bottom:14px;}
+  .tabs2 button{flex:1;font-family:Arial,sans-serif;font-size:12px;background:rgba(255,255,255,.03);
+    border:1px solid rgba(212,168,108,.22);color:#cbab9e;padding:9px 4px;border-radius:10px;cursor:pointer;}
+  .tabs2 button.on{background:var(--wine);color:#fff;border-color:var(--wine2);}
+  .coupon{position:relative;overflow:hidden;}
+  .coupon::before,.coupon::after{content:"";position:absolute;top:50%;width:16px;height:16px;
+    transform:translateY(-50%);border-radius:50%;background:var(--bg);}
+  .coupon::before{left:-8px;}.coupon::after{right:-8px;}
+  .coupon.used{opacity:.5;filter:grayscale(.4);}
+  .cbig{font-size:26px;}
+
+  /* DICE + WHEEL */
+  .seg{display:flex;gap:8px;margin-bottom:16px;}
+  .seg button{flex:1;font-family:Arial,sans-serif;font-size:13px;background:rgba(255,255,255,.03);
+    border:1px solid rgba(212,168,108,.22);color:#cbab9e;padding:10px;border-radius:10px;cursor:pointer;}
+  .seg button.on{background:var(--wine);color:#fff;border-color:var(--wine2);}
+  .dice-row{display:flex;gap:16px;justify-content:center;margin:14px 0;}
+  .die{width:110px;height:110px;border-radius:18px;display:flex;flex-direction:column;gap:5px;
+    align-items:center;justify-content:center;text-align:center;padding:8px;font-weight:600;color:#3a1208;
+    background:linear-gradient(160deg,#f6e7cc,#e2c79a);box-shadow:0 10px 24px var(--shadow);}
+  .die .de{font-size:28px;}.die .dl{font-size:15px;line-height:1.1;}
+  .die.roll{animation:rl .6s ease;}
+  @keyframes rl{0%{transform:rotate(0)}25%{transform:rotate(-12deg) scale(1.07)}50%{transform:rotate(10deg) scale(.96)}100%{transform:none}}
+  .combo{text-align:center;font-size:21px;min-height:30px;margin-bottom:6px;}
+  .wheel-stage{position:relative;width:260px;height:260px;margin:8px auto;}
+  .wpt{position:absolute;top:-4px;left:50%;transform:translateX(-50%);z-index:5;font-size:26px;color:var(--gold);filter:drop-shadow(0 2px 3px #000);}
+  .wheel{width:260px;height:260px;border-radius:50%;transition:transform 5s cubic-bezier(.17,.67,.12,1);
+    box-shadow:0 0 0 7px var(--wine),0 0 0 10px var(--gold),0 12px 32px var(--shadow);}
+  .whub{position:absolute;top:50%;left:50%;width:46px;height:46px;transform:translate(-50%,-50%);border-radius:50%;z-index:4;
+    background:radial-gradient(circle at 35% 30%,var(--gold-soft),var(--gold) 60%,#8a5e16);
+    box-shadow:0 3px 9px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-size:19px;}
+  .wheel-res{text-align:center;font-size:19px;min-height:54px;margin-top:14px;white-space:pre-line;}
+  .lock{text-align:center;font-family:Arial,sans-serif;color:var(--gold-soft);font-size:13px;margin-top:8px;}
+
+  /* MODAL */
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(8,2,5,.72);display:none;
+    align-items:flex-end;justify-content:center;}
+  .modal.on{display:flex;}
+  .sheet{width:100%;max-width:540px;background:linear-gradient(180deg,#2a0813,#1c0610);
+    border-top-left-radius:22px;border-top-right-radius:22px;border:1px solid rgba(212,168,108,.25);
+    padding:20px 18px 26px;box-shadow:0 -10px 40px var(--shadow);animation:up .3s ease;max-height:86vh;overflow-y:auto;}
+  @keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+  .sheet h3{font-size:21px;margin-bottom:14px;}
+  .sheet .x{float:right;font-size:22px;color:#9c7f88;cursor:pointer;line-height:1;}
+
+  .fx{position:fixed;top:-40px;z-index:80;pointer-events:none;animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:0}}
+</style>
+</head>
+<body>
+<div class="demo-flag">Prototipo · dati finti locali · le foto vere saranno private su Supabase</div>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="candle">🕯️</div>
+  <div class="login-kick">il nostro spazio</div>
+  <div class="login-title">Velluto</div>
+  <div class="who">
+    <div class="who-card" data-me="tomas"><span class="av">🦊</span><span class="nm">Tomas</span></div>
+    <div class="who-card" data-me="giulia"><span class="av">🦋</span><span class="nm">Giulia</span></div>
+  </div>
+  <div class="login-note">Nell'app vera qui ci sarà il login con email e password — ognuno il suo account. Nel prototipo scegli solo chi sei per provarlo.</div>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <div class="topbar">
+    <div class="brand">Velluto</div>
+    <div class="me-chip" id="meChip"></div>
+  </div>
+
+  <nav class="nav" id="nav"></nav>
+
+  <section class="panel" id="p-desideri"></section>
+  <section class="panel" id="p-calendario"></section>
+  <section class="panel" id="p-buoni"></section>
+  <section class="panel" id="p-dadi"></section>
+  <section class="panel" id="p-ruota"></section>
+  <section class="panel" id="p-tod"></section>
+</div>
+
+<button class="fab" id="fab" style="display:none">＋</button>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+
+<script>
+/* ===== helpers (DOM-safe) ===== */
+function mk(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+function el(id){return document.getElementById(id);}
+function uid(){return Math.random().toString(36).slice(2,9);}
+function add(parent,...kids){kids.forEach(k=>k&&parent.appendChild(k));return parent;}
+
+const PROFILES={tomas:{name:'Tomas',av:'🦊'},giulia:{name:'Giulia',av:'🦋'}};
+const other=p=>p==='tomas'?'giulia':'tomas';
+let me=localStorage.getItem('ns_me')||null;
+
+/* ===== seed data ===== */
+const SEED={
+  desideri:[
+    {id:uid(),testo:"Weekend in una spa con vasca in camera",autore:'giulia',cat:'Romantico',stato:'da_provare',creato:Date.now()-86400000*3},
+    {id:uid(),testo:"Provare i giochi della ruota tutti in una sera",autore:'tomas',cat:'Gioco',stato:'da_provare',creato:Date.now()-86400000*1},
+    {id:uid(),testo:"Cena al ristorante + dolce a casa",autore:'tomas',cat:'Romantico',stato:'realizzato',dataReal:'2026-04-18',creato:Date.now()-86400000*40},
+  ],
+  esperienze:[
+    {id:uid(),titolo:"Notte dopo il cinema",testo:"Tornati a casa e... serata da ricordare 🔥",autore:'tomas',voto:5,data:'2026-05-22',foto:['📷','📷']},
+    {id:uid(),titolo:"Mattina pigra",testo:"Colazione a letto finita bene.",autore:'giulia',voto:4,data:'2026-05-18',foto:[]},
+  ],
+  buoni:[
+    {id:uid(),da:'tomas',a:'giulia',emoji:'💆',titolo:'Buono massaggio',desc:'Massaggio integrale, olio incluso',tipo:'regalo',stato:'attivo',creato:Date.now()-86400000*2},
+    {id:uid(),da:'tomas',a:'giulia',emoji:'👑',titolo:'Buono potere',desc:'Una notte decidi tutto tu',tipo:'regalo',stato:'attivo',bundle:'b1',creato:Date.now()-86400000*2},
+    {id:uid(),da:'giulia',a:'tomas',emoji:'🍳',titolo:'Buono colazione',desc:'Colazione a letto',tipo:'regalo',stato:'riscattato',creato:Date.now()-86400000*9},
+    {id:uid(),da:'giulia',a:'tomas',emoji:'🎬',titolo:'Richiesta: serata film',desc:'Vorrei una serata film abbracciati',tipo:'richiesta',stato:'in_attesa',creato:Date.now()-3600000*5},
+  ],
+  carte:[
+    {id:uid(),tipo:'verita',testo:'Qual è la fantasia che non mi hai ancora confessato?',intensita:2,autore:'tomas'},
+    {id:uid(),tipo:'sfida',testo:'Spogliati di un capo a tua scelta.',intensita:2,autore:'giulia'},
+    {id:uid(),tipo:'sfida',testo:'Baciami dove dico io per 30 secondi.',intensita:3,autore:'tomas'},
+  ],
+  ruota:{tomas:0,giulia:0},
+};
+let db=JSON.parse(localStorage.getItem('ns_db')||'null')||SEED;
+function save(){localStorage.setItem('ns_db',JSON.stringify(db));}
+
+/* ===== hearts fx ===== */
+function rain(n){const e=['❤️','🔥','🌹','✨','💋'];for(let i=0;i<n;i++){const s=mk('div','fx',e[(Math.random()*e.length)|0]);
+  s.style.left=Math.random()*100+'vw';s.style.fontSize=(15+Math.random()*20)+'px';
+  s.style.animationDuration=(2.5+Math.random()*2)+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),5000);}}
+
+/* ===== LOGIN ===== */
+document.querySelectorAll('.who-card').forEach(c=>c.addEventListener('click',()=>{
+  me=c.dataset.me;localStorage.setItem('ns_me',me);startApp();}));
+function startApp(){
+  el('login').classList.add('gone');
+  el('app').style.display='';el('fab').style.display='';
+  const chip=el('meChip');chip.replaceChildren(mk('span','av',PROFILES[me].av),mk('span',null,PROFILES[me].name+' ▾'));
+  chip.onclick=()=>{ // switch profile (demo)
+    me=other(me);localStorage.setItem('ns_me',me);startApp();render();
+  };
+  buildNav();go('desideri');
+}
+if(me){startApp();}
+
+/* ===== NAV ===== */
+const TABS=[
+  ['desideri','🔥','Desideri'],['calendario','📅','Calendario'],['buoni','🎟️','Buoni'],
+  ['dadi','🎲','Dadi'],['ruota','🎡','Ruota'],['tod','🃏','Truth/Dare'],
+];
+let cur='desideri';
+function buildNav(){const n=el('nav');n.replaceChildren();TABS.forEach(([k,i,l])=>{
+  const b=mk('button');add(b,mk('span','i',i),mk('span',null,l));b.dataset.k=k;b.onclick=()=>go(k);n.appendChild(b);});}
+function go(k){cur=k;
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  el('p-'+k).classList.add('on');
+  el('fab').style.display=(k==='dadi'||k==='ruota')?'none':'';
+  window.scrollTo({top:0,behavior:'smooth'});
+  render();
+}
+function render(){({desideri:renderDesideri,calendario:renderCal,buoni:renderBuoni,dadi:renderDadi,ruota:renderRuota,tod:renderTod}[cur])();}
+
+el('fab').onclick=()=>({desideri:addDesiderio,calendario:addEsperienza,buoni:addBuono,tod:addCarta}[cur]||(()=>{}))();
+
+/* ===== MODAL ===== */
+function openSheet(title,buildBody){const s=el('sheet');s.replaceChildren();
+  const x=mk('span','x','✕');x.onclick=closeSheet;s.appendChild(x);
+  s.appendChild(mk('h3',null,title));buildBody(s);el('modal').classList.add('on');}
+function closeSheet(){el('modal').classList.remove('on');}
+el('modal').addEventListener('click',e=>{if(e.target===el('modal'))closeSheet();});
+function field(parent,labelTxt,input){const l=mk('label','lbl',labelTxt);parent.appendChild(l);parent.appendChild(input);return input;}
+
+/* ===== header helper ===== */
+function head(panel,title,sub){const t=mk('h2','ptitle');
+  // allow <em> styling on a word -> simple: put plain
+  t.textContent=title;panel.appendChild(t);panel.appendChild(mk('p','psub',sub));}
+function authorChip(a){const w=mk('span','muted');w.textContent=' ';
+  const r=mk('span');r.appendChild(mk('span','av-mini',PROFILES[a].av));r.appendChild(document.createTextNode(' '+PROFILES[a].name));
+  r.className='muted';return r;}
+
+/* ===== 1. DESIDERI ===== */
+let fDes='tutti';
+function renderDesideri(){const p=el('p-desideri');p.replaceChildren();
+  head(p,'🔥 Desideri & fantasie','Bacheca delle cose da provare. Segnale come realizzate quando le spuntate insieme.');
+  const f=mk('div','filters');[['tutti','Tutti'],['da_provare','Da provare'],['realizzato','Realizzati'],['mine','Scritti da me']].forEach(([k,l])=>{
+    const b=mk('button',fDes===k?'on':'',l);b.onclick=()=>{fDes=k;renderDesideri();};f.appendChild(b);});
+  p.appendChild(f);
+  let list=db.desideri.slice().sort((a,b)=>b.creato-a.creato);
+  if(fDes==='da_provare')list=list.filter(d=>d.stato==='da_provare');
+  if(fDes==='realizzato')list=list.filter(d=>d.stato==='realizzato');
+  if(fDes==='mine')list=list.filter(d=>d.autore===me);
+  if(!list.length){p.appendChild(emptyMsg('Ancora niente qui.\nTocca ＋ per aggiungere un desiderio.'));return;}
+  list.forEach(d=>{
+    const c=mk('div','card');
+    const top=mk('div','row spread');
+    const left=mk('div','row');left.appendChild(mk('span',d.stato==='realizzato'?'pill done':'pill todo',d.stato==='realizzato'?'Realizzato':'Da provare'));
+    if(d.cat)left.appendChild(mk('span','pill t',d.cat));
+    top.appendChild(left);top.appendChild(authorChip(d.autore));
+    c.appendChild(top);
+    const txt=mk('p',null,d.testo);txt.style.margin='10px 0 8px';txt.style.fontSize='18px';c.appendChild(txt);
+    const act=mk('div','row spread');
+    if(d.stato==='realizzato'&&d.dataReal)act.appendChild(mk('span','muted','Fatto il '+fmtD(d.dataReal)));
+    else act.appendChild(mk('span','muted',''));
+    const btns=mk('div','row');
+    if(d.stato==='da_provare'){const done=mk('button','btn sm gold','✓ Realizzato');
+      done.onclick=()=>{d.stato='realizzato';d.dataReal=todayISO();save();rain(8);renderDesideri();};btns.appendChild(done);}
+    const del=mk('button','btn sm ghost','Elimina');del.onclick=()=>{db.desideri=db.desideri.filter(x=>x.id!==d.id);save();renderDesideri();};
+    btns.appendChild(del);act.appendChild(btns);c.appendChild(act);
+    p.appendChild(c);
+  });
+}
+function addDesiderio(){openSheet('Nuovo desiderio',s=>{
+  const testo=field(s,'Cosa vorreste provare',mk('textarea'));
+  const cat=field(s,'Categoria (facoltativa)',mk('input'));cat.placeholder='es. Romantico, Gioco, Avventura';
+  const b=mk('button','btn','Aggiungi alla bacheca');b.style.width='100%';b.style.marginTop='6px';
+  b.onclick=()=>{if(!testo.value.trim())return;db.desideri.push({id:uid(),testo:testo.value.trim(),autore:me,cat:cat.value.trim(),stato:'da_provare',creato:Date.now()});save();closeSheet();rain(6);renderDesideri();};
+  s.appendChild(b);});}
+
+/* ===== 2. CALENDARIO ===== */
+let calM=4,calY=2026; // maggio 2026 (0-based month)
+function renderCal(){const p=el('p-calendario');p.replaceChildren();
+  head(p,'📅 Calendario & esperienze','Le vostre serate, con voto a fiamme e foto. Tocca un giorno per vedere o aggiungere.');
+  const h=mk('div','cal-head');
+  const prev=mk('button','btn sm ghost','‹');prev.onclick=()=>{calM--;if(calM<0){calM=11;calY--;}renderCal();};
+  const nx=mk('button','btn sm ghost','›');nx.onclick=()=>{calM++;if(calM>11){calM=0;calY++;}renderCal();};
+  const mn=mk('div','mname',['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'][calM]+' '+calY);
+  add(h,prev,mn,nx);p.appendChild(h);
+  const g=mk('div','cal-grid');['L','M','M','G','V','S','D'].forEach(d=>g.appendChild(mk('div','cal-dow',d)));
+  const first=new Date(calY,calM,1);let start=(first.getDay()+6)%7;
+  const days=new Date(calY,calM+1,0).getDate();
+  const byDay={};db.esperienze.forEach(e=>{const dt=new Date(e.data);if(dt.getMonth()===calM&&dt.getFullYear()===calY)byDay[dt.getDate()]=(byDay[dt.getDate()]||0)+1;});
+  for(let i=0;i<start;i++)g.appendChild(mk('div','cal-day other',''));
+  for(let d=1;d<=days;d++){const cell=mk('div','cal-day'+(byDay[d]?' has':''),String(d));
+    if(byDay[d])cell.appendChild(mk('span','dot'));
+    cell.onclick=()=>dayDetail(d);g.appendChild(cell);}
+  p.appendChild(g);
+  p.appendChild(mk('p','muted','Esperienze recenti'));
+  db.esperienze.slice().sort((a,b)=>b.data<a.data?-1:1).forEach(e=>p.appendChild(espCard(e)));
+}
+function espCard(e){const c=mk('div','card');
+  const top=mk('div','row spread');top.appendChild(mk('span',null,e.titolo)).style.fontSize='18px';
+  top.appendChild(mk('span','muted',fmtD(e.data)));c.appendChild(top);
+  const fl=mk('div','flames');for(let i=1;i<=5;i++)fl.appendChild(mk('span',i<=e.voto?'fl on':'fl','🔥'));c.appendChild(fl);
+  const txt=mk('p',null,e.testo);txt.style.margin='8px 0 0';txt.style.fontSize='15px';c.appendChild(txt);
+  if(e.foto&&e.foto.length){const ph=mk('div','photos');e.foto.forEach(()=>ph.appendChild(mk('div','photo','🖼️')));c.appendChild(ph);}
+  c.appendChild(authorChip(e.autore));
+  return c;}
+function dayDetail(d){const iso=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  const items=db.esperienze.filter(e=>e.data===iso);
+  openSheet(d+' '+['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'][calM]+' '+calY,s=>{
+    if(!items.length)s.appendChild(mk('p','muted','Niente per questo giorno.'));
+    items.forEach(e=>s.appendChild(espCard(e)));
+    const b=mk('button','btn gold','＋ Aggiungi esperienza qui');b.style.width='100%';b.style.marginTop='8px';
+    b.onclick=()=>{closeSheet();addEsperienza(iso);};s.appendChild(b);});}
+function addEsperienza(presetDate){openSheet('Nuova esperienza',s=>{
+  const tit=field(s,'Titolo',mk('input'));tit.placeholder='es. Notte speciale';
+  const data=field(s,'Data',mk('input'));data.type='date';data.value=presetDate||todayISO();
+  const txt=field(s,'Racconto / note',mk('textarea'));
+  s.appendChild(mk('label','lbl','Quanto vi è piaciuto'));
+  let voto=4;const fl=mk('div','flames');fl.style.marginBottom='12px';
+  function paint(){[...fl.children].forEach((c,i)=>c.classList.toggle('on',i<voto));}
+  for(let i=1;i<=5;i++){const f=mk('span','fl','🔥');f.onclick=()=>{voto=i;paint();};fl.appendChild(f);}paint();s.appendChild(fl);
+  s.appendChild(mk('label','lbl','Foto (private)'));
+  const ph=mk('div','photos');let nFoto=0;
+  const addPhoto=mk('div','photo','＋');addPhoto.style.cursor='pointer';
+  addPhoto.onclick=()=>{nFoto++;ph.insertBefore(mk('div','photo','🖼️'),addPhoto);};
+  ph.appendChild(addPhoto);s.appendChild(ph);
+  s.appendChild(mk('p','muted','Nel prototipo le foto sono finte. Nell\'app vere e salvate in privato.'));
+  const b=mk('button','btn','Salva esperienza');b.style.width='100%';b.style.marginTop='12px';
+  b.onclick=()=>{if(!tit.value.trim())return;db.esperienze.push({id:uid(),titolo:tit.value.trim(),testo:txt.value.trim(),autore:me,voto,data:data.value,foto:Array(nFoto).fill('🖼️')});save();closeSheet();rain(8);renderCal();};
+  s.appendChild(b);});}
+
+/* ===== 3. BUONI ===== */
+let bTab='ricevuti';
+function renderBuoni(){const p=el('p-buoni');p.replaceChildren();
+  head(p,'🎟️ Buoni','Regala buoni (anche bundle) o richiedine uno: l\'altro accetta o rifiuta.');
+  const t=mk('div','tabs2');[['ricevuti','Ricevuti'],['inviati','Inviati'],['richieste','Richieste']].forEach(([k,l])=>{
+    const b=mk('button',bTab===k?'on':'',l);b.onclick=()=>{bTab=k;renderBuoni();};t.appendChild(b);});
+  p.appendChild(t);
+  let list=[];
+  if(bTab==='ricevuti')list=db.buoni.filter(b=>b.a===me&&b.tipo==='regalo'&&b.stato!=='rifiutato');
+  if(bTab==='inviati')list=db.buoni.filter(b=>b.da===me&&b.tipo==='regalo');
+  if(bTab==='richieste')list=db.buoni.filter(b=>b.tipo==='richiesta'&&b.stato==='in_attesa'&&(b.da===me||b.a===me));
+  if(!list.length){p.appendChild(emptyMsg(bTab==='richieste'?'Nessuna richiesta in sospeso.':'Niente qui.\nTocca ＋ per regalare o richiedere.'));return;}
+  list.forEach(b=>p.appendChild(couponCard(b)));
+}
+function couponCard(b){const c=mk('div','card coupon'+(b.stato==='riscattato'?' used':''));
+  const top=mk('div','row');top.appendChild(mk('span','cbig',b.emoji||'🎟️'));
+  const tx=mk('div');tx.style.flex='1';tx.appendChild(mk('div',null,b.titolo)).style.fontSize='17px';
+  tx.appendChild(mk('div','muted',b.desc));top.appendChild(tx);c.appendChild(top);
+  const meta=mk('div','row spread');meta.style.marginTop='10px';
+  let lbl=b.tipo==='richiesta'?('Richiesta da '+PROFILES[b.a].name):((b.da===me?'A ':'Da ')+PROFILES[b.da===me?b.a:b.da].name);
+  meta.appendChild(mk('span','muted',lbl));
+  const btns=mk('div','row');
+  if(b.tipo==='regalo'&&b.a===me&&b.stato==='attivo'){const r=mk('button','btn sm gold','Riscatta');
+    r.onclick=()=>{b.stato='riscattato';save();rain(10);renderBuoni();};btns.appendChild(r);}
+  if(b.tipo==='regalo'&&b.stato==='riscattato')btns.appendChild(mk('span','pill done','Riscattato'));
+  if(b.tipo==='richiesta'&&b.da===me){ // io devo accettare/rifiutare (me = chi concede)
+    const ok=mk('button','btn sm gold','Accetta');ok.onclick=()=>{b.tipo='regalo';b.stato='attivo';save();rain(8);renderBuoni();};
+    const no=mk('button','btn sm ghost','Rifiuta');no.onclick=()=>{b.stato='rifiutato';save();renderBuoni();};
+    add(btns,ok,no);}
+  if(b.tipo==='richiesta'&&b.a===me)btns.appendChild(mk('span','pill','In attesa'));
+  meta.appendChild(btns);c.appendChild(meta);return c;}
+function addBuono(){openSheet('Buoni',s=>{
+  let mode='regalo';
+  const seg=mk('div','seg');const r=mk('button','on','🎁 Regala');const q=mk('button',null,'🙋 Richiedi');
+  r.onclick=()=>{mode='regalo';r.classList.add('on');q.classList.remove('on');note.textContent=noteReg;};
+  q.onclick=()=>{mode='richiesta';q.classList.add('on');r.classList.remove('on');note.textContent=noteReq;};
+  add(seg,r,q);s.appendChild(seg);
+  const emoji=field(s,'Emoji',mk('input'));emoji.value='🎟️';emoji.style.width='80px';
+  const tit=field(s,'Titolo',mk('input'));tit.placeholder='es. Buono massaggio';
+  const desc=field(s,'Descrizione',mk('textarea'));desc.placeholder='Vale per...';
+  const noteReg='Lo regali a '+PROFILES[other(me)].name+': lo vedrà subito tra i Ricevuti.';
+  const noteReq='Lo chiedi a '+PROFILES[other(me)].name+': dovrà accettarlo o rifiutarlo.';
+  const note=mk('p','muted',noteReg);s.appendChild(note);
+  const b=mk('button','btn','Conferma');b.style.width='100%';b.style.marginTop='6px';
+  b.onclick=()=>{if(!tit.value.trim())return;
+    if(mode==='regalo')db.buoni.push({id:uid(),da:me,a:other(me),emoji:emoji.value||'🎟️',titolo:tit.value.trim(),desc:desc.value.trim(),tipo:'regalo',stato:'attivo',creato:Date.now()});
+    else db.buoni.push({id:uid(),da:other(me),a:me,emoji:emoji.value||'🎟️',titolo:tit.value.trim(),desc:desc.value.trim(),tipo:'richiesta',stato:'in_attesa',creato:Date.now()});
+    save();closeSheet();rain(6);renderBuoni();};
+  s.appendChild(b);});}
+
+/* ===== 4. DADI ===== */
+const ACTIONS=[{e:'💋',t:'Bacia'},{e:'👅',t:'Lecca'},{e:'🤚',t:'Massaggia'},{e:'🦷',t:'Mordi piano'},{e:'💨',t:'Soffia su'},{e:'☝️',t:'Sfiora'}];
+const ZONES=[{e:'🫦',t:'il collo'},{e:'👂',t:"l'orecchio"},{e:'🦵',t:"l'interno coscia"},{e:'🔙',t:'la schiena'},{e:'💝',t:'il petto'},{e:'🎲',t:'…scegli tu'}];
+let dRolling=false;
+function renderDadi(){const p=el('p-dadi');p.replaceChildren();
+  head(p,'🎲 Dadi','Azione + zona, a caso. Tirate quando volete.');
+  const row=mk('div','dice-row');const d1=mk('div','die');d1.id='dd1';const d2=mk('div','die');d2.id='dd2';
+  setDie(d1,ACTIONS[0]);setDie(d2,ZONES[0]);add(row,d1,d2);p.appendChild(row);
+  p.appendChild(mk('div','combo')).id='dCombo';
+  const b=mk('button','btn gold','Tira i dadi');b.style.display='block';b.style.margin='4px auto';
+  b.onclick=rollD;p.appendChild(b);}
+function setDie(d,it){d.replaceChildren(mk('span','de',it.e),mk('span','dl',it.t));}
+function rollD(){if(dRolling)return;dRolling=true;const d1=el('dd1'),d2=el('dd2');
+  d1.classList.remove('roll');d2.classList.remove('roll');void d1.offsetWidth;d1.classList.add('roll');d2.classList.add('roll');
+  let n=0;const iv=setInterval(()=>{setDie(d1,ACTIONS[(Math.random()*ACTIONS.length)|0]);setDie(d2,ZONES[(Math.random()*ZONES.length)|0]);
+    if(++n>8){clearInterval(iv);const a=ACTIONS[(Math.random()*ACTIONS.length)|0],z=ZONES[(Math.random()*ZONES.length)|0];
+      setDie(d1,a);setDie(d2,z);el('dCombo').textContent=a.t+' '+z.t+' 😏';dRolling=false;rain(5);}},90);}
+
+/* ===== 5. RUOTA ===== */
+const WHEEL=[
+  {e:'💃',t:'Spogliarello lento'},{e:'⏳',t:'10 min di preliminari'},{e:'👑',t:'Comanda l\'altro'},
+  {e:'💆',t:'Massaggio con olio'},{e:'🚿',t:'Doccia insieme'},{e:'🎭',t:'Bendati e lasciati guidare'},
+  {e:'👅',t:'Sesso orale a sorpresa'},{e:'🛋️',t:'Ovunque tranne il letto'},
+];
+const WEEK=7*86400000;
+let wSpin=false;
+function renderRuota(){const p=el('p-ruota');p.replaceChildren();
+  head(p,'🎡 Ruota della fortuna','Un giro a settimana a testa. Quello che esce è il vostro compitino. 🔥');
+  const last=db.ruota[me]||0;const left=WEEK-(Date.now()-last);
+  const stage=mk('div','wheel-stage');stage.appendChild(mk('div','wpt','▼'));
+  const w=mk('canvas','wheel');w.width=260;w.height=260;w.id='wheelC';stage.appendChild(w);
+  stage.appendChild(mk('div','whub','❤️'));p.appendChild(stage);
+  drawWheel();
+  const res=mk('div','wheel-res');res.id='wheelRes';p.appendChild(res);
+  if(left>0){p.appendChild(mk('div','lock','⏳ Prossimo giro tra '+fmtLeft(left)));}
+  else{const b=mk('button','btn gold','Gira la ruota');b.style.display='block';b.style.margin='4px auto';b.id='spinB';
+    b.onclick=spinW;p.appendChild(b);}
+  const rb=mk('button','btn ghost sm','(demo) azzera attesa');rb.style.display='block';rb.style.margin='14px auto 0';
+  rb.onclick=()=>{db.ruota[me]=0;save();renderRuota();};p.appendChild(rb);
+}
+function drawWheel(){const cv=el('wheelC');if(!cv)return;const c=cv.getContext('2d'),R=130,n=WHEEL.length,arc=2*Math.PI/n;
+  const pal=['#7a1533','#5c1026','#9a1f43','#46070f','#8a1838','#5c1026','#a3214a','#3d0a12'];
+  for(let i=0;i<n;i++){const a0=i*arc-Math.PI/2;c.beginPath();c.moveTo(R,R);c.arc(R,R,R,a0,a0+arc);c.closePath();
+    c.fillStyle=pal[i%pal.length];c.fill();c.strokeStyle='rgba(212,168,108,.5)';c.lineWidth=1.5;c.stroke();
+    c.save();c.translate(R,R);c.rotate(a0+arc/2);c.textAlign='right';c.fillStyle='#f3d9b0';c.font='20px Georgia';
+    c.fillText(WHEEL[i].e,R-14,7);c.restore();}}
+function spinW(){if(wSpin)return;wSpin=true;el('spinB').disabled=true;
+  const cv=el('wheelC'),n=WHEEL.length,idx=(Math.random()*n)|0,seg=360/n;
+  const target=360*6+(360-idx*seg-seg/2);cv.style.transform='rotate('+target+'deg)';
+  setTimeout(()=>{const it=WHEEL[idx];el('wheelRes').textContent=it.e+'\n'+it.t;
+    db.ruota[me]=Date.now();save();rain(12);wSpin=false;setTimeout(renderRuota,1200);},5100);}
+
+/* ===== 6. TRUTH OR DARE ===== */
+let todType='tutti',todInt='tutti';
+function renderTod(){const p=el('p-tod');p.replaceChildren();
+  head(p,'🃏 Truth or Dare','Il mazzo parte vuoto: aggiungete le vostre carte e pescatene una a caso.');
+  const f1=mk('div','filters');[['tutti','Tutte'],['verita','Verità'],['sfida','Sfida']].forEach(([k,l])=>{
+    const b=mk('button',todType===k?'on':'',l);b.onclick=()=>{todType=k;renderTod();};f1.appendChild(b);});
+  p.appendChild(f1);
+  const f2=mk('div','filters');[['tutti','Ogni intensità'],['1','① soft'],['2','② media'],['3','③ hot']].forEach(([k,l])=>{
+    const b=mk('button',todInt===k?'on':'',l);b.onclick=()=>{todInt=k;renderTod();};f2.appendChild(b);});
+  p.appendChild(f2);
+  const pool=filteredCards();
+  const draw=mk('button','btn gold','🎴 Pesca una carta');draw.style.display='block';draw.style.margin='4px auto 16px';
+  draw.disabled=!pool.length;draw.onclick=()=>drawCard(pool);p.appendChild(draw);
+  const slot=mk('div');slot.id='todSlot';p.appendChild(slot);
+  p.appendChild(mk('p','muted','Nel mazzo: '+db.carte.length+' carte • Tocca ＋ per aggiungerne'));
+  if(!db.carte.length)p.appendChild(emptyMsg('Mazzo vuoto.\nTocca ＋ e scrivi la prima carta.'));
+}
+function filteredCards(){return db.carte.filter(c=>(todType==='tutti'||c.tipo===todType)&&(todInt==='tutti'||String(c.intensita)===todInt));}
+function drawCard(pool){const c=pool[(Math.random()*pool.length)|0];const slot=el('todSlot');slot.replaceChildren();
+  const card=mk('div','card');card.style.textAlign='center';card.style.padding='26px 18px';
+  card.appendChild(mk('div','pill'+(c.tipo==='sfida'?' t':' done'),c.tipo==='verita'?'VERITÀ':'SFIDA'));
+  const tx=mk('p',null,c.testo);tx.style.fontSize='20px';tx.style.margin='14px 0 8px';card.appendChild(tx);
+  card.appendChild(mk('div','muted','Intensità '+'🔥'.repeat(c.intensita)));slot.appendChild(card);rain(5);}
+function addCarta(){openSheet('Nuova carta',s=>{
+  let tipo='verita',inten=1;
+  const seg=mk('div','seg');const v=mk('button','on','Verità');const d=mk('button',null,'Sfida');
+  v.onclick=()=>{tipo='verita';v.classList.add('on');d.classList.remove('on');};
+  d.onclick=()=>{tipo='sfida';d.classList.add('on');v.classList.remove('on');};add(seg,v,d);s.appendChild(seg);
+  const txt=field(s,'Testo della carta',mk('textarea'));
+  s.appendChild(mk('label','lbl','Intensità'));
+  const seg2=mk('div','seg');['①','②','③'].forEach((l,i)=>{const b=mk('button',i===0?'on':'',l+' '+['soft','media','hot'][i]);
+    b.onclick=()=>{inten=i+1;[...seg2.children].forEach((x,j)=>x.classList.toggle('on',j===i));};seg2.appendChild(b);});s.appendChild(seg2);
+  const b=mk('button','btn','Aggiungi al mazzo');b.style.width='100%';b.style.marginTop='6px';
+  b.onclick=()=>{if(!txt.value.trim())return;db.carte.push({id:uid(),tipo,testo:txt.value.trim(),intensita:inten,autore:me});save();closeSheet();rain(5);renderTod();};
+  s.appendChild(b);});}
+
+/* ===== utils ===== */
+function emptyMsg(t){return mk('div','empty',t);}
+function todayISO(){return new Date().toISOString().slice(0,10);}
+function fmtD(iso){const[y,m,d]=iso.split('-');return d+'/'+m+'/'+y;}
+function fmtLeft(ms){const dd=Math.floor(ms/86400000),hh=Math.floor(ms%86400000/3600000);return dd+'g '+hh+'h';}
+</script>
+</body>
+</html>
