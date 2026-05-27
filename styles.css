@@ -5,16 +5,24 @@
   --spin:cubic-bezier(.17,.67,.18,1);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;}
-body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;
-  overflow-x:hidden;-webkit-font-smoothing:antialiased;
+html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none;}
+body{position:fixed;inset:0;font-family:Georgia,"Times New Roman",serif;color:var(--cream);
+  -webkit-font-smoothing:antialiased;
   background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
              linear-gradient(170deg,var(--bg),var(--bg2));background-attachment:fixed;}
 .sans,input,button,.nav button,.muted,.login-kick{font-family:Arial,Helvetica,sans-serif;}
 
-/* layout mobile-first: colonna singola */
-.wrap{max-width:540px;margin:0 auto;padding:26px 16px 110px;}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+/* layout mobile-first: colonna fissa topbar/viewport/dock */
+.wrap{max-width:540px;margin:0 auto;height:100%;display:flex;flex-direction:column;padding:0;}
+.topbar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+  padding:max(14px,env(safe-area-inset-top)) 16px 10px;margin:0;}
+
+.viewport{flex:1 1 auto;position:relative;overflow:hidden;touch-action:pan-y;}
+.track{display:flex;height:100%;will-change:transform;}
+.page{flex:0 0 100%;width:100%;height:100%;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;
+  padding:6px 16px calc(96px + env(safe-area-inset-bottom));scrollbar-width:none;}
+.page::-webkit-scrollbar{display:none;}
 .brand{font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);}
 .topbar-right{display:flex;align-items:center;gap:8px;}
 .gear{background:rgba(255,255,255,.04);border:1px solid rgba(212,168,108,.3);border-radius:999px;
@@ -23,8 +31,8 @@ body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:1
   border:1px solid rgba(212,168,108,.3);border-radius:999px;padding:6px 13px;color:var(--cream);
   font-size:14px;cursor:pointer;min-height:40px;}
 
-/* nav: dock fissa in basso — icone che si espandono sull'attiva + swipe sulla barra */
-.nav{position:fixed;left:12px;right:12px;bottom:14px;z-index:35;max-width:516px;margin:0 auto;
+/* nav: dock statica in fondo alla colonna */
+.nav{flex:0 0 auto;position:static;left:auto;right:auto;bottom:auto;margin:0 12px 14px;
   display:flex;gap:4px;background:rgba(13,3,7,.86);backdrop-filter:blur(10px);
   border:1px solid rgba(212,168,108,.3);border-radius:22px;padding:8px;
   box-shadow:0 12px 30px rgba(0,0,0,.55);touch-action:pan-y;user-select:none;}
@@ -37,8 +45,7 @@ body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:1
 .nav button .lab{font-size:12.5px;max-width:0;overflow:hidden;white-space:nowrap;opacity:0;transition:.38s;}
 .nav button.on .lab{max-width:120px;opacity:1;}
 
-.panel{display:none;}
-.panel.on{display:block;animation:fade .3s ease;}
+/* .panel removed — pages are always-visible flex cells in .track (Task 3) */
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .ptitle{font-size:26px;margin:0 0 3px;}
 .psub{font-size:13px;color:#b89aa2;margin:0 0 16px;line-height:1.5;}
