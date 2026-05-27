@@ -824,3 +824,10 @@ body.locked{overflow:hidden;touch-action:none;}
 .set-back{font-family:Arial,Helvetica,sans-serif;background:transparent;border:0;color:var(--gold-soft);font-size:15px;cursor:pointer;display:flex;align-items:center;gap:5px;}
 .tap{cursor:pointer;}
 .tap:active{opacity:.7;}
+
+/* ===== Modalità pudica (Task 11) ===== */
+/* Thumbnail: già sfocate via .thumb-blur; pudica rinforza e aggiunge transizione */
+body.pudica .thumb.thumb-blur img{filter:blur(14px) saturate(1.05);transition:filter .25s;}
+/* Contenuti generici marcati data-spicy: sfocati di default, rivelati su tap (.revealed) */
+body.pudica [data-spicy]{filter:blur(14px);transition:filter .25s;}
+body.pudica [data-spicy].revealed{filter:none;}
