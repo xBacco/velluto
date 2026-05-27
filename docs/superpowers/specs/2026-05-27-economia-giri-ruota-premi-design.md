@@ -40,9 +40,11 @@ tasca (1 gratis a settimana, gli altri si vincono giocando).
 - **8 fette della ruota:** 💋 apri un segreto · 🔥 proposta piccante · 🎁 buono a sorpresa ·
   💌 pesca un desiderio · 🃏 carta Obbligo o Verità · ⭐ jolly scegli-tu · 🎲 tiro di dadi ·
   🔁 gira ancora.
-  - La fetta **💋 apri un segreto** è "viva" **solo se** c'è una busta sigillata in attesa
-    per chi gira; altrimenti resta disegnata ma **spenta** (peso 0, non vincibile, resa
-    smorzata). Vedi §5.
+  - Due fette sono **condizionali**: **💋 apri un segreto** è viva solo se c'è una busta
+    sigillata in attesa per chi gira; **🃏 carta ToD** è viva solo se la coppia ha almeno
+    una carta nel mazzo. Quando la condizione manca, la fetta resta disegnata ma **spenta**
+    (peso 0, non vincibile, resa smorzata). Vedi §5.
+  - **Pesi:** tutti uguali (peso 1) per ora — si tara dopo aver provato la ruota dal vivo.
 - **Premi differiti vs immediati:**
   - **Differiti** — si **materializzano nelle tab**: `🎁 buono a sorpresa` → compare nei
     **Buoni**; `💌 pesca un desiderio` → desiderio **evidenziato** nei Desideri.
@@ -150,7 +152,9 @@ Un solo posto per i numeri, da tarare dopo l'uso reale.
 export const ECONOMIA = {
   GRATIS_OGNI_GIORNI: 7,   // ogni quanto matura il giro gratis settimanale
   COSTO_GIRO: 1,           // giri spesi per girare la ruota
-  GIRI_PER_VITTORIA: 1,    // accreditati vincendo un gioco (default hook concediGiro)
+  GIRI_PER_VITTORIA: 1,    // PROVVISORIO: accreditati vincendo un gioco (hook concediGiro).
+                           // I giochi potranno dare giri O altri premi → si tara/estende
+                           // quando i giochi esistono (vedi §9, §12).
   ULTIMI_PREMI: 5,         // voci mostrate nello storico "Ultimi premi"
 };
 
@@ -160,20 +164,34 @@ export const FETTE = [
   { key: 'piccante',  emoji: '🔥', label: 'Proposta piccante', peso: 1 },
   { key: 'buono',     emoji: '🎁', label: 'Buono a sorpresa',  peso: 1, differito: true },
   { key: 'desiderio', emoji: '💌', label: 'Pesca un desiderio', peso: 1, differito: true },
-  { key: 'tod',       emoji: '🃏', label: 'Carta Obbligo o Verità', peso: 1 },
+  { key: 'tod',       emoji: '🃏', label: 'Carta Obbligo o Verità', peso: 1, soloSeCarte: true },
   { key: 'jolly',     emoji: '⭐', label: 'Jolly: scegli tu',  peso: 1 },
   { key: 'dadi',      emoji: '🎲', label: 'Tiro di dadi',      peso: 1 },
   { key: 'ancora',    emoji: '🔁', label: 'Gira ancora',       peso: 1 },
 ];
 
 // Proposte piccanti (le 8 della vecchia ruota settimanale → diventano UN premio: ne pesca una).
+// BOZZA approvata dall'utente il 2026-05-27 (rifinibile).
 export const PROPOSTE_PICCANTI = [
-  '…', // 8 frasi hardcoded, stile contenuti dei dadi. Da rifinire con l'utente.
+  'Spogliatevi a vicenda, lentamente, senza dire una parola.',
+  'Massaggio con l’olio: dieci minuti a testa, niente fretta.',
+  'Uno dei due bendato: si lascia guidare solo dal tatto.',
+  'Doccia insieme, luci basse.',
+  'Chi ha girato detta le regole per i prossimi dieci minuti.',
+  'Un bacio lungo un minuto intero — mani dietro la schiena.',
+  'Raccontatevi una fantasia che non vi siete mai detti.',
+  'Striptease privato: una canzone intera, pubblico di una persona.',
 ];
 
 // Buoni a sorpresa: pool da cui materializzare un regalo per chi vince la fetta 🎁.
+// BOZZA approvata dall'utente il 2026-05-27 (rifinibile).
 export const BUONI_SORPRESA = [
-  // { emoji, titolo, descrizione } — da rifinire con l'utente.
+  { emoji: '💆', titolo: 'Massaggio completo', descrizione: 'Quindici minuti di massaggio, quando lo riscatti.' },
+  { emoji: '🛁', titolo: 'Bagno caldo preparato', descrizione: 'Te lo prepara il partner, candele incluse.' },
+  { emoji: '😈', titolo: 'Un sì garantito',      descrizione: 'Una richiesta piccante a tua scelta, senza poter dire di no.' },
+  { emoji: '🎬', titolo: 'Serata, scegli tu',    descrizione: 'Film e coccole decisi da te, per una sera.' },
+  { emoji: '💋', titolo: 'Tre voglie express',   descrizione: 'Tre piccoli desideri esauditi stasera.' },
+  { emoji: '🍳', titolo: 'Colazione a letto',    descrizione: 'Una mattina a tua scelta, te la porta il partner.' },
 ];
 ```
 
@@ -189,8 +207,9 @@ Tutte pure (dati in → dati out), `now`/`rnd` iniettabili dove serve. Stile dei
   settimanale**: guarda il movimento `motivo==='settimanale'` più recente dell'utente;
   `ok = now − ultimo ≥ GRATIS_OGNI_GIORNI giorni` (o nessun movimento). `prossimoSblocco` =
   data del prossimo gratis. (È la funzione un tempo chiamata `ruotaEleggibile`, ora sui movimenti.)
-- **`fetteRuota(haSegretoInAttesa)`** → copia di `FETTE` con il **peso della fetta `segreto`
-  forzato a 0** se `!haSegretoInAttesa` (resta nell'array per la geometria: 8 spicchi sempre).
+- **`fetteRuota({ haSegreti, haCarte })`** → copia di `FETTE` con i pesi delle fette
+  **condizionali** forzati a 0 quando la condizione manca: `segreto` → 0 se `!haSegreti`;
+  `tod` → 0 se `!haCarte`. Le fette restano nell'array per la geometria (8 spicchi sempre).
 - **`estraiFetta(fette, rnd = Math.random)`** → estrazione **pesata** (salta peso 0) →
   `{ indice, fetta }`. `indice` serve al modulo per calcolare l'angolo di atterraggio.
 - **`ultimiPremi(movimenti, userId, n = ECONOMIA.ULTIMI_PREMI)`** → ultimi `n` movimenti
@@ -242,8 +261,9 @@ Ruota**; gli altri giochi si aggiungono quando esistono.
    giriEleggibile(mov, me, now)`.
 2. Se `ok`, **matura il gratis**: `accreditaGiro({ motivo:'settimanale' })`, poi ricarica.
    (Maturazione **pigra**, all'apertura — niente cron.)
-3. Determina `haSegretoInAttesa = segretiDaRivelare(buoni, me).length > 0` (richiede i
-   `buoni`; vedi spec segreti) → `fette = fetteRuota(haSegretoInAttesa)`.
+3. Determina le condizioni: `haSegreti = segretiDaRivelare(buoni, me).length > 0` (richiede i
+   `buoni`; vedi spec segreti) e `haCarte = listCarte(...).length > 0` →
+   `fette = fetteRuota({ haSegreti, haCarte })`.
 4. Disegna: card saldo (pallini-gettone = saldo, "gratis tra Ng" = countdown da
    `prossimoSblocco`), la ruota (8 spicchi, emoji dritte), il bottone ghost "GIRA LA RUOTA"
    (disabilitato se `!puoGirare(saldo)`), lo storico `ultimiPremi`.
@@ -276,7 +296,7 @@ dipendono dalla fetta:
 | 🔥 `piccante` | immediato | mostra **una** proposta a caso da `PROPOSTE_PICCANTI` | nessuna |
 | 🎁 `buono` | **differito** | materializza un **regalo** nei Buoni: `addBuono({ tipo:'regalo', stato:'attivo', a_id:me, da_id:partner, …pool BUONI_SORPRESA })`; il pop-up dice "lo trovi nei Buoni" | `addBuono` |
 | 💌 `desiderio` | **differito** | pesca un desiderio `da_provare` a caso e lo **evidenzia** nei Desideri; pop-up "te l'abbiamo scelto noi" | tab Desideri |
-| 🃏 `tod` | immediato | pesca una **carta** a caso (`pescaCarta`) e la mostra nel pop-up | `listCarte` + `pescaCarta` (carte esistono nel DB; modulo ToD non necessario) |
+| 🃏 `tod` | immediato | pesca una **carta** a caso (`pescaCarta`) e la mostra nel pop-up. **Fetta spenta** (peso 0) se il mazzo è vuoto → non vincibile finché non si aggiungono carte | `listCarte` + `pescaCarta` (carte esistono nel DB; modulo ToD non necessario) |
 | ⭐ `jolly` | scelta | bottone "**Scegli tu →**" → l'utente sceglie uno degli altri premi | — |
 | 🎲 `dadi` | immediato | tira i dadi e mostra l'esito (riusa `tiraDadi`/`componiFrase`) | Dadi (già fatto) |
 | 🔁 `ancora` | immediato | `accreditaGiro({ motivo:'ancora' })` (+1) → di fatto **giro gratis**; pop-up "Gira ancora!" | nessuna |
@@ -291,12 +311,13 @@ dipendono dalla fetta:
 ## 9. Hook "guadagnare giri dai giochi" (estensibile)
 
 - I giochi che hanno un **vincitore** chiamano `concediGiro(client, { couple_id, user_id })`
-  alla vittoria. Oggi: **Strip Poker** (quando si chiude una partita → +`GIRI_PER_VITTORIA`
-  al vincitore). Domani: altri giochi.
-- **Quanti** giri dà ciascun gioco e **a quali** condizioni è una scelta di bilanciamento da
-  fare **quando il gioco esiste** → valori in `ECONOMIA` (o una mappa per-gioco se servirà).
-- Questo mantiene l'economia **aperta all'estensione** senza decidere ora numeri su giochi
-  non costruiti (vedi §12 Domande aperte).
+  alla vittoria. Oggi nessun gioco-con-vincitore è costruito; domani: **Strip Poker** e altri.
+- **Scelta utente (2026-05-27):** quanti giri dà ciascun gioco — e se un gioco debba dare
+  **giri o altri premi** (es. un buono, un giro extra) — resta **aperto**, da decidere quando
+  il gioco esiste. Per ora `GIRI_PER_VITTORIA = 1` è solo un **default provvisorio**.
+- Questo mantiene l'economia **aperta all'estensione**: l'hook `concediGiro` è il punto di
+  innesto; se in futuro un gioco dovrà dare un premio diverso dai giri, si aggiunge un hook
+  fratello senza toccare la ruota. Niente numeri decisi ora su giochi non costruiti.
 
 ---
 
@@ -336,17 +357,16 @@ in attesa; storico "Ultimi premi" si aggiorna; layout mobile corretto; persisten
 
 ---
 
-## 12. Domande aperte (da chiudere con l'utente)
+## 12. Domande aperte → CHIUSE il 2026-05-27
 
-1. **Contenuti `PROPOSTE_PICCANTI`** (le 8 frasi) e **`BUONI_SORPRESA`** (pool del regalo a
-   sorpresa): vanno scritti con l'utente (stile contenuti dei dadi).
-2. **Pesi delle fette**: ora tutti = 1 (uniforme). Tarare dopo l'uso (es. "apri segreto" più
-   raro?).
-3. **Giri per vittoria per-gioco**: definire quando i giochi esistono (ora unico
-   `GIRI_PER_VITTORIA`).
-4. **Fetta 🃏 ToD a mazzo vuoto**: se la coppia non ha ancora carte, cosa mostra il pop-up?
-   (proposta: messaggio "aggiungi carte in Obbligo o Verità" + nessun premio perso, oppure
-   ri-tira). Da decidere.
+1. **Contenuti** `PROPOSTE_PICCANTI` (8 frasi) e `BUONI_SORPRESA` (pool) → **bozza scritta
+   e approvata** dall'utente, ora in §4 (rifinibile in seguito).
+2. **Pesi delle fette** → **tutti uguali** (peso 1) per ora; si tara dopo l'uso dal vivo.
+3. **Giri per vittoria** → **resta aperto di proposito**: dipende da giochi non costruiti e
+   un gioco potrà dare giri *o altri premi*; `GIRI_PER_VITTORIA = 1` è solo default
+   provvisorio, l'hook `concediGiro` è il punto d'innesto estensibile (vedi §9).
+4. **Fetta 🃏 ToD a mazzo vuoto** → **fetta spenta** (peso 0), stesso meccanismo della fetta
+   segreto: non vincibile finché il mazzo è vuoto (vedi §5 `fetteRuota`).
 
 ---
 
