@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ruota a premi · mockup interattivo</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a;
+  --ok:#7fb069; --paper:#f3e6cf; --ink:#3a2405; --shadow:rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;margin:0;
+  background:#0c0306;display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 14px 60px;}
+.intro{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;max-width:430px;line-height:1.5;}
+.intro b{color:var(--gold-soft);}
+.phone{width:100%;max-width:400px;border-radius:30px;overflow:hidden;border:1px solid rgba(212,168,108,.25);
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),linear-gradient(170deg,var(--bg),var(--bg2));
+  box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;min-height:720px;display:flex;flex-direction:column;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 10px;}
+.brand{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);}
+.me-chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid rgba(212,168,108,.3);
+  border-radius:999px;padding:5px 11px;color:var(--cream);font-family:Arial,sans-serif;font-size:12px;}
+.body{flex:1;padding:6px 18px 18px;display:flex;flex-direction:column;align-items:center;}
+.ptitle{font-size:24px;margin:6px 0 2px;text-align:center;}
+.psub{font-family:Arial,sans-serif;font-size:12.5px;color:#c79;margin:0 0 8px;text-align:center;}
+
+.wallet{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(212,168,108,.3);
+  border-radius:14px;padding:9px 16px;margin:6px 0 4px;font-family:Arial,sans-serif;}
+.wallet .n{font-family:Georgia,serif;font-size:26px;color:var(--gold-soft);line-height:1;}
+.wallet .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);}
+.earn-note{font-family:Arial,sans-serif;font-size:11.5px;color:#b9908f;text-align:center;margin:2px 0 10px;line-height:1.5;}
+
+.wheel-wrap{position:relative;width:300px;height:300px;margin:6px auto 2px;}
+.pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);z-index:6;
+  width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;
+  border-top:26px solid var(--gold-soft);filter:drop-shadow(0 2px 3px rgba(0,0,0,.6));}
+.wheel{position:absolute;inset:0;border-radius:50%;border:6px solid var(--gold);
+  box-shadow:0 0 0 4px rgba(0,0,0,.5),0 14px 40px rgba(0,0,0,.6),inset 0 0 30px rgba(0,0,0,.4);
+  transition:transform 4.4s cubic-bezier(.17,.67,.18,1);
+  background:conic-gradient(from 0deg,
+    #6a1230 0deg 45deg, #3a0c1c 45deg 90deg,
+    #6a1230 90deg 135deg, #3a0c1c 135deg 180deg,
+    #6a1230 180deg 225deg, #3a0c1c 225deg 270deg,
+    #6a1230 270deg 315deg, #3a0c1c 315deg 360deg);}
+.wheel::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,transparent 0 44.6deg,rgba(212,168,108,.55) 44.6deg 45deg);}
+.slice-lbl{position:absolute;top:50%;left:50%;transform-origin:0 0;font-family:Arial,sans-serif;
+  width:120px;text-align:center;pointer-events:none;}
+.slice-lbl .e{font-size:24px;display:block;line-height:1;}
+.slice-lbl .t{font-size:10px;letter-spacing:.03em;color:var(--cream);display:block;margin-top:3px;text-shadow:0 1px 2px rgba(0,0,0,.7);}
+.hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;width:54px;height:54px;border-radius:50%;
+  background:radial-gradient(circle at 38% 32%,var(--gold-soft),var(--gold) 60%,#a87a3e);
+  border:3px solid #2a0813;box-shadow:0 3px 10px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-size:22px;}
+
+.spin-btn{appearance:none;border:none;cursor:pointer;font-family:Arial,sans-serif;margin-top:14px;
+  min-height:50px;border-radius:14px;padding:0 30px;font-size:15px;letter-spacing:.04em;
+  background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;box-shadow:0 8px 20px rgba(0,0,0,.5);}
+.spin-btn:disabled{opacity:.45;cursor:not-allowed;}
+.spin-btn.empty{background:linear-gradient(180deg,#7a1533,#5c1026);color:#fff;}
+
+.nav{display:flex;gap:4px;justify-content:space-between;padding:8px 8px 12px;background:linear-gradient(0deg,#1c0610,transparent);overflow-x:auto;}
+.nav button{flex:0 0 auto;font-family:Arial,sans-serif;font-size:11px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(212,168,108,.18);color:var(--gold-soft);padding:7px 9px;border-radius:10px;cursor:pointer;white-space:nowrap;}
+.nav button.on{color:#fff;border-color:var(--wine2);background:linear-gradient(180deg,rgba(122,21,51,.6),rgba(92,16,38,.3));}
+
+.modal{position:fixed;inset:0;z-index:60;background:rgba(8,2,5,.82);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:20px;}
+.modal.show{display:flex;}
+.prize{width:100%;max-width:330px;background:linear-gradient(180deg,#2a0813,#1c0610);border:1px solid rgba(212,168,108,.35);
+  border-radius:20px;padding:26px 22px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.6);animation:pop .4s cubic-bezier(.18,1.5,.4,1);}
+@keyframes pop{0%{transform:scale(.7);opacity:0;}100%{transform:scale(1);opacity:1;}}
+.prize .won{font-family:Arial,sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);}
+.prize .big{font-size:60px;margin:10px 0 6px;}
+.prize .name{font-size:22px;color:var(--gold-soft);margin:0 0 6px;}
+.prize .desc{font-family:Arial,sans-serif;font-size:13.5px;color:#e7c9c9;line-height:1.5;margin:0 0 18px;}
+.prize .act{appearance:none;border:none;cursor:pointer;font-family:Arial,sans-serif;width:100%;min-height:46px;border-radius:12px;
+  font-size:14px;background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;}
+.prize .sec{display:block;margin:10px auto 0;background:transparent;border:1px solid rgba(212,168,108,.4);color:var(--gold-soft);
+  font-family:Arial,sans-serif;font-size:12.5px;padding:8px 18px;border-radius:10px;cursor:pointer;}
+.confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:70;}
+.confetti span{position:absolute;font-size:18px;animation:fall 1.4s ease-out forwards;}
+@keyframes fall{0%{opacity:1;transform:translateY(-20px) rotate(0);}100%{opacity:0;transform:translateY(60vh) rotate(360deg);}}
+</style>
+</head>
+<body>
+  <p class="intro">Mockup <b>interattivo</b> della ruota a premi. Hai <b>3 giri</b>: tocca <b>GIRA</b>. Il premio "💋 apri segreto" compare solo se hai buste in attesa; "🔁 rigira" non costa un giro. I giri extra si <b>vincono giocando</b>.</p>
+
+  <div class="phone">
+    <div class="topbar"><span class="brand">Velluto</span><span class="me-chip">❤️ Giulia · esci</span></div>
+    <div class="body">
+      <h2 class="ptitle">🎡 La Ruota</h2>
+      <p class="psub">Gira e scopri cosa ti tocca stasera.</p>
+
+      <div class="wallet"><span class="n" id="giriN">3</span><span class="lbl">giri<br>disponibili</span></div>
+      <p class="earn-note">Ne maturi 1 a settimana · gli extra li vinci ai giochi 🃏🎲</p>
+
+      <div class="wheel-wrap">
+        <div class="pointer"></div>
+        <div class="wheel" id="wheel"></div>
+        <div class="hub">🎡</div>
+      </div>
+
+      <button class="spin-btn" id="spinBtn">GIRA · −1</button>
+    </div>
+    <div class="nav">
+      <button>🔥 Desideri</button><button>📅 Esperienze</button><button>🎟️ Buoni</button>
+      <button class="on">🎡 Ruota</button><button>🃏 Carte</button><button>🎲 Dadi</button>
+    </div>
+  </div>
+
+  <div class="modal" id="resModal"><div class="prize" id="prizeBox"></div></div>
+
+<script>
+const slices=[
+  {e:'💋',t:'Apri segreto',name:'Apri un segreto',desc:'Scegli quale busta sigillata aprire. Parte l\'animazione 💋',act:'Scegli quale busta →'},
+  {e:'🔥',t:'Proposta',name:'Proposta piccante',desc:'Una proposta spinta da fare insieme, stasera.',act:'Scopri quale'},
+  {e:'🎁',t:'Buono',name:'Un buono a sorpresa',desc:'Un coupon appena generato: lo trovi nei tuoi Buoni.',act:'Vai ai Buoni'},
+  {e:'💌',t:'Desiderio',name:'Pesca un desiderio',desc:'Estratto a caso dalla vostra lista: realizzatelo.',act:'Vai ai Desideri'},
+  {e:'🃏',t:'Carta',name:'Carta Truth or Dare',desc:'Pesca una carta dal vostro mazzo.',act:'Pesca la carta'},
+  {e:'⭐',t:'Jolly',name:'Jolly · scegli tu',desc:'Carta bianca: decidi tu cosa.',act:'Perfetto'},
+  {e:'🎲',t:'Dadi',name:'Tiro di dadi',desc:'Un tiro azione + zona del corpo.',act:'Tira i dadi'},
+  {e:'🔁',t:'Rigira',name:'Gira ancora!',desc:'Giro gratis: non ti e costato nulla.',act:'Rigira'},
+];
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+
+const wheel=document.getElementById('wheel');
+slices.forEach((s,i)=>{
+  const a=i*45+22.5;
+  const l=el('div','slice-lbl');
+  l.style.transform=`rotate(${a}deg) translate(-60px,-128px)`;
+  l.append(el('span','e',s.e), el('span','t',s.t));
+  wheel.appendChild(l);
+});
+
+let giri=3, rot=0, spinning=false;
+const giriN=document.getElementById('giriN'), spinBtn=document.getElementById('spinBtn');
+function syncWallet(){
+  giriN.textContent=giri;
+  if(giri<=0){spinBtn.textContent='Nessun giro · gioca per vincerne';spinBtn.classList.add('empty');spinBtn.disabled=true;}
+  else{spinBtn.textContent='GIRA · −1';spinBtn.classList.remove('empty');spinBtn.disabled=spinning;}
+}
+spinBtn.onclick=()=>{
+  if(spinning||giri<=0)return;
+  spinning=true; giri--; syncWallet(); spinBtn.disabled=true;
+  const i=Math.floor(Math.random()*slices.length);
+  const finalMod=(360-(i*45+22.5))%360;
+  const delta=(finalMod-(rot%360)+360)%360;
+  rot+=360*5+delta;
+  wheel.style.transform=`rotate(${rot}deg)`;
+  setTimeout(()=>{spinning=false; showPrize(slices[i]);}, 4500);
+};
+
+function confetti(){
+  const c=el('div','confetti'); const em=['💋','❤️','✨','🌹'];
+  for(let k=0;k<26;k++){const s=el('span',null,em[k%em.length]);
+    s.style.left=Math.random()*100+'%';s.style.animationDelay=(Math.random()*.3)+'s';s.style.fontSize=(14+Math.random()*14)+'px';c.appendChild(s);}
+  document.body.appendChild(c);setTimeout(()=>c.remove(),1700);
+}
+function showPrize(s){
+  confetti();
+  const box=document.getElementById('prizeBox'); box.replaceChildren();
+  const act=el('button','act',s.act); act.id='prizeAct';
+  const sec=el('button','sec','Chiudi'); sec.id='prizeClose';
+  box.append(el('div','won','Hai vinto'), el('div','big',s.e), el('p','name',s.name), el('p','desc',s.desc), act, sec);
+  document.getElementById('resModal').classList.add('show');
+  const close=()=>{document.getElementById('resModal').classList.remove('show');syncWallet();};
+  sec.onclick=close;
+  act.onclick=()=>{ if(s.t==='Rigira'){giri++;syncWallet();} close(); };
+}
+syncWallet();
+</script>
+</body>
+</html>
