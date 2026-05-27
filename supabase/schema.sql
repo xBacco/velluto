@@ -96,14 +96,30 @@ create table if not exists carte (
   creato timestamptz not null default now()
 );
 
--- 7. GIRI RUOTA
-create table if not exists ruota_giri (
-  id uuid primary key default gen_random_uuid(),
+-- 7. ECONOMIA A GIRI (ledger insert-only)
+create table if not exists giri_movimenti (
+  id        uuid primary key default gen_random_uuid(),
   couple_id uuid not null references couples(id),
-  user_id uuid not null references auth.users(id),
-  esito text not null,
-  creato timestamptz not null default now()
+  user_id   uuid not null references auth.users(id),
+  delta     int  not null,
+  motivo    text not null check (motivo in ('settimanale','gioco','giro','ancora')),
+  esito     text,
+  creato    timestamptz not null default now()
 );
+create index if not exists giri_mov_couple_idx on giri_movimenti (couple_id, user_id, creato desc);
+
+-- 7b. CONTENUTI RUOTA editabili (fette piccante/buono)
+create table if not exists ruota_contenuti (
+  id          uuid primary key default gen_random_uuid(),
+  couple_id   uuid not null references couples(id),
+  categoria   text not null check (categoria in ('piccante','buono')),
+  emoji       text,
+  testo       text not null,
+  descrizione text,
+  ordine      int  not null default 0,
+  creato      timestamptz not null default now()
+);
+create index if not exists ruota_cont_idx on ruota_contenuti (couple_id, categoria, ordine);
 
 -- 8. DADI (facce editabili per coppia — Fase 4a; vedi anche supabase/dadi.sql)
 create table if not exists dadi_facce (
@@ -126,7 +142,8 @@ alter table esperienze     enable row level security;
 alter table esperienza_foto enable row level security;
 alter table buoni          enable row level security;
 alter table carte          enable row level security;
-alter table ruota_giri     enable row level security;
+alter table giri_movimenti  enable row level security;
+alter table ruota_contenuti enable row level security;
 alter table dadi_facce     enable row level security;
 
 -- couples: leggibile dai membri
@@ -144,5 +161,6 @@ create policy esperienze_all on esperienze       for all using (is_member(couple
 create policy expfoto_all    on esperienza_foto  for all using (is_member(couple_id)) with check (is_member(couple_id));
 create policy buoni_all      on buoni            for all using (is_member(couple_id)) with check (is_member(couple_id));
 create policy carte_all      on carte            for all using (is_member(couple_id)) with check (is_member(couple_id));
-create policy ruota_all      on ruota_giri       for all using (is_member(couple_id)) with check (is_member(couple_id));
+create policy giri_mov_all   on giri_movimenti   for all using (is_member(couple_id)) with check (is_member(couple_id));
+create policy ruota_cont_all on ruota_contenuti  for all using (is_member(couple_id)) with check (is_member(couple_id));
 create policy dadi_facce_all on dadi_facce        for all using (is_member(couple_id)) with check (is_member(couple_id));
