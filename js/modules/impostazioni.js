@@ -64,15 +64,12 @@ function renderMain() {
   add(av, face, mk('div', 'set-pen', '✎'));
   const grow = mk('div', 'set-grow');
   const lbl = mk('label', 'set-lbl', 'Il tuo nome');
+  const inp = mk('input', 'set-fld'); inp.id = 'setNameInput'; inp.value = me.display_name || '';
+  lbl.htmlFor = inp.id;
   add(grow, lbl);
-  const inp = mk('input', 'set-fld'); inp.value = me.display_name || '';
   add(grow, inp); add(prof, av, grow);
-  const picker = mk('div', 'set-picker');
-  EMOJI.forEach(e => { const b = mk('button', null, e); b.onclick = () => { face.textContent = e; picker.classList.remove('show'); save(); }; add(picker, b); });
-  av.onclick = () => picker.classList.toggle('show');
   let saveT = null;
   const save = () => { clearTimeout(saveT); saveT = setTimeout(doSave, 600); };
-  inp.oninput = save;
   async function doSave() {
     try {
       await updateProfile(client, me.id, { display_name: inp.value.trim(), avatar: face.textContent });
@@ -81,6 +78,10 @@ function renderMain() {
       toast('Profilo salvato', 'ok');
     } catch (e) { toast('Errore: ' + e.message, 'err'); }
   }
+  inp.oninput = save;
+  const picker = mk('div', 'set-picker');
+  EMOJI.forEach(e => { const b = mk('button', null, e); b.onclick = () => { face.textContent = e; picker.classList.remove('show'); save(); }; add(picker, b); });
+  av.onclick = () => picker.classList.toggle('show');
   add(pCard, prof, picker); add(pSec, pCard); add(body, pSec);
 
   // PRIVACY & BLOCCO  → Task 10
@@ -96,7 +97,7 @@ function renderMain() {
   pw.classList.add('tap'); pw.onclick = openCambiaPassword;   // Task 12 (form)
   add(aCard, pw); add(aSec, aCard);
   const out = mk('button', 'set-logout', 'Esci da Lussuria');
-  out.onclick = async () => { try { await logout(); } catch (_) {} location.reload(); };
+  out.onclick = async () => { closeImpostazioni(); try { await logout(); } catch (_) {} location.reload(); };
   add(aSec, out); add(body, aSec);
 
   // FOOTER
