@@ -260,3 +260,9 @@ export async function addStripPartita(client, { couple_id, vincitore_id, perdent
   const res = await client.from('strip_partite').insert({ couple_id, vincitore_id, perdente_id, modalita });
   return check(res);
 }
+
+export async function getPartner(client, coupleId, meId) {
+  const res = await client.from('profiles').select('*').eq('couple_id', coupleId);
+  const rows = check(res) || [];
+  return rows.find(r => r.id !== meId) || null;
+}

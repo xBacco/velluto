@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coupon segreti · 3 aperture del sigillo</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0;
+  --paper:#f3e6cf; --ink:#3a2405; --shadow:rgba(0,0,0,.55);
+  --wax1:#c0364f; --wax2:#7a1226;
+}
+*{box-sizing:border-box;}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;margin:0;
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+             linear-gradient(170deg,var(--bg),var(--bg2));background-attachment:fixed;padding:28px 16px 70px;}
+.sans{font-family:Arial,Helvetica,sans-serif;}
+.kick{font-family:Arial,sans-serif;letter-spacing:.5em;text-transform:uppercase;font-size:11px;color:var(--gold);text-align:center;margin-bottom:6px;}
+h1{font-size:30px;font-weight:400;text-align:center;margin:0 0 4px;
+  background:linear-gradient(180deg,var(--cream),var(--gold-soft));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.lede{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;max-width:570px;margin:0 auto 34px;line-height:1.5;}
+.grid{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start;max-width:1180px;margin:0 auto;}
+.col{flex:1 1 330px;max-width:360px;}
+.optlabel{font-family:Arial,sans-serif;text-align:center;margin-bottom:12px;}
+.optlabel b{display:block;color:var(--gold-soft);font-size:15px;letter-spacing:.04em;}
+.optlabel span{font-size:12px;color:#b9908f;}
+.card{background:linear-gradient(160deg,rgba(92,16,38,.35),rgba(20,4,9,.4));
+  border:1px solid rgba(212,168,108,.22);border-radius:16px;padding:18px;box-shadow:0 6px 18px var(--shadow);}
+.note{font-family:Arial,sans-serif;font-size:11.5px;color:#a98;line-height:1.5;margin-top:14px;text-align:center;}
+.reset{display:block;margin:12px auto 0;background:none;border:none;color:var(--gold-soft);
+  font-family:Arial,sans-serif;font-size:11px;text-decoration:underline;cursor:pointer;opacity:.75;}
+.foot{text-align:center;margin-top:42px;}
+.foot .sans{font-size:13px;color:#caa;}
+
+/* ===== stage condiviso (vino + apertura A2 pop) ===== */
+.stage{position:relative;height:250px;perspective:1100px;cursor:pointer;user-select:none;}
+.env-body{position:absolute;inset:0;border-radius:12px;overflow:hidden;
+  background:linear-gradient(160deg,#3a0c1c,#240711);border:1px solid rgba(212,168,108,.32);box-shadow:inset 0 0 40px rgba(0,0,0,.45);}
+.env-body::after{content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(135deg,transparent calc(50% - 1px),rgba(212,168,108,.14) 50%,transparent calc(50% + 1px)),
+    linear-gradient(225deg,transparent calc(50% - 1px),rgba(212,168,108,.14) 50%,transparent calc(50% + 1px));}
+.flap{position:absolute;top:0;left:0;right:0;height:128px;transform-origin:top center;z-index:6;
+  clip-path:polygon(0 0,100% 0,50% 100%);
+  background:linear-gradient(160deg,#5c1430,#3a0c1c);border-bottom:1px solid rgba(212,168,108,.18);
+  transition:transform .85s cubic-bezier(.6,-0.2,.3,1.4);}
+.stage.open .flap{transform:rotateX(-170deg);z-index:1;}
+
+/* letter pop (A2) */
+.letter{position:absolute;z-index:4;border-radius:10px;font-family:Arial,sans-serif;line-height:1.55;
+  box-shadow:0 -6px 20px rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  background:var(--paper);color:var(--ink);left:16px;right:16px;bottom:24px;height:202px;padding:14px 16px;transform-origin:center 65%;
+  transform:scale(.25);opacity:0;transition:transform .65s cubic-bezier(.18,1.5,.4,1) .4s,opacity .25s .4s;}
+.stage.open .letter{transform:scale(1);opacity:1;}
+.letter .lt-title{font-family:Georgia,serif;font-size:16px;color:#7a1226;margin:0 0 8px;}
+.letter .lt-body{font-size:14px;margin:0;}
+.letter .lt-sign{font-size:12px;color:#9a6b1e;margin-top:12px;font-style:italic;}
+.hint{position:absolute;bottom:14px;left:0;right:0;z-index:2;text-align:center;
+  font-family:Arial,sans-serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-soft);transition:opacity .3s;}
+.stage.open .hint{opacity:0;}
+.glow{position:absolute;inset:0;border-radius:12px;pointer-events:none;z-index:7;opacity:0;}
+.stage.open .glow{animation:flash 1s ease .3s;}
+@keyframes flash{0%{opacity:0;}30%{opacity:1;box-shadow:0 0 38px 6px rgba(233,201,143,.5);}100%{opacity:0;}}
+
+/* burst di baci (più numeroso) */
+.burst{position:absolute;top:120px;left:50%;z-index:9;pointer-events:none;}
+.burst span{position:absolute;left:0;top:0;font-size:17px;opacity:0;}
+.stage.open .burst span{animation:fly .85s cubic-bezier(.2,.6,.3,1) var(--d,.3s) forwards;}
+@keyframes fly{0%{opacity:1;transform:translate(0,0) scale(.3);}22%{opacity:1;}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.15) rotate(var(--r));}}
+
+/* contenitore ceralacca */
+.wax{position:absolute;top:101px;left:50%;transform:translateX(-50%);z-index:8;width:56px;height:56px;}
+.wax .sigil{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:27px;line-height:1;z-index:3;}
+
+/* ---- S1 · Frantumazione in 6 schegge ---- */
+.shatter .shard{position:absolute;inset:0;background:radial-gradient(circle at 38% 32%,var(--wax1),var(--wax2) 72%);
+  box-shadow:inset 0 -3px 6px rgba(0,0,0,.4);transition:transform .6s cubic-bezier(.3,.5,.4,1) .05s,opacity .5s ease .15s;}
+.stage.open .shatter .shard{transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(.8);opacity:0;}
+.stage.open .shatter .sigil{opacity:0;transform:scale(.4);transition:.3s;}
+
+/* ---- S2 · Scioglimento ---- */
+.melt .blob{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 38% 30%,var(--wax1),var(--wax2) 72%);
+  box-shadow:0 3px 9px rgba(0,0,0,.5),inset 0 -4px 8px rgba(0,0,0,.45);transform-origin:center bottom;
+  transition:transform .8s cubic-bezier(.55,.1,.5,1) .05s,opacity .6s ease .2s,border-radius .8s ease .05s,filter .6s;}
+.stage.open .melt .blob{transform:scaleY(.12) scaleX(1.25);border-radius:50% 50% 40% 40%/30% 30% 80% 80%;opacity:0;filter:blur(2px);}
+.stage.open .melt .sigil{opacity:0;transform:scale(.5) translateY(6px);transition:.4s;}
+
+/* ---- S3 · Salta via (pop del tappo) ---- */
+.popoff .blob{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 38% 30%,var(--wax1),var(--wax2) 72%);
+  box-shadow:0 3px 9px rgba(0,0,0,.5),inset 0 -4px 8px rgba(0,0,0,.45);
+  transition:transform .7s cubic-bezier(.2,.9,.3,1) 0s,opacity .4s ease .35s;}
+.stage.open .popoff .blob{transform:translateY(-120px) scale(.45) rotate(42deg);opacity:0;}
+.stage.open .popoff .sigil{transform:translateY(-120px) scale(.45) rotate(42deg);opacity:0;transition:.7s cubic-bezier(.2,.9,.3,1);}
+</style>
+</head>
+<body>
+  <div class="kick">Velluto · Buoni</div>
+  <h1>Come si rompe il sigillo — 3 modi</h1>
+  <p class="lede">Apertura A2 (pop + pioggia di baci 💋) confermata. Cambia solo <b>come cede la ceralacca</b>. Tocca per aprire; "↺" per ri-sigillare. Quale ti convince: <b>S1</b>, <b>S2</b> o <b>S3</b>.</p>
+
+  <div class="grid">
+
+    <!-- S1 -->
+    <div class="col">
+      <div class="optlabel"><b>S1 · Frantumazione</b><span>La ceralacca si spacca in schegge che schizzano via.</span></div>
+      <div class="card">
+        <div class="stage" data-stage>
+          <div class="env-body"></div>
+          <div class="letter"><p class="lt-title">Per stasera 🔥</p><p class="lt-body">Niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p><p class="lt-sign">— con voglia, Tomas</p></div>
+          <div class="flap"></div>
+          <div class="wax shatter">
+            <div class="shard" style="clip-path:polygon(50% 50%,93.3% 75%,50% 100%);--dx:30px;--dy:52px;--r:60deg;"></div>
+            <div class="shard" style="clip-path:polygon(50% 50%,50% 100%,6.7% 75%);--dx:-30px;--dy:52px;--r:-55deg;"></div>
+            <div class="shard" style="clip-path:polygon(50% 50%,6.7% 75%,6.7% 25%);--dx:-60px;--dy:4px;--r:-40deg;"></div>
+            <div class="shard" style="clip-path:polygon(50% 50%,6.7% 25%,50% 0);--dx:-28px;--dy:-50px;--r:-30deg;"></div>
+            <div class="shard" style="clip-path:polygon(50% 50%,50% 0,93.3% 25%);--dx:30px;--dy:-50px;--r:35deg;"></div>
+            <div class="shard" style="clip-path:polygon(50% 50%,93.3% 25%,93.3% 75%);--dx:60px;--dy:2px;--r:45deg;"></div>
+            <div class="sigil">💋</div>
+          </div>
+          <div class="burst">
+            <span style="--dx:-60px;--dy:-48px;--r:-30deg;--d:.34s;">💋</span>
+            <span style="--dx:56px;--dy:-52px;--r:25deg;--d:.3s;">💋</span>
+            <span style="--dx:-78px;--dy:6px;--r:-15deg;--d:.4s;">💋</span>
+            <span style="--dx:74px;--dy:2px;--r:20deg;--d:.36s;">💋</span>
+            <span style="--dx:-34px;--dy:-70px;--r:-10deg;--d:.32s;">💋</span>
+            <span style="--dx:38px;--dy:-68px;--r:12deg;--d:.44s;">💋</span>
+            <span style="--dx:-54px;--dy:42px;--r:-20deg;--d:.42s;">❤️</span>
+            <span style="--dx:52px;--dy:40px;--r:18deg;--d:.38s;">❤️</span>
+            <span style="--dx:0px;--dy:-82px;--r:6deg;--d:.46s;">✨</span>
+            <span style="--dx:-20px;--dy:58px;--r:-8deg;--d:.48s;">✨</span>
+          </div>
+          <div class="glow"></div><div class="hint">tocca per aprire</div>
+        </div>
+        <button class="reset" data-reset>↺ ri-sigilla</button>
+      </div>
+      <p class="note">Decisa e "fisica": la ceralacca cede davvero.</p>
+    </div>
+
+    <!-- S2 -->
+    <div class="col">
+      <div class="optlabel"><b>S2 · Scioglimento</b><span>Il sigillo si scioglie e si appiattisce, come cera calda.</span></div>
+      <div class="card">
+        <div class="stage" data-stage>
+          <div class="env-body"></div>
+          <div class="letter"><p class="lt-title">Per stasera 🔥</p><p class="lt-body">Niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p><p class="lt-sign">— con voglia, Tomas</p></div>
+          <div class="flap"></div>
+          <div class="wax melt"><div class="blob"></div><div class="sigil">💋</div></div>
+          <div class="burst">
+            <span style="--dx:-60px;--dy:-48px;--r:-30deg;--d:.4s;">💋</span>
+            <span style="--dx:56px;--dy:-52px;--r:25deg;--d:.36s;">💋</span>
+            <span style="--dx:-78px;--dy:6px;--r:-15deg;--d:.46s;">💋</span>
+            <span style="--dx:74px;--dy:2px;--r:20deg;--d:.42s;">💋</span>
+            <span style="--dx:-34px;--dy:-70px;--r:-10deg;--d:.38s;">💋</span>
+            <span style="--dx:38px;--dy:-68px;--r:12deg;--d:.5s;">💋</span>
+            <span style="--dx:-54px;--dy:42px;--r:-20deg;--d:.48s;">❤️</span>
+            <span style="--dx:52px;--dy:40px;--r:18deg;--d:.44s;">❤️</span>
+            <span style="--dx:0px;--dy:-82px;--r:6deg;--d:.52s;">✨</span>
+            <span style="--dx:-20px;--dy:58px;--r:-8deg;--d:.54s;">✨</span>
+          </div>
+          <div class="glow"></div><div class="hint">tocca per aprire</div>
+        </div>
+        <button class="reset" data-reset>↺ ri-sigilla</button>
+      </div>
+      <p class="note">Morbida e sensuale: la cera "si arrende".</p>
+    </div>
+
+    <!-- S3 -->
+    <div class="col">
+      <div class="optlabel"><b>S3 · Salta via</b><span>Il sigillo schizza in alto come un tappo e i baci esplodono.</span></div>
+      <div class="card">
+        <div class="stage" data-stage>
+          <div class="env-body"></div>
+          <div class="letter"><p class="lt-title">Per stasera 🔥</p><p class="lt-body">Niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p><p class="lt-sign">— con voglia, Tomas</p></div>
+          <div class="flap"></div>
+          <div class="wax popoff"><div class="blob"></div><div class="sigil">💋</div></div>
+          <div class="burst">
+            <span style="--dx:-60px;--dy:-48px;--r:-30deg;--d:.32s;">💋</span>
+            <span style="--dx:56px;--dy:-52px;--r:25deg;--d:.3s;">💋</span>
+            <span style="--dx:-78px;--dy:6px;--r:-15deg;--d:.38s;">💋</span>
+            <span style="--dx:74px;--dy:2px;--r:20deg;--d:.34s;">💋</span>
+            <span style="--dx:-34px;--dy:-70px;--r:-10deg;--d:.3s;">💋</span>
+            <span style="--dx:38px;--dy:-68px;--r:12deg;--d:.42s;">💋</span>
+            <span style="--dx:-54px;--dy:42px;--r:-20deg;--d:.4s;">❤️</span>
+            <span style="--dx:52px;--dy:40px;--r:18deg;--d:.36s;">❤️</span>
+            <span style="--dx:0px;--dy:-82px;--r:6deg;--d:.44s;">✨</span>
+            <span style="--dx:-20px;--dy:58px;--r:-8deg;--d:.46s;">✨</span>
+          </div>
+          <div class="glow"></div><div class="hint">tocca per aprire</div>
+        </div>
+        <button class="reset" data-reset>↺ ri-sigilla</button>
+      </div>
+      <p class="note">La più scenografica e "frizzante".</p>
+    </div>
+
+  </div>
+
+  <div class="foot"><p class="sans">Quale rottura del sigillo vince? <b>S1</b>, <b>S2</b> o <b>S3</b>.</p></div>
+
+<script>
+  document.querySelectorAll('[data-stage]').forEach(s=>s.addEventListener('click',()=>s.classList.add('open')));
+  document.querySelectorAll('[data-reset]').forEach(b=>b.addEventListener('click',()=>b.closest('.card').querySelector('[data-stage]').classList.remove('open')));
+</script>
+</body>
+</html>

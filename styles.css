@@ -531,7 +531,6 @@ body.locked{overflow:hidden;touch-action:none;}
 .strip-root .btn.hid{display:none;}
 .strip-root .btn[disabled]{opacity:.4;cursor:default;box-shadow:none;}
 .strip-root .btn.ghost{background:transparent;color:var(--cream);box-shadow:inset 0 0 0 1px rgba(212,168,108,.6);padding:11px 18px;}
-.strip-root .strip-note{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;color:rgba(212,168,108,.5);letter-spacing:.05em;}
 
 /* ---------- overlay (appesi a body: dadi-scrim strip-ov) ---------- */
 .strip-ov{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;overflow:auto;
@@ -554,8 +553,6 @@ body.locked{overflow:hidden;touch-action:none;}
 .strip-root .pm:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.4);}
 .strip-root .pm .pm-t{display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',Georgia,serif;font-size:21px;color:var(--cream);}
 .strip-root .pm .pm-s{font-size:12px;color:#b79a86;margin-top:5px;line-height:1.4;}
-.strip-root .btn{border:none;border-radius:99px;padding:11px 26px;cursor:pointer;font-family:'EB Garamond',serif;font-size:15px;letter-spacing:.03em;
-  background:linear-gradient(180deg,var(--gold-soft),#b6843f);color:var(--bg2);box-shadow:0 8px 22px rgba(212,168,108,.32);transition:transform .15s;}
 
 /* ---------- SETUP guardaroba (overlay) ---------- */
 .strip-ov .setHead{display:flex;flex-direction:column;gap:2px;}

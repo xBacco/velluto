@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coupon segreti · 3 varianti di scioglimento</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0;
+  --paper:#f3e6cf; --ink:#3a2405; --shadow:rgba(0,0,0,.55);
+  --wax1:#c0364f; --wax2:#7a1226;
+}
+*{box-sizing:border-box;}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;margin:0;
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+             linear-gradient(170deg,var(--bg),var(--bg2));background-attachment:fixed;padding:28px 16px 70px;}
+.sans{font-family:Arial,Helvetica,sans-serif;}
+.kick{font-family:Arial,sans-serif;letter-spacing:.5em;text-transform:uppercase;font-size:11px;color:var(--gold);text-align:center;margin-bottom:6px;}
+h1{font-size:30px;font-weight:400;text-align:center;margin:0 0 4px;
+  background:linear-gradient(180deg,var(--cream),var(--gold-soft));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.lede{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;max-width:570px;margin:0 auto 34px;line-height:1.5;}
+.grid{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start;max-width:1180px;margin:0 auto;}
+.col{flex:1 1 330px;max-width:360px;}
+.optlabel{font-family:Arial,sans-serif;text-align:center;margin-bottom:12px;}
+.optlabel b{display:block;color:var(--gold-soft);font-size:15px;letter-spacing:.04em;}
+.optlabel span{font-size:12px;color:#b9908f;}
+.card{background:linear-gradient(160deg,rgba(92,16,38,.35),rgba(20,4,9,.4));
+  border:1px solid rgba(212,168,108,.22);border-radius:16px;padding:18px;box-shadow:0 6px 18px var(--shadow);}
+.note{font-family:Arial,sans-serif;font-size:11.5px;color:#a98;line-height:1.5;margin-top:14px;text-align:center;}
+.reset{display:block;margin:12px auto 0;background:none;border:none;color:var(--gold-soft);
+  font-family:Arial,sans-serif;font-size:11px;text-decoration:underline;cursor:pointer;opacity:.75;}
+.foot{text-align:center;margin-top:42px;}
+.foot .sans{font-size:13px;color:#caa;}
+
+/* ===== stage condiviso (vino + apertura A2 pop + baci) ===== */
+.stage{position:relative;height:250px;perspective:1100px;cursor:pointer;user-select:none;}
+.env-body{position:absolute;inset:0;border-radius:12px;overflow:hidden;
+  background:linear-gradient(160deg,#3a0c1c,#240711);border:1px solid rgba(212,168,108,.32);box-shadow:inset 0 0 40px rgba(0,0,0,.45);}
+.env-body::after{content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(135deg,transparent calc(50% - 1px),rgba(212,168,108,.14) 50%,transparent calc(50% + 1px)),
+    linear-gradient(225deg,transparent calc(50% - 1px),rgba(212,168,108,.14) 50%,transparent calc(50% + 1px));}
+.flap{position:absolute;top:0;left:0;right:0;height:128px;transform-origin:top center;z-index:6;
+  clip-path:polygon(0 0,100% 0,50% 100%);
+  background:linear-gradient(160deg,#5c1430,#3a0c1c);border-bottom:1px solid rgba(212,168,108,.18);
+  transition:transform .85s cubic-bezier(.6,-0.2,.3,1.4);}
+.stage.open .flap{transform:rotateX(-170deg);z-index:1;}
+.letter{position:absolute;z-index:4;border-radius:10px;font-family:Arial,sans-serif;line-height:1.55;
+  box-shadow:0 -6px 20px rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  background:var(--paper);color:var(--ink);left:16px;right:16px;bottom:24px;height:202px;padding:14px 16px;transform-origin:center 65%;
+  transform:scale(.25);opacity:0;transition:transform .65s cubic-bezier(.18,1.5,.4,1) .5s,opacity .25s .5s;}
+.stage.open .letter{transform:scale(1);opacity:1;}
+.letter .lt-title{font-family:Georgia,serif;font-size:16px;color:#7a1226;margin:0 0 8px;}
+.letter .lt-body{font-size:14px;margin:0;}
+.letter .lt-sign{font-size:12px;color:#9a6b1e;margin-top:12px;font-style:italic;}
+.hint{position:absolute;bottom:14px;left:0;right:0;z-index:2;text-align:center;
+  font-family:Arial,sans-serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-soft);transition:opacity .3s;}
+.stage.open .hint{opacity:0;}
+.glow{position:absolute;inset:0;border-radius:12px;pointer-events:none;z-index:7;opacity:0;}
+.stage.open .glow{animation:flash 1s ease .4s;}
+@keyframes flash{0%{opacity:0;}30%{opacity:1;box-shadow:0 0 38px 6px rgba(233,201,143,.5);}100%{opacity:0;}}
+.burst{position:absolute;top:120px;left:50%;z-index:9;pointer-events:none;}
+.burst span{position:absolute;left:0;top:0;font-size:17px;opacity:0;}
+.stage.open .burst span{animation:fly .85s cubic-bezier(.2,.6,.3,1) var(--d,.45s) forwards;}
+@keyframes fly{0%{opacity:1;transform:translate(0,0) scale(.3);}22%{opacity:1;}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.15) rotate(var(--r));}}
+
+/* ceralacca */
+.wax{position:absolute;top:101px;left:50%;transform:translateX(-50%);z-index:8;width:56px;height:56px;}
+.wax .blob{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 38% 30%,var(--wax1),var(--wax2) 72%);
+  box-shadow:0 3px 9px rgba(0,0,0,.5),inset 0 -4px 8px rgba(0,0,0,.45);}
+.wax .sigil{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:27px;line-height:1;z-index:3;}
+.stage.open .wax .sigil{opacity:0;transform:scale(.5) translateY(6px);transition:opacity .4s,transform .5s;}
+
+/* ===== M1 · Gocciola (drip) ===== */
+.melt-drip .blob{transform-origin:center top;
+  transition:transform .8s cubic-bezier(.5,.1,.5,1) .05s,opacity .55s ease .3s,border-radius .8s ease .05s,filter .5s;}
+.stage.open .melt-drip .blob{transform:scaleY(.35) translateY(6px);border-radius:48% 48% 46% 46%/40% 40% 70% 70%;opacity:0;filter:blur(1px);}
+.melt-drip .drop{position:absolute;left:50%;top:34px;width:11px;height:13px;margin-left:-5.5px;z-index:2;
+  border-radius:50% 50% 50% 50%/60% 60% 45% 45%;background:radial-gradient(circle at 40% 30%,var(--wax1),var(--wax2));opacity:0;}
+.stage.open .melt-drip .drop{animation:drip 1s ease forwards;}
+.stage.open .melt-drip .drop.d2{animation-delay:.12s;}
+.stage.open .melt-drip .drop.d3{animation-delay:.22s;}
+@keyframes drip{0%{opacity:0;transform:translate(0,0) scale(.6);}25%{opacity:1;transform:translate(var(--dx,0),6px) scale(1);}100%{opacity:0;transform:translate(var(--dx,0),48px) scale(.7);}}
+
+/* ===== M2 · Pozza che si allarga (puddle) ===== */
+.melt-puddle .blob{transform-origin:center bottom;
+  transition:transform .9s cubic-bezier(.5,.05,.4,1) .05s,opacity .6s ease .4s,border-radius .9s ease .05s,filter .6s;}
+.stage.open .melt-puddle .blob{transform:scaleY(.1) scaleX(1.7) translateY(20px);border-radius:50%;opacity:0;filter:blur(2px);}
+
+/* ===== M3 · Cola allungandosi (sag) ===== */
+.melt-sag .blob{transform-origin:center top;
+  transition:transform .95s cubic-bezier(.55,.08,.5,1) .05s,opacity .6s ease .45s,border-radius .9s ease .05s,filter .6s;}
+.stage.open .melt-sag .blob{transform:scaleY(1.55) scaleX(.62) translateY(14px);border-radius:46% 46% 50% 50%/28% 28% 82% 82%;opacity:0;filter:blur(2px);}
+</style>
+</head>
+<body>
+  <div class="kick">Velluto · Buoni</div>
+  <h1>Scioglimento del sigillo — 3 varianti</h1>
+  <p class="lede">Tutto il resto è identico (busta vino, pop, pioggia di baci 💋). Cambia solo <b>il modo in cui la cera si scioglie</b>. Tocca per aprire; "↺" per ri-sigillare. Quale: <b>M1</b>, <b>M2</b> o <b>M3</b>.</p>
+
+  <div class="grid">
+
+    <!-- M1 -->
+    <div class="col">
+      <div class="optlabel"><b>M1 · Gocciola</b><span>La cera si ammorbidisce e cola in piccole gocce.</span></div>
+      <div class="card">
+        <div class="stage" data-stage>
+          <div class="env-body"></div>
+          <div class="letter"><p class="lt-title">Per stasera 🔥</p><p class="lt-body">Niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p><p class="lt-sign">— con voglia, Tomas</p></div>
+          <div class="flap"></div>
+          <div class="wax melt-drip">
+            <div class="blob"></div>
+            <div class="drop" style="--dx:0px;"></div>
+            <div class="drop d2" style="--dx:-9px;"></div>
+            <div class="drop d3" style="--dx:9px;"></div>
+            <div class="sigil">💋</div>
+          </div>
+          <div class="burst">
+            <span style="--dx:-60px;--dy:-48px;--r:-30deg;--d:.5s;">💋</span><span style="--dx:56px;--dy:-52px;--r:25deg;--d:.46s;">💋</span>
+            <span style="--dx:-78px;--dy:6px;--r:-15deg;--d:.56s;">💋</span><span style="--dx:74px;--dy:2px;--r:20deg;--d:.52s;">💋</span>
+            <span style="--dx:-34px;--dy:-70px;--r:-10deg;--d:.48s;">💋</span><span style="--dx:38px;--dy:-68px;--r:12deg;--d:.6s;">💋</span>
+            <span style="--dx:-54px;--dy:42px;--r:-20deg;--d:.58s;">❤️</span><span style="--dx:52px;--dy:40px;--r:18deg;--d:.54s;">❤️</span>
+            <span style="--dx:0px;--dy:-82px;--r:6deg;--d:.62s;">✨</span><span style="--dx:-20px;--dy:58px;--r:-8deg;--d:.64s;">✨</span>
+          </div>
+          <div class="glow"></div><div class="hint">tocca per aprire</div>
+        </div>
+        <button class="reset" data-reset>↺ ri-sigilla</button>
+      </div>
+      <p class="note">Si vedono le gocce scendere: molto "cera vera".</p>
+    </div>
+
+    <!-- M2 -->
+    <div class="col">
+      <div class="optlabel"><b>M2 · Pozza</b><span>Collassa e si allarga in una pozza sottile, poi svanisce.</span></div>
+      <div class="card">
+        <div class="stage" data-stage>
+          <div class="env-body"></div>
+          <div class="letter"><p class="lt-title">Per stasera 🔥</p><p class="lt-body">Niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p><p class="lt-sign">— con voglia, Tomas</p></div>
+          <div class="flap"></div>
+          <div class="wax melt-puddle"><div class="blob"></div><div class="sigil">💋</div></div>
+          <div class="burst">
+            <span style="--dx:-60px;--dy:-48px;--r:-30deg;--d:.5s;">💋</span><span style="--dx:56px;--dy:-52px;--r:25deg;--d:.46s;">💋</span>
+            <span style="--dx:-78px;--dy:6px;--r:-15deg;--d:.56s;">💋</span><span style="--dx:74px;--dy:2px;--r:20deg;--d:.52s;">💋</span>
+            <span style="--dx:-34px;--dy:-70px;--r:-10deg;--d:.48s;">💋</span><span style="--dx:38px;--dy:-68px;--r:12deg;--d:.6s;">💋</span>
+            <span style="--dx:-54px;--dy:42px;--r:-20deg;--d:.58s;">❤️</span><span style="--dx:52px;--dy:40px;--r:18deg;--d:.54s;">❤️</span>
+            <span style="--dx:0px;--dy:-82px;--r:6deg;--d:.62s;">✨</span><span style="--dx:-20px;--dy:58px;--r:-8deg;--d:.64s;">✨</span>
+          </div>
+          <div class="glow"></div><div class="hint">tocca per aprire</div>
+        </div>
+        <button class="reset" data-reset>↺ ri-sigilla</button>
+      </div>
+      <p class="note">La cera si spande sotto: morbida e lenta.</p>
+    </div>
+
+    <!-- M3 -->
+    <div class="col">
+      <div class="optlabel"><b>M3 · Cola giù</b><span>Si allunga verso il basso come cera che cede e scivola.</span></div>
+      <div class="card">
+        <div class="stage" data-stage>
+          <div class="env-body"></div>
+          <div class="letter"><p class="lt-title">Per stasera 🔥</p><p class="lt-body">Niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p><p class="lt-sign">— con voglia, Tomas</p></div>
+          <div class="flap"></div>
+          <div class="wax melt-sag"><div class="blob"></div><div class="sigil">💋</div></div>
+          <div class="burst">
+            <span style="--dx:-60px;--dy:-48px;--r:-30deg;--d:.5s;">💋</span><span style="--dx:56px;--dy:-52px;--r:25deg;--d:.46s;">💋</span>
+            <span style="--dx:-78px;--dy:6px;--r:-15deg;--d:.56s;">💋</span><span style="--dx:74px;--dy:2px;--r:20deg;--d:.52s;">💋</span>
+            <span style="--dx:-34px;--dy:-70px;--r:-10deg;--d:.48s;">💋</span><span style="--dx:38px;--dy:-68px;--r:12deg;--d:.6s;">💋</span>
+            <span style="--dx:-54px;--dy:42px;--r:-20deg;--d:.58s;">❤️</span><span style="--dx:52px;--dy:40px;--r:18deg;--d:.54s;">❤️</span>
+            <span style="--dx:0px;--dy:-82px;--r:6deg;--d:.62s;">✨</span><span style="--dx:-20px;--dy:58px;--r:-8deg;--d:.64s;">✨</span>
+          </div>
+          <div class="glow"></div><div class="hint">tocca per aprire</div>
+        </div>
+        <button class="reset" data-reset>↺ ri-sigilla</button>
+      </div>
+      <p class="note">Effetto "goccia di cera" che cola: sensuale.</p>
+    </div>
+
+  </div>
+
+  <div class="foot"><p class="sans">Quale scioglimento vince? <b>M1</b>, <b>M2</b> o <b>M3</b>.</p></div>
+
+<script>
+  document.querySelectorAll('[data-stage]').forEach(s=>s.addEventListener('click',()=>s.classList.add('open')));
+  document.querySelectorAll('[data-reset]').forEach(b=>b.addEventListener('click',()=>b.closest('.card').querySelector('[data-stage]').classList.remove('open')));
+</script>
+</body>
+</html>

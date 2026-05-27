@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nuovo coupon · bottom sheet — 3 varianti</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --ok:#7fb069; --shadow:rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;margin:0;background:#0c0306;padding:26px 14px 70px;}
+h1{font-size:26px;font-weight:400;text-align:center;margin:0 0 4px;background:linear-gradient(180deg,var(--cream),var(--gold-soft));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.lede{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;max-width:640px;margin:0 auto 28px;line-height:1.5;}
+.lede b{color:var(--gold-soft);}
+.grid{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;align-items:flex-start;}
+.col{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.col h2{font-family:Arial,sans-serif;font-size:14px;color:var(--gold-soft);margin:0;}
+.col .desc{font-family:Arial,sans-serif;font-size:11.5px;color:#b9908f;text-align:center;max-width:300px;line-height:1.45;}
+.toggle{font-family:Arial,sans-serif;font-size:12px;background:transparent;border:1px solid rgba(212,168,108,.45);color:var(--gold-soft);padding:8px 16px;border-radius:10px;cursor:pointer;}
+.phone{width:320px;height:600px;border-radius:28px;overflow:hidden;border:1px solid rgba(212,168,108,.25);
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),linear-gradient(170deg,var(--bg),var(--bg2));
+  box-shadow:0 18px 50px rgba(0,0,0,.6);position:relative;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px;}
+.brand{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);}
+.me-chip{font-family:Arial,sans-serif;font-size:11px;background:rgba(255,255,255,.04);border:1px solid rgba(212,168,108,.3);border-radius:999px;padding:4px 10px;}
+.scroll{position:absolute;inset:48px 0 0;overflow-y:auto;padding:6px 14px 20px;touch-action:pan-y;}
+.scroll.lock{overflow:hidden;touch-action:none;}
+.ptitle{font-size:21px;margin:4px 0 2px;}
+.psub{font-family:Arial,sans-serif;font-size:12px;color:#c79;margin:0 0 12px;}
+.bgcard{background:linear-gradient(160deg,rgba(92,16,38,.35),rgba(20,4,9,.4));border:1px solid rgba(212,168,108,.2);border-radius:13px;padding:13px;margin-bottom:11px;}
+.bgcard .row{display:flex;align-items:center;gap:10px;}.bgcard .e{font-size:20px;}.bgcard .t{font-family:Arial,sans-serif;font-size:14px;}
+.scrim{position:absolute;inset:0;background:rgba(8,2,5,.62);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .3s;z-index:30;}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+.lbl{display:block;font-family:Arial,sans-serif;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin:13px 0 5px 2px;}
+input,textarea{font-family:Arial,sans-serif;font-size:14px;width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(212,168,108,.3);color:var(--cream);border-radius:10px;padding:9px 11px;}
+textarea{min-height:58px;resize:none;}
+.btn-gold{appearance:none;border:none;cursor:pointer;font-family:Arial,sans-serif;background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;font-size:15px;border-radius:12px;min-height:44px;width:100%;}
+.sheet-hd{font-family:Arial,sans-serif;text-align:center;color:var(--gold-soft);font-size:12px;letter-spacing:.16em;text-transform:uppercase;}
+
+/* bottom sheet base */
+.bsheet{position:absolute;left:0;right:0;bottom:0;z-index:40;background:linear-gradient(180deg,#2e0a16,#1c0610);
+  border-top:1px solid rgba(212,168,108,.35);border-radius:22px 22px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.55);
+  transform:translateY(110%);transition:transform .4s cubic-bezier(.3,.8,.3,1);max-height:92%;display:flex;flex-direction:column;}
+.bsheet.show{transform:translateY(0);}
+.bsheet.dragging{transition:none;}
+.grab{flex:0 0 auto;padding:10px 18px 6px;cursor:grab;touch-action:none;}
+.grab:active{cursor:grabbing;}
+.handle{width:44px;height:5px;border-radius:99px;background:rgba(212,168,108,.45);margin:0 auto 10px;}
+.bbody{overflow-y:auto;padding:0 18px 22px;}
+.xclose{position:absolute;top:14px;right:16px;font-family:Arial,sans-serif;font-size:13px;color:var(--gold-soft);background:none;border:none;cursor:pointer;z-index:2;}
+
+/* tipo: tiles */
+.tiles{display:flex;gap:8px;}
+.tile{flex:1;border:1px solid rgba(212,168,108,.25);background:rgba(255,255,255,.03);border-radius:14px;padding:12px 6px;text-align:center;cursor:pointer;}
+.tile.on{background:var(--wine);border-color:var(--wine2);}
+.tile .ic{font-size:22px;display:block;margin-bottom:5px;}.tile .nm{font-family:Arial,sans-serif;font-size:11.5px;color:var(--cream);}
+/* tipo: segmented */
+.seg{display:flex;background:rgba(255,255,255,.04);border:1px solid rgba(212,168,108,.25);border-radius:12px;padding:4px;gap:4px;}
+.seg button{flex:1;font-family:Arial,sans-serif;font-size:12px;background:none;border:none;color:var(--gold-soft);padding:9px 4px;border-radius:9px;cursor:pointer;}
+.seg button.on{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;}
+/* tipo: lista */
+.listtypes{display:flex;flex-direction:column;gap:9px;}
+.ltrow{display:flex;align-items:center;gap:11px;border:1px solid rgba(212,168,108,.25);background:rgba(255,255,255,.03);border-radius:13px;padding:11px;cursor:pointer;}
+.ltrow.on{background:var(--wine);border-color:var(--wine2);}
+.ltrow .ic{font-size:22px;}.ltrow .nm{font-family:Arial,sans-serif;font-size:13.5px;color:var(--cream);}.ltrow .ds{font-family:Arial,sans-serif;font-size:10.5px;color:#c79;margin-top:1px;}
+</style>
+</head>
+<body>
+  <h1>Bottom sheet — 3 varianti</h1>
+  <p class="lede">Tutte si chiudono con il tasto <b>Chiudi</b> e con lo <b>swipe verso il basso</b> (trascina la maniglia/intestazione giù). Lo sfondo resta fermo. Apri col pulsante sotto ogni telefono.</p>
+
+  <div class="grid">
+
+    <!-- BS1 -->
+    <div class="col">
+      <h2>BS1 · Compatta a riquadri</h2>
+      <div class="phone">
+        <div class="topbar"><span class="brand">Velluto</span><span class="me-chip">❤️ Giulia</span></div>
+        <div class="scroll" id="sc1">
+          <h2 class="ptitle">🎟️ Buoni</h2><p class="psub">Regali, richieste e segreti.</p>
+          <div class="bgcard"><div class="row"><span class="e">💆</span><span class="t">Massaggio</span></div></div>
+          <div class="bgcard"><div class="row"><span class="e">🍳</span><span class="t">Colazione a letto</span></div></div>
+          <div class="bgcard"><div class="row"><span class="e">🎬</span><span class="t">Serata film</span></div></div>
+          <div class="bgcard"><div class="row"><span class="e">🍷</span><span class="t">Cena fuori</span></div></div>
+        </div>
+        <div class="scrim" data-scrim="1"></div>
+        <div class="bsheet" id="bs1" data-sc="1">
+          <div class="grab" data-grab><div class="handle"></div><div class="sheet-hd">Nuovo coupon</div></div>
+          <button class="xclose" data-close="1">Chiudi</button>
+          <div class="bbody">
+            <label class="lbl">Tipo</label>
+            <div class="tiles"><div class="tile on"><span class="ic">🎁</span><span class="nm">Regalo</span></div><div class="tile"><span class="ic">🙏</span><span class="nm">Richiesta</span></div><div class="tile"><span class="ic">💋</span><span class="nm">Segreto</span></div></div>
+            <label class="lbl">Emoji &amp; titolo</label>
+            <div style="display:flex;gap:8px;"><input value="🎟️" style="width:58px;text-align:center;"><input placeholder="Es. Massaggio" style="flex:1;"></div>
+            <label class="lbl">Descrizione</label><textarea></textarea>
+            <button class="btn-gold" style="margin-top:14px;">Crea</button>
+          </div>
+        </div>
+      </div>
+      <button class="toggle" data-open="1">Apri foglio</button>
+      <p class="desc">Bassa e veloce: i 3 tipi come riquadri-icona. Occupa poco schermo.</p>
+    </div>
+
+    <!-- BS2 -->
+    <div class="col">
+      <h2>BS2 · Segmented control</h2>
+      <div class="phone">
+        <div class="topbar"><span class="brand">Velluto</span><span class="me-chip">❤️ Giulia</span></div>
+        <div class="scroll" id="sc2">
+          <h2 class="ptitle">🎟️ Buoni</h2><p class="psub">Regali, richieste e segreti.</p>
+          <div class="bgcard"><div class="row"><span class="e">💆</span><span class="t">Massaggio</span></div></div>
+          <div class="bgcard"><div class="row"><span class="e">🍳</span><span class="t">Colazione a letto</span></div></div>
+          <div class="bgcard"><div class="row"><span class="e">🎬</span><span class="t">Serata film</span></div></div>
+          <div class="bgcard"><div class="row"><span class="e">🍷</span><span class="t">Cena fuori</span></div></div>
+        </div>
+        <div class="scrim" data-scrim="2"></div>
+        <div class="bsheet" id="bs2" data-sc="2">
+          <div class="grab" data-grab><div class="handle"></div><div class="sheet-hd">Nuovo coupon</div></div>
+          <button class="xclose" data-close="2">Chiudi</button>
+          <div class="bbody">
+            <label class="lbl">Tipo</label>
+            <div class="seg"><button class="on">🎁 Regalo</button><button>🙏 Richiesta</button><button>💋 Segreto</button></div>
+            <label class="lbl">Emoji</label><input value="🎟️" style="width:64px;text-align:center;">
+            <label class="lbl">Titolo</label><input placeholder="Es. Massaggio">
+            <label class="lbl">Descrizione</label><textarea></textarea>
+            <button class="btn-gold" style="margin-top:14px;">Crea</button>
+          </div>
+        </div>
+      </div>
+      <button class="toggle" data-open="2">Apri foglio</button>
+      <p class="desc">Tipo come interruttore a segmenti (oro). Campi su righe separate, ordinata.</p>
+    </div>
+
+    <!-- BS3 -->
+    <div class="col">
+      <h2>BS3 · Alta, tipo a lista</h2>
+      <div class="phone">
+        <div class="topbar"><span class="brand">Velluto</span><span class="me-chip">❤️ Giulia</span></div>
+        <div class="scroll" id="sc3">
+          <h2 class="ptitle">🎟️ Buoni</h2><p class="psub">Regali, richieste e segreti.</p>
+          <div class="bgcard"><div class="row"><span class="e">💆</span><span class="t">Massaggio</span></div></div>
+          <div class="bgcard"><div class="row"><span class="e">🍳</span><span class="t">Colazione a letto</span></div></div>
+          <div class="bgcard"><div class="row"><span class="e">🎬</span><span class="t">Serata film</span></div></div>
+          <div class="bgcard"><div class="row"><span class="e">🍷</span><span class="t">Cena fuori</span></div></div>
+        </div>
+        <div class="scrim" data-scrim="3"></div>
+        <div class="bsheet" id="bs3" data-sc="3" style="max-height:92%;">
+          <div class="grab" data-grab><div class="handle"></div><div class="sheet-hd">Nuovo coupon</div></div>
+          <button class="xclose" data-close="3">Chiudi</button>
+          <div class="bbody">
+            <label class="lbl">Che cos'è?</label>
+            <div class="listtypes">
+              <div class="ltrow on"><span class="ic">🎁</span><div><div class="nm">Regalo</div><div class="ds">Un buono da riscattare quando vuole.</div></div></div>
+              <div class="ltrow"><span class="ic">🙏</span><div><div class="nm">Richiesta</div><div class="ds">Lo accetta o rifiuta.</div></div></div>
+              <div class="ltrow"><span class="ic">💋</span><div><div class="nm">Segreto</div><div class="ds">Busta sigillata da aprire.</div></div></div>
+            </div>
+            <label class="lbl">Emoji &amp; titolo</label>
+            <div style="display:flex;gap:8px;"><input value="🎟️" style="width:58px;text-align:center;"><input placeholder="Es. Massaggio" style="flex:1;"></div>
+            <label class="lbl">Descrizione</label><textarea style="min-height:74px;"></textarea>
+            <button class="btn-gold" style="margin-top:14px;">Crea</button>
+          </div>
+        </div>
+      </div>
+      <button class="toggle" data-open="3">Apri foglio</button>
+      <p class="desc">Più alta e guidata: i tipi spiegati a lista. Comoda per chi è alle prime volte.</p>
+    </div>
+
+  </div>
+
+<script>
+  function open(k){document.getElementById('bs'+k).classList.add('show');document.getElementById('sc'+k).classList.add('lock');document.querySelector('[data-scrim="'+k+'"]').classList.add('show');}
+  function close(k){const s=document.getElementById('bs'+k);s.style.transform='';s.classList.remove('show','dragging');document.getElementById('sc'+k).classList.remove('lock');document.querySelector('[data-scrim="'+k+'"]').classList.remove('show');}
+  document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>open(b.dataset.open));
+  document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>close(b.dataset.close));
+  document.querySelectorAll('.scrim').forEach(s=>s.onclick=()=>close(s.dataset.scrim));
+  document.querySelectorAll('.tile,.seg button,.ltrow').forEach(t=>t.onclick=()=>{[...t.parentElement.children].forEach(x=>x.classList.remove('on'));t.classList.add('on');});
+
+  // swipe-down per chiudere
+  document.querySelectorAll('[data-grab]').forEach(grab=>{
+    const sheet=grab.closest('.bsheet');const k=sheet.dataset.sc;
+    let startY=0,dy=0,drag=false;
+    grab.addEventListener('pointerdown',e=>{drag=true;startY=e.clientY;dy=0;sheet.classList.add('dragging');grab.setPointerCapture(e.pointerId);});
+    grab.addEventListener('pointermove',e=>{if(!drag)return;dy=Math.max(0,e.clientY-startY);sheet.style.transform='translateY('+dy+'px)';});
+    grab.addEventListener('pointerup',()=>{if(!drag)return;drag=false;sheet.classList.remove('dragging');
+      if(dy>110)close(k);else sheet.style.transform='translateY(0)';});
+  });
+</script>
+</body>
+</html>

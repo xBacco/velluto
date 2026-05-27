@@ -7,12 +7,13 @@
 import { mk, add, clear, toast } from '../ui.js';
 import {
   mazzo52, mescola, valutaMano, miglioreManoDa7, confronta, CATEGORIE_POKER,
-  GUARDAROBA, GUARDAROBA_META, capiIniziali, statoInizialePartita, togliCapo, eNudo,
+  GUARDAROBA, GUARDAROBA_META, capiIniziali, togliCapo,
   risultatoPartita, testaATesta,
 } from '../lib/logic.js';
-import { listStripPartite, addStripPartita } from '../store.js';
+import { listStripPartite, addStripPartita, getPartner } from '../store.js';
 
 let ctx = null, host = null, partite = [];
+let partner = null;
 let mode = 'holdem';            // 'holdem' | 'draw'
 let stato = null;              // { lui:{}, lei:{} } capi residui
 let deck = [], board = [], meHole = [], oppHole = [], meSet = [], oppSet = [];
@@ -219,8 +220,10 @@ function buildFig(box, F, st) {
 
 export async function renderStrip(context) {
   ctx = context; host = context.panel;
-  try { partite = await listStripPartite(ctx.client, ctx.me.couple_id); }
-  catch (err) { toast('Errore storico strip: ' + err.message, 'err'); partite = []; }
+  try {
+    partite = await listStripPartite(ctx.client, ctx.me.couple_id);
+    partner = await getPartner(ctx.client, ctx.me.couple_id, ctx.me.id);
+  } catch (err) { toast('Errore caricamento strip: ' + err.message, 'err'); partite = partite || []; }
   drawApertura();
 }
 
@@ -230,11 +233,9 @@ export async function renderStrip(context) {
 // `me` (profilo) ha id, couple_id, display_name, avatar — NESSUN partner_id.
 // Il partner si deduce dallo storico delle partite (l'altro id coinvolto).
 function partnerId() {
-  for (const p of partite) {
-    if (p.vincitore_id && p.vincitore_id !== ctx.me.id) return p.vincitore_id;
-    if (p.perdente_id && p.perdente_id !== ctx.me.id) return p.perdente_id;
-  }
-  return null;
+  if (partner) return partner.id;
+  const p = partite.find(x => x.vincitore_id !== ctx.me.id || x.perdente_id !== ctx.me.id);
+  return p ? (p.vincitore_id === ctx.me.id ? p.perdente_id : p.vincitore_id) : null;
 }
 
 function drawApertura() {
@@ -620,9 +621,9 @@ function doStrip(loser, win) {
   stripEls.text.textContent = win + ' ha vinto: tocca il capo che ' + loser + ' deve togliersi.';
   stripEls.tap.textContent = 'tocca un capo grande qui ↓';
   stripEls.btn1.classList.add('hid'); stripEls.btn2.classList.add('hid');
-  armStrip(st, loser, win);
+  armStrip(loser, win);
 }
-function armStrip(st, loser, win) {
+function armStrip(loser, win) {
   stripEls.fig.querySelectorAll('.robe').forEach(r => {
     r.classList.add('pick');
     const fn = r.dataset.acc

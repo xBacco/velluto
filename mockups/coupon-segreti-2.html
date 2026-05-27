@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coupon segreti · 3 mockup (set 2)</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a;
+  --ok:#7fb069; --err:#e0556a; --shadow:rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;margin:0;
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+             linear-gradient(170deg,var(--bg),var(--bg2));background-attachment:fixed;
+  padding:28px 16px 60px;}
+.sans{font-family:Arial,Helvetica,sans-serif;}
+.kick{font-family:Arial,sans-serif;letter-spacing:.5em;text-transform:uppercase;font-size:11px;color:var(--gold);text-align:center;margin-bottom:6px;}
+h1{font-size:30px;font-weight:400;text-align:center;margin:0 0 4px;
+  background:linear-gradient(180deg,var(--cream),var(--gold-soft));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.lede{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;max-width:540px;margin:0 auto 30px;line-height:1.5;}
+.grid{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;align-items:flex-start;max-width:1140px;margin:0 auto;}
+.col{flex:1 1 320px;max-width:360px;}
+.optlabel{font-family:Arial,sans-serif;text-align:center;margin-bottom:12px;}
+.optlabel b{display:block;color:var(--gold-soft);font-size:15px;letter-spacing:.04em;}
+.optlabel span{font-size:12px;color:#b9908f;}
+.card{background:linear-gradient(160deg,rgba(92,16,38,.35),rgba(20,4,9,.4));
+  border:1px solid rgba(212,168,108,.22);border-radius:16px;padding:18px;box-shadow:0 6px 18px var(--shadow);}
+.row{display:flex;align-items:center;gap:10px;}
+.spread{justify-content:space-between;}
+.bemoji{font-size:24px;}
+.btitle{margin:0;font-size:18px;}
+.bdesc{font-family:Arial,sans-serif;font-size:14px;color:#e7c9c9;line-height:1.5;margin:12px 0 0;}
+.btn{appearance:none;border:none;cursor:pointer;font-family:inherit;min-height:42px;border-radius:12px;padding:0 16px;
+  background:linear-gradient(180deg,var(--wine2),var(--wine));color:#fff;font-size:15px;box-shadow:0 4px 12px var(--shadow);}
+.btn.ghost{background:transparent;border:1px solid rgba(212,168,108,.45);color:var(--gold-soft);box-shadow:none;}
+.note{font-family:Arial,sans-serif;font-size:11.5px;color:#a98;line-height:1.5;margin-top:12px;text-align:center;}
+.reset{display:block;margin:10px auto 0;background:none;border:none;color:var(--gold-soft);
+  font-family:Arial,sans-serif;font-size:11px;text-decoration:underline;cursor:pointer;opacity:.75;}
+.reveal-txt{font-family:Arial,sans-serif;font-size:14px;color:#e7c9c9;line-height:1.5;}
+.foot{text-align:center;margin-top:40px;}
+.foot .sans{font-size:13px;color:#caa;}
+
+/* ===== D · Busta con ceralacca ===== */
+.env{position:relative;height:200px;perspective:900px;cursor:pointer;}
+.env-body{position:absolute;inset:0;border-radius:12px;
+  background:linear-gradient(160deg,#3a0c1c,#240711);border:1px solid rgba(212,168,108,.3);
+  display:flex;align-items:flex-end;justify-content:center;overflow:hidden;}
+.env-flap{position:absolute;top:0;left:0;right:0;height:108px;transform-origin:top center;transition:transform .7s ease;
+  background:linear-gradient(160deg,#52132a,#3a0c1c);clip-path:polygon(0 0,100% 0,50% 100%);
+  border-bottom:1px solid rgba(212,168,108,.25);z-index:3;}
+.env.open .env-flap{transform:rotateX(-165deg);}
+.wax{position:absolute;top:74px;left:50%;transform:translateX(-50%);z-index:4;width:48px;height:48px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#a8324f,#6d1226);box-shadow:0 3px 8px rgba(0,0,0,.5),inset 0 -3px 6px rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:center;font-size:20px;color:#e9c98f;transition:opacity .4s,transform .5s;}
+.env.open .wax{opacity:0;transform:translateX(-50%) scale(.6);}
+.letter{position:absolute;left:14px;right:14px;bottom:14px;z-index:2;background:#f3e6cf;color:#3a2405;
+  border-radius:8px;padding:14px;font-family:Arial,sans-serif;font-size:13.5px;line-height:1.5;
+  transform:translateY(40px);opacity:0;transition:transform .6s .25s ease,opacity .5s .25s;box-shadow:0 -4px 14px rgba(0,0,0,.35);}
+.env.open .letter{transform:translateY(0);opacity:1;}
+.env-hint{position:absolute;bottom:10px;left:0;right:0;z-index:1;text-align:center;
+  font-family:Arial,sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-soft);}
+.env.open .env-hint{opacity:0;}
+
+/* ===== E · Gratta e svela (canvas) ===== */
+.scratch-wrap{position:relative;height:150px;border-radius:12px;overflow:hidden;border:1px solid rgba(212,168,108,.25);}
+.scratch-under{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;text-align:center;
+  background:linear-gradient(160deg,rgba(92,16,38,.5),rgba(20,4,9,.6));}
+.scratch-cv{position:absolute;inset:0;cursor:grab;touch-action:none;}
+
+/* ===== F · Carta coperta che si gira ===== */
+.flip{height:200px;perspective:1100px;cursor:pointer;}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d;}
+.flip.open .flip-inner{transform:rotateY(180deg);}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:18px;display:flex;flex-direction:column;}
+.face.back{background:
+   repeating-linear-gradient(45deg,rgba(212,168,108,.08) 0 8px,transparent 8px 16px),
+   linear-gradient(160deg,#52132a,#240711);
+  border:1px solid rgba(212,168,108,.35);align-items:center;justify-content:center;gap:10px;text-align:center;}
+.face.front{background:linear-gradient(160deg,rgba(92,16,38,.45),rgba(20,4,9,.55));
+  border:1px solid rgba(212,168,108,.3);transform:rotateY(180deg);}
+.flip-lock{font-size:34px;}
+.flip-hint{font-family:Arial,sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-soft);}
+.flip-from{font-family:Arial,sans-serif;font-size:13px;color:var(--cream);}
+</style>
+</head>
+<body>
+  <div class="kick">Velluto · Buoni</div>
+  <h1>Coupon segreti — altri 3</h1>
+  <p class="lede">Tre metafore più "fisiche" per lo sblocco. Interagisci con ognuna: apri la busta, gratta col dito/mouse, gira la carta. Dimmi quale ti piace — <b>D</b>, <b>E</b> o <b>F</b>.</p>
+
+  <div class="grid">
+
+    <!-- D -->
+    <div class="col">
+      <div class="optlabel"><b>D · Busta con ceralacca</b><span>Una lettera sigillata. Tocchi → la ceralacca si spezza e la lettera esce.</span></div>
+      <div class="card">
+        <div class="env" data-env>
+          <div class="env-body">
+            <div class="letter">Stasera niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</div>
+            <div class="env-hint">tocca per aprire</div>
+          </div>
+          <div class="env-flap"></div>
+          <div class="wax">❦</div>
+        </div>
+        <button class="reset" data-reset-env>↺ ri-sigilla</button>
+      </div>
+      <p class="note">Molto romantico/cerimonioso. Lo sblocco è un piccolo evento.</p>
+    </div>
+
+    <!-- E -->
+    <div class="col">
+      <div class="optlabel"><b>E · Gratta e svela</b><span>Strato dorato da grattare col dito (come un gratta&amp;vinci).</span></div>
+      <div class="card">
+        <div class="scratch-wrap">
+          <div class="scratch-under">
+            <p class="reveal-txt">Stasera niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p>
+          </div>
+          <canvas class="scratch-cv" data-scratch></canvas>
+        </div>
+        <button class="reset" data-reset-scratch>↺ ricopri</button>
+      </div>
+      <p class="note">Tattile e giocoso. Su mobile si gratta col dito. (Qui demo col mouse premuto.)</p>
+    </div>
+
+    <!-- F -->
+    <div class="col">
+      <div class="optlabel"><b>F · Carta coperta</b><span>Una carta a faccia in giù che si gira in 3D quando la tocchi.</span></div>
+      <div class="card">
+        <div class="flip" data-flip>
+          <div class="flip-inner">
+            <div class="face back">
+              <div class="flip-lock">🂠</div>
+              <div class="flip-from">Un segreto da <b>Tomas</b></div>
+              <div class="flip-hint">tocca per girare</div>
+            </div>
+            <div class="face front">
+              <div class="row spread"><div class="row"><span class="bemoji">🍷</span><p class="btitle">Una notte per te</p></div></div>
+              <p class="bdesc">Stasera niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p>
+            </div>
+          </div>
+        </div>
+        <button class="reset" data-reset-flip>↺ ri-gira</button>
+      </div>
+      <p class="note">Pulito ed elegante. Il "dorso carta" richiama anche i Giochi (dadi/carte).</p>
+    </div>
+
+  </div>
+
+  <div class="foot"><p class="sans">Quale preferisci? <b>D</b>, <b>E</b> o <b>F</b> — oppure dimmi cosa mescolare col set precedente.</p></div>
+
+<script>
+  // D — busta
+  document.querySelectorAll('[data-env]').forEach(e=>e.addEventListener('click',()=>e.classList.add('open')));
+  document.querySelectorAll('[data-reset-env]').forEach(b=>b.addEventListener('click',()=>b.closest('.card').querySelector('[data-env]').classList.remove('open')));
+
+  // F — flip
+  document.querySelectorAll('[data-flip]').forEach(f=>f.addEventListener('click',()=>f.classList.add('open')));
+  document.querySelectorAll('[data-reset-flip]').forEach(b=>b.addEventListener('click',()=>b.closest('.card').querySelector('[data-flip]').classList.remove('open')));
+
+  // E — scratch canvas
+  document.querySelectorAll('[data-scratch]').forEach(cv=>{
+    const wrap=cv.parentElement;
+    function paint(){
+      const r=wrap.getBoundingClientRect();
+      cv.width=r.width; cv.height=r.height;
+      const ctx=cv.getContext('2d');
+      const g=ctx.createLinearGradient(0,0,r.width,r.height);
+      g.addColorStop(0,'#e9c98f'); g.addColorStop(.5,'#d4a86c'); g.addColorStop(1,'#b8893f');
+      ctx.fillStyle=g; ctx.fillRect(0,0,r.width,r.height);
+      ctx.fillStyle='rgba(58,36,5,.55)'; ctx.font='13px Arial'; ctx.textAlign='center';
+      ctx.fillText('🔒 gratta per svelare', r.width/2, r.height/2);
+      cv.dataset.painted='1';
+    }
+    paint();
+    let down=false;
+    const ctx=cv.getContext('2d');
+    function scratch(x,y){
+      const r=cv.getBoundingClientRect();
+      ctx.globalCompositeOperation='destination-out';
+      ctx.beginPath(); ctx.arc(x-r.left,y-r.top,20,0,Math.PI*2); ctx.fill();
+    }
+    cv.addEventListener('pointerdown',e=>{down=true;scratch(e.clientX,e.clientY);});
+    cv.addEventListener('pointermove',e=>{if(down)scratch(e.clientX,e.clientY);});
+    window.addEventListener('pointerup',()=>down=false);
+    cv.addEventListener('pointerleave',()=>{});
+    cv._repaint=paint;
+  });
+  document.querySelectorAll('[data-reset-scratch]').forEach(b=>b.addEventListener('click',()=>{
+    const cv=b.closest('.card').querySelector('[data-scratch]');
+    const ctx=cv.getContext('2d'); ctx.globalCompositeOperation='source-over'; cv._repaint();
+  }));
+</script>
+</body>
+</html>

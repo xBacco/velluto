@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { listDesideri, addDesiderio, markRealizzato, deleteDesiderio, listStripPartite, addStripPartita } from '../js/store.js';
+import { listDesideri, addDesiderio, markRealizzato, deleteDesiderio, listStripPartite, addStripPartita, getPartner } from '../js/store.js';
 
 // --- fake client supabase ---
 function fakeClient(initialRows = []) {
@@ -98,4 +98,20 @@ test('addStripPartita inserisce esito con couple_id, vincitore, perdente, modali
   assert.equal(ins.payload.vincitore_id, 'u1');
   assert.equal(ins.payload.perdente_id, 'u2');
   assert.equal(ins.payload.modalita, 'holdem');
+});
+
+test('getPartner ritorna l\'altro profilo della coppia', async () => {
+  const c = fakeClient([
+    { id: 'me', couple_id: 'cpl', display_name: 'Io' },
+    { id: 'lei', couple_id: 'cpl', display_name: 'Lei' },
+    { id: 'estraneo', couple_id: 'altra', display_name: 'X' },
+  ]);
+  const p = await getPartner(c, 'cpl', 'me');
+  assert.equal(p.id, 'lei');
+});
+
+test('getPartner ritorna null se non c\'è partner', async () => {
+  const c = fakeClient([{ id: 'me', couple_id: 'cpl', display_name: 'Io' }]);
+  const p = await getPartner(c, 'cpl', 'me');
+  assert.equal(p, null);
 });

@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coupon segreti · busta — 3 varianti</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a;
+  --paper:#f3e6cf; --ink:#3a2405;
+  --shadow:rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;margin:0;
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+             linear-gradient(170deg,var(--bg),var(--bg2));background-attachment:fixed;
+  padding:28px 16px 70px;}
+.sans{font-family:Arial,Helvetica,sans-serif;}
+.kick{font-family:Arial,sans-serif;letter-spacing:.5em;text-transform:uppercase;font-size:11px;color:var(--gold);text-align:center;margin-bottom:6px;}
+h1{font-size:30px;font-weight:400;text-align:center;margin:0 0 4px;
+  background:linear-gradient(180deg,var(--cream),var(--gold-soft));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.lede{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;max-width:560px;margin:0 auto 34px;line-height:1.5;}
+.grid{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start;max-width:1180px;margin:0 auto;}
+.col{flex:1 1 330px;max-width:360px;}
+.optlabel{font-family:Arial,sans-serif;text-align:center;margin-bottom:12px;}
+.optlabel b{display:block;color:var(--gold-soft);font-size:15px;letter-spacing:.04em;}
+.optlabel span{font-size:12px;color:#b9908f;}
+.card{background:linear-gradient(160deg,rgba(92,16,38,.35),rgba(20,4,9,.4));
+  border:1px solid rgba(212,168,108,.22);border-radius:16px;padding:18px;box-shadow:0 6px 18px var(--shadow);}
+.bemoji{font-size:22px;}
+.note{font-family:Arial,sans-serif;font-size:11.5px;color:#a98;line-height:1.5;margin-top:14px;text-align:center;}
+.reset{display:block;margin:12px auto 0;background:none;border:none;color:var(--gold-soft);
+  font-family:Arial,sans-serif;font-size:11px;text-decoration:underline;cursor:pointer;opacity:.75;}
+.foot{text-align:center;margin-top:42px;}
+.foot .sans{font-size:13px;color:#caa;}
+
+/* ============ STAGE busta (condiviso) ============ */
+.stage{position:relative;height:250px;perspective:1100px;cursor:pointer;user-select:none;}
+
+/* corpo busta */
+.env-body{position:absolute;inset:0;border-radius:12px;overflow:hidden;
+  background:linear-gradient(160deg,#43102213,#240711),linear-gradient(160deg,#3a0c1c,#240711);
+  border:1px solid rgba(212,168,108,.32);box-shadow:inset 0 0 40px rgba(0,0,0,.45);}
+/* triangoli laterali interni della busta (dettaglio) */
+.env-body::before{content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(135deg,transparent 49.5%,rgba(212,168,108,.12) 49.5% 50%,transparent 50%),
+    linear-gradient(225deg,transparent 49.5%,rgba(212,168,108,.12) 49.5% 50%,transparent 50%);}
+
+/* lembo superiore */
+.flap{position:absolute;top:0;left:0;right:0;height:130px;transform-origin:top center;z-index:6;
+  background:linear-gradient(160deg,#5c1430,#3a0c1c);clip-path:polygon(0 0,100% 0,50% 100%);
+  border-bottom:1px solid rgba(212,168,108,.2);
+  transition:transform .85s cubic-bezier(.6,-0.2,.3,1.4);}
+.stage.open .flap{transform:rotateX(-168deg);z-index:1;}
+
+/* ceralacca: due metà che si spezzano */
+.wax{position:absolute;top:78px;left:50%;transform:translateX(-50%);z-index:8;width:54px;height:54px;}
+.wax .half{position:absolute;top:0;width:27px;height:54px;overflow:hidden;transition:transform .6s ease,opacity .5s ease .15s;}
+.wax .half.l{left:0;}
+.wax .half.r{right:0;}
+.wax .blob{position:absolute;top:0;width:54px;height:54px;border-radius:50%;
+  background:radial-gradient(circle at 36% 30%,#c0364f,#7a1226 70%);
+  box-shadow:0 3px 9px rgba(0,0,0,.5),inset 0 -4px 8px rgba(0,0,0,.45);}
+.wax .half.l .blob{left:0;}
+.wax .half.r .blob{right:0;}
+.wax .sigil{position:absolute;top:0;left:0;width:54px;height:54px;display:flex;align-items:center;justify-content:center;
+  font-size:24px;z-index:2;transition:opacity .3s ease,transform .4s ease;}
+.stage.open .wax .half.l{transform:translate(-26px,30px) rotate(-48deg);opacity:0;}
+.stage.open .wax .half.r{transform:translate(26px,30px) rotate(48deg);opacity:0;}
+.stage.open .wax .sigil{opacity:0;transform:scale(.4);}
+
+/* lettera */
+.letter{position:absolute;z-index:4;background:var(--paper);color:var(--ink);border-radius:10px;
+  font-family:Arial,sans-serif;line-height:1.55;box-shadow:0 -6px 20px rgba(0,0,0,.4);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+.letter .lt-title{font-family:Georgia,serif;font-size:16px;color:#7a1226;margin:0 0 8px;letter-spacing:.02em;}
+.letter .lt-body{font-size:14px;margin:0;}
+.letter .lt-sign{font-size:12px;color:#9a6b1e;margin-top:12px;font-style:italic;}
+
+.hint{position:absolute;bottom:12px;left:0;right:0;z-index:2;text-align:center;
+  font-family:Arial,sans-serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-soft);
+  transition:opacity .3s;}
+.stage.open .hint{opacity:0;}
+
+/* glow di apertura */
+.glow{position:absolute;inset:0;border-radius:12px;pointer-events:none;z-index:7;opacity:0;
+  box-shadow:0 0 0 0 rgba(233,201,143,0);}
+.stage.open .glow{animation:flash 1s ease .25s;}
+@keyframes flash{0%{opacity:0;}30%{opacity:1;box-shadow:0 0 38px 6px rgba(233,201,143,.55);}100%{opacity:0;box-shadow:0 0 0 0 rgba(233,201,143,0);}}
+
+/* ===== V1 — la lettera sale dal fondo e si centra ===== */
+.v1 .letter{left:16px;right:16px;bottom:16px;height:120px;padding:14px 16px;
+  transform:translateY(60px);opacity:0;
+  transition:transform .8s cubic-bezier(.2,.7,.2,1) .25s,opacity .5s .25s,height .8s .25s,bottom .8s .25s;}
+.v1.open .letter{transform:translateY(0);opacity:1;height:200px;bottom:25px;}
+
+/* ===== V2 — la lettera cresce dal centro (dal sigillo) ===== */
+.v2 .letter{left:50%;top:50%;width:60px;height:60px;padding:0;overflow:hidden;
+  transform:translate(-50%,-50%) scale(.2);opacity:0;
+  transition:transform .75s cubic-bezier(.2,.8,.2,1) .3s,opacity .4s .3s,width .75s .3s,height .75s .3s,padding .75s .3s;}
+.v2.open .letter{width:88%;height:78%;padding:16px;transform:translate(-50%,-50%) scale(1);opacity:1;}
+
+/* ===== V3 — la lettera esce in avanti con tilt 3D e si appoggia centrata ===== */
+.v3 .stage-inner{position:absolute;inset:0;transform-style:preserve-3d;}
+.v3 .letter{left:18px;right:18px;top:50%;height:190px;padding:16px;transform-origin:center bottom;
+  transform:translateY(-50%) translateZ(-60px) rotateX(35deg) scale(.9);opacity:0;
+  transition:transform .85s cubic-bezier(.3,.7,.2,1.1) .3s,opacity .5s .3s;}
+.v3.open .letter{transform:translateY(-50%) translateZ(40px) rotateX(0) scale(1);opacity:1;}
+</style>
+</head>
+<body>
+  <div class="kick">Velluto · Buoni</div>
+  <h1>Coupon segreti — la busta, 3 varianti</h1>
+  <p class="lede">Stessa busta, tre <b>animazioni di apertura</b> diverse. Ceralacca piccante 💋🔥😈 che si spezza in due. Testo della lettera centrato. Tocca ogni busta per aprirla; "↺" per ri-sigillare. Dimmi quale movimento preferisci: <b>V1</b>, <b>V2</b> o <b>V3</b>.</p>
+
+  <div class="grid">
+
+    <!-- V1 -->
+    <div class="col">
+      <div class="optlabel"><b>V1 · La lettera sale</b><span>Il lembo si ribalta, la lettera scivola su dal fondo e si centra.</span></div>
+      <div class="card">
+        <div class="stage v1" data-stage>
+          <div class="env-body"></div>
+          <div class="letter">
+            <p class="lt-title">Per stasera 🔥</p>
+            <p class="lt-body">Niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p>
+            <p class="lt-sign">— con voglia, Tomas</p>
+          </div>
+          <div class="flap"></div>
+          <div class="wax"><div class="half l"><div class="blob"></div></div><div class="half r"><div class="blob"></div></div><div class="sigil">💋</div></div>
+          <div class="glow"></div>
+          <div class="hint">tocca per aprire</div>
+        </div>
+        <button class="reset" data-reset>↺ ri-sigilla</button>
+      </div>
+      <p class="note">Classica e morbida. Sigillo 💋 (bacio).</p>
+    </div>
+
+    <!-- V2 -->
+    <div class="col">
+      <div class="optlabel"><b>V2 · Cresce dal sigillo</b><span>La lettera nasce piccola dove c'era la ceralacca e si espande.</span></div>
+      <div class="card">
+        <div class="stage v2" data-stage>
+          <div class="env-body"></div>
+          <div class="letter">
+            <p class="lt-title">Per stasera 🔥</p>
+            <p class="lt-body">Niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p>
+            <p class="lt-sign">— con voglia, Tomas</p>
+          </div>
+          <div class="flap"></div>
+          <div class="wax"><div class="half l"><div class="blob"></div></div><div class="half r"><div class="blob"></div></div><div class="sigil">🔥</div></div>
+          <div class="glow"></div>
+          <div class="hint">tocca per aprire</div>
+        </div>
+        <button class="reset" data-reset>↺ ri-sigilla</button>
+      </div>
+      <p class="note">Effetto "zoom" sorprendente. Sigillo 🔥.</p>
+    </div>
+
+    <!-- V3 -->
+    <div class="col">
+      <div class="optlabel"><b>V3 · Esce in avanti (3D)</b><span>La lettera si solleva inclinata verso di te e si appoggia dritta.</span></div>
+      <div class="card">
+        <div class="stage v3" data-stage>
+          <div class="stage-inner">
+            <div class="env-body"></div>
+            <div class="letter">
+              <p class="lt-title">Per stasera 🔥</p>
+              <p class="lt-body">Niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p>
+              <p class="lt-sign">— con voglia, Tomas</p>
+            </div>
+            <div class="flap"></div>
+            <div class="wax"><div class="half l"><div class="blob"></div></div><div class="half r"><div class="blob"></div></div><div class="sigil">😈</div></div>
+            <div class="glow"></div>
+            <div class="hint">tocca per aprire</div>
+          </div>
+        </div>
+        <button class="reset" data-reset>↺ ri-sigilla</button>
+      </div>
+      <p class="note">Più cinematografico. Sigillo 😈.</p>
+    </div>
+
+  </div>
+
+  <div class="foot"><p class="sans">Quale animazione vince? <b>V1</b>, <b>V2</b> o <b>V3</b>. (E dimmi pure se preferisci un altro sigillo: 💋 🔥 😈 🌶️ 🍑 ❤️‍🔥)</p></div>
+
+<script>
+  document.querySelectorAll('[data-stage]').forEach(s=>{
+    s.addEventListener('click',()=>s.classList.add('open'));
+  });
+  document.querySelectorAll('[data-reset]').forEach(b=>{
+    b.addEventListener('click',()=>b.closest('.card').querySelector('[data-stage]').classList.remove('open'));
+  });
+</script>
+</body>
+</html>

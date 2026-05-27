@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coupon segreti · 3 animazioni di apertura</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0;
+  --paper:#f3e6cf; --ink:#3a2405; --shadow:rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;margin:0;
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+             linear-gradient(170deg,var(--bg),var(--bg2));background-attachment:fixed;padding:28px 16px 70px;}
+.sans{font-family:Arial,Helvetica,sans-serif;}
+.kick{font-family:Arial,sans-serif;letter-spacing:.5em;text-transform:uppercase;font-size:11px;color:var(--gold);text-align:center;margin-bottom:6px;}
+h1{font-size:30px;font-weight:400;text-align:center;margin:0 0 4px;
+  background:linear-gradient(180deg,var(--cream),var(--gold-soft));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.lede{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;max-width:560px;margin:0 auto 34px;line-height:1.5;}
+.grid{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start;max-width:1180px;margin:0 auto;}
+.col{flex:1 1 330px;max-width:360px;}
+.optlabel{font-family:Arial,sans-serif;text-align:center;margin-bottom:12px;}
+.optlabel b{display:block;color:var(--gold-soft);font-size:15px;letter-spacing:.04em;}
+.optlabel span{font-size:12px;color:#b9908f;}
+.card{background:linear-gradient(160deg,rgba(92,16,38,.35),rgba(20,4,9,.4));
+  border:1px solid rgba(212,168,108,.22);border-radius:16px;padding:18px;box-shadow:0 6px 18px var(--shadow);}
+.note{font-family:Arial,sans-serif;font-size:11.5px;color:#a98;line-height:1.5;margin-top:14px;text-align:center;}
+.reset{display:block;margin:12px auto 0;background:none;border:none;color:var(--gold-soft);
+  font-family:Arial,sans-serif;font-size:11px;text-decoration:underline;cursor:pointer;opacity:.75;}
+.foot{text-align:center;margin-top:42px;}
+.foot .sans{font-size:13px;color:#caa;}
+
+/* ===== stage condiviso (veste vino classico) ===== */
+.stage{position:relative;height:250px;perspective:1100px;cursor:pointer;user-select:none;}
+.env-body{position:absolute;inset:0;border-radius:12px;overflow:hidden;
+  background:linear-gradient(160deg,#3a0c1c,#240711);border:1px solid rgba(212,168,108,.32);box-shadow:inset 0 0 40px rgba(0,0,0,.45);}
+.env-body::after{content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(135deg,transparent calc(50% - 1px),rgba(212,168,108,.14) 50%,transparent calc(50% + 1px)),
+    linear-gradient(225deg,transparent calc(50% - 1px),rgba(212,168,108,.14) 50%,transparent calc(50% + 1px));}
+.flap{position:absolute;top:0;left:0;right:0;height:128px;transform-origin:top center;z-index:6;
+  clip-path:polygon(0 0,100% 0,50% 100%);
+  background:linear-gradient(160deg,#5c1430,#3a0c1c);border-bottom:1px solid rgba(212,168,108,.18);
+  transition:transform .85s cubic-bezier(.6,-0.2,.3,1.4),opacity .5s ease;}
+.stage.open .flap{transform:rotateX(-170deg);z-index:1;}
+
+.wax{position:absolute;top:101px;left:50%;transform:translateX(-50%);z-index:8;width:56px;height:56px;}
+.wax .half{position:absolute;top:0;width:28px;height:56px;overflow:hidden;transition:transform .6s ease,opacity .5s ease .12s;}
+.wax .half.l{left:0;} .wax .half.r{right:0;}
+.wax .blob{position:absolute;top:0;width:56px;height:56px;border-radius:50%;
+  background:radial-gradient(circle at 36% 30%,#c0364f,#7a1226 72%);box-shadow:0 3px 9px rgba(0,0,0,.5),inset 0 -4px 8px rgba(0,0,0,.45);}
+.wax .half.l .blob{left:0;} .wax .half.r .blob{right:0;}
+.wax .sigil{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:27px;line-height:1;z-index:2;transition:opacity .3s ease,transform .4s ease;}
+.stage.open .wax .half.l{transform:translate(-26px,32px) rotate(-50deg);opacity:0;}
+.stage.open .wax .half.r{transform:translate(26px,32px) rotate(50deg);opacity:0;}
+.stage.open .wax .sigil{opacity:0;transform:scale(.4);}
+
+/* particelle (solo pop) */
+.burst{position:absolute;top:124px;left:50%;z-index:9;pointer-events:none;}
+.burst span{position:absolute;left:0;top:0;font-size:16px;opacity:0;}
+.stage.open .burst span{animation:fly .8s cubic-bezier(.2,.6,.3,1) .28s forwards;}
+@keyframes fly{0%{opacity:1;transform:translate(0,0) scale(.4);}25%{opacity:1;}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.1) rotate(var(--r));}}
+
+.letter{position:absolute;z-index:4;border-radius:10px;font-family:Arial,sans-serif;line-height:1.55;
+  box-shadow:0 -6px 20px rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  background:var(--paper);color:var(--ink);}
+.letter .lt-title{font-family:Georgia,serif;font-size:16px;color:#7a1226;margin:0 0 8px;}
+.letter .lt-body{font-size:14px;margin:0;}
+.letter .lt-sign{font-size:12px;color:#9a6b1e;margin-top:12px;font-style:italic;}
+.hint{position:absolute;bottom:14px;left:0;right:0;z-index:2;text-align:center;
+  font-family:Arial,sans-serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-soft);transition:opacity .3s;}
+.stage.open .hint{opacity:0;}
+.glow{position:absolute;inset:0;border-radius:12px;pointer-events:none;z-index:7;opacity:0;}
+.stage.open .glow{animation:flash 1s ease .25s;}
+@keyframes flash{0%{opacity:0;}30%{opacity:1;box-shadow:0 0 38px 6px rgba(233,201,143,.5);}100%{opacity:0;}}
+
+/* ===== A1 · Srotolamento (unfold dall'alto) ===== */
+.unfold .letter{left:16px;right:16px;bottom:24px;height:202px;padding:14px 16px;transform-origin:top center;
+  transform:rotateX(-90deg);opacity:0;
+  transition:transform .9s cubic-bezier(.3,.75,.2,1) .35s,opacity .25s .35s;}
+.unfold.open .letter{transform:rotateX(0);opacity:1;}
+
+/* ===== A2 · Pop con bacetti (bounce) ===== */
+.pop .letter{left:16px;right:16px;bottom:24px;height:202px;padding:14px 16px;transform-origin:center 65%;
+  transform:scale(.25);opacity:0;
+  transition:transform .65s cubic-bezier(.18,1.5,.4,1) .34s,opacity .25s .34s;}
+.pop.open .letter{transform:scale(1);opacity:1;}
+.pop.open .wax .half{transform:scale(.4);opacity:0;transition:.22s;}
+
+/* ===== A3 · La busta si dissolve, resta la lettera ===== */
+.dissolve .env-body{transition:transform .7s ease .25s,opacity .6s ease .3s;}
+.dissolve.open .env-body{opacity:0;transform:scale(1.07);}
+.dissolve.open .flap{opacity:0;}
+.dissolve .letter{left:8px;right:8px;top:50%;height:214px;padding:16px;
+  transform:translateY(-50%) scale(.82);opacity:0;
+  transition:transform .85s cubic-bezier(.2,.7,.2,1) .38s,opacity .5s .38s;}
+.dissolve.open .letter{transform:translateY(-50%) scale(1);opacity:1;box-shadow:0 8px 30px rgba(0,0,0,.55);}
+</style>
+</head>
+<body>
+  <div class="kick">Velluto · Buoni</div>
+  <h1>Apertura della busta — altre 3</h1>
+  <p class="lede">Veste vino + sigillo 💋. Cambia solo <b>come</b> si apre. Tocca per provarle; "↺" per ri-sigillare. Quale movimento preferisci: <b>A1</b>, <b>A2</b> o <b>A3</b>.</p>
+
+  <div class="grid">
+
+    <!-- A1 -->
+    <div class="col">
+      <div class="optlabel"><b>A1 · Srotolamento</b><span>La lettera si srotola dall'alto, come aprire un foglio piegato.</span></div>
+      <div class="card">
+        <div class="stage unfold" data-stage>
+          <div class="env-body"></div>
+          <div class="letter"><p class="lt-title">Per stasera 🔥</p><p class="lt-body">Niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p><p class="lt-sign">— con voglia, Tomas</p></div>
+          <div class="flap"></div>
+          <div class="wax"><div class="half l"><div class="blob"></div></div><div class="half r"><div class="blob"></div></div><div class="sigil">💋</div></div>
+          <div class="glow"></div><div class="hint">tocca per aprire</div>
+        </div>
+        <button class="reset" data-reset>↺ ri-sigilla</button>
+      </div>
+      <p class="note">Sensazione di "carta piegata". Elegante e calma.</p>
+    </div>
+
+    <!-- A2 -->
+    <div class="col">
+      <div class="optlabel"><b>A2 · Pop con bacetti</b><span>Il sigillo esplode in 💋 e la lettera fa un piccolo rimbalzo.</span></div>
+      <div class="card">
+        <div class="stage pop" data-stage>
+          <div class="env-body"></div>
+          <div class="letter"><p class="lt-title">Per stasera 🔥</p><p class="lt-body">Niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p><p class="lt-sign">— con voglia, Tomas</p></div>
+          <div class="flap"></div>
+          <div class="wax"><div class="half l"><div class="blob"></div></div><div class="half r"><div class="blob"></div></div><div class="sigil">💋</div></div>
+          <div class="burst">
+            <span style="--dx:-58px;--dy:-46px;--r:-30deg;">💋</span>
+            <span style="--dx:54px;--dy:-50px;--r:25deg;">💋</span>
+            <span style="--dx:-70px;--dy:10px;--r:-15deg;">❤️</span>
+            <span style="--dx:66px;--dy:6px;--r:20deg;">❤️</span>
+            <span style="--dx:-30px;--dy:-66px;--r:-10deg;">✨</span>
+            <span style="--dx:34px;--dy:-64px;--r:12deg;">✨</span>
+          </div>
+          <div class="glow"></div><div class="hint">tocca per aprire</div>
+        </div>
+        <button class="reset" data-reset>↺ ri-sigilla</button>
+      </div>
+      <p class="note">Giocosa e festosa. La più "wow".</p>
+    </div>
+
+    <!-- A3 -->
+    <div class="col">
+      <div class="optlabel"><b>A3 · La busta si dissolve</b><span>La busta svanisce e resta solo la lettera, al centro.</span></div>
+      <div class="card">
+        <div class="stage dissolve" data-stage>
+          <div class="env-body"></div>
+          <div class="letter"><p class="lt-title">Per stasera 🔥</p><p class="lt-body">Niente telefoni. Ti aspetto alle 21, vestita come piace a te. Il resto… lo scopri lì. 😏</p><p class="lt-sign">— con voglia, Tomas</p></div>
+          <div class="flap"></div>
+          <div class="wax"><div class="half l"><div class="blob"></div></div><div class="half r"><div class="blob"></div></div><div class="sigil">💋</div></div>
+          <div class="glow"></div><div class="hint">tocca per aprire</div>
+        </div>
+        <button class="reset" data-reset>↺ ri-sigilla</button>
+      </div>
+      <p class="note">Pulita: l'attenzione va tutta sul testo.</p>
+    </div>
+
+  </div>
+
+  <div class="foot"><p class="sans">Quale apertura vince? <b>A1</b>, <b>A2</b> o <b>A3</b>.</p></div>
+
+<script>
+  document.querySelectorAll('[data-stage]').forEach(s=>s.addEventListener('click',()=>s.classList.add('open')));
+  document.querySelectorAll('[data-reset]').forEach(b=>b.addEventListener('click',()=>b.closest('.card').querySelector('[data-stage]').classList.remove('open')));
+</script>
+</body>
+</html>
