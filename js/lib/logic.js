@@ -336,3 +336,32 @@ export function richiesteDaConcedere(buoni, me) {
 export function richiesteInviate(buoni, me) {
   return buoni.filter(b => b.tipo === 'richiesta' && b.stato === 'in_attesa' && b.a_id === me);
 }
+
+// ---- ECONOMIA A GIRI (pure) ----
+export const ECONOMIA = {
+  GRATIS_OGNI_GIORNI: 7,   // ogni quanto matura il giro gratis settimanale
+  COSTO_GIRO: 1,           // giri spesi per girare
+  GIRI_PER_VITTORIA: 1,    // PROVVISORIO: accreditati vincendo un gioco (hook concediGiro)
+  ULTIMI_PREMI: 5,         // voci dello storico "Ultimi premi"
+};
+
+// Saldo = somma dei delta dei movimenti dell'utente (ledger insert-only).
+export function saldoGiri(movimenti, userId) {
+  return movimenti.filter(m => m.user_id === userId).reduce((s, m) => s + m.delta, 0);
+}
+
+export function puoGirare(saldo) {
+  return saldo >= ECONOMIA.COSTO_GIRO;
+}
+
+// Giro gratis settimanale: ok se mai maturato o se passati GRATIS_OGNI_GIORNI dall'ultimo.
+// `now` (Date) iniettabile per i test.
+export function giriEleggibile(movimenti, userId, now = new Date()) {
+  const settimanali = movimenti
+    .filter(m => m.user_id === userId && m.motivo === 'settimanale')
+    .map(m => new Date(m.creato))
+    .sort((a, b) => b - a);
+  if (!settimanali.length) return { ok: true, prossimoSblocco: null };
+  const prossimo = new Date(settimanali[0].getTime() + ECONOMIA.GRATIS_OGNI_GIORNI * 864e5);
+  return { ok: now >= prossimo, prossimoSblocco: prossimo.toISOString() };
+}
