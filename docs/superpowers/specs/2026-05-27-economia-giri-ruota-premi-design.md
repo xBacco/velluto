@@ -40,10 +40,10 @@ tasca (1 gratis a settimana, gli altri si vincono giocando).
 - **8 fette della ruota:** 💋 apri un segreto · 🔥 proposta piccante · 🎁 buono a sorpresa ·
   💌 pesca un desiderio · 🃏 carta Obbligo o Verità · ⭐ jolly scegli-tu · 🎲 tiro di dadi ·
   🔁 gira ancora.
-  - Due fette sono **condizionali**: **💋 apri un segreto** è viva solo se c'è una busta
-    sigillata in attesa per chi gira; **🃏 carta ToD** è viva solo se la coppia ha almeno
-    una carta nel mazzo. Quando la condizione manca, la fetta resta disegnata ma **spenta**
-    (peso 0, non vincibile, resa smorzata). Vedi §5.
+  - Alcune fette sono **condizionali**: **💋 apri un segreto** (viva solo con una busta in
+    attesa), **🃏 carta ToD** (viva solo con almeno una carta), e **🔥/🎁** (vive solo se la
+    rispettiva lista editabile non è vuota). Quando la condizione manca, la fetta resta
+    disegnata ma **spenta** (peso 0, non vincibile, resa smorzata). Vedi §5 `fetteRuota`.
   - **Pesi:** tutti uguali (peso 1) per ora — si tara dopo aver provato la ruota dal vivo.
 - **Premi differiti vs immediati:**
   - **Differiti** — si **materializzano nelle tab**: `🎁 buono a sorpresa` → compare nei
@@ -55,6 +55,10 @@ tasca (1 gratis a settimana, gli altri si vincono giocando).
 - **Tutti i numeri** (ogni quanto il gratis, costo del giro, giri per vittoria, pesi delle
   fette, lunghezza storico) stanno in **un blocco di costanti** `ECONOMIA`/`FETTE`,
   tarabili a sensazione dopo l'uso.
+- **Contenuti editabili dalla coppia (scelta utente 2026-05-27):** le **proposte piccanti**
+  (fetta 🔥) e i **buoni a sorpresa** (fetta 🎁) **non** sono hardcoded: vivono su Supabase,
+  **modificabili in qualsiasi momento** dall'app (aggiungi/modifica/elimina), come i Dadi e
+  i Tipi. Le liste in `logic.js` restano solo come **default seminati** alla prima apertura.
 
 ### UI bloccata (mockup approvati)
 
@@ -112,7 +116,29 @@ giri_movimenti (
 - **`ruota_giri` è superata:** la tabella `ruota_giri` (presente nello schema ma **mai
   usata** da codice) viene **rimossa**. La migrazione la droppa.
 
-### 3.2 Migrazione SQL — `supabase/giri.sql` (nuovo file)
+### 3.2 Contenuti editabili — `ruota_contenuti` (tabella nuova)
+
+Le liste delle fette 🔥 e 🎁 sono **per coppia ed editabili** (come `dadi_facce`/`tipi`):
+una sola tabella generica con una `categoria`.
+
+```
+ruota_contenuti (
+  id          uuid pk default gen_random_uuid(),
+  couple_id   uuid not null references couples(id),
+  categoria   text not null check (categoria in ('piccante','buono')),
+  emoji       text,                 -- solo 'buono' (es. 💆); null per 'piccante'
+  testo       text not null,        -- 'piccante': la frase; 'buono': il titolo
+  descrizione text,                 -- solo 'buono': il corpo del coupon
+  ordine      int  not null default 0,
+  creato      timestamptz not null default now()
+)
+```
+
+- **Seeding pigro:** alla prima apertura della Ruota, se la coppia non ha righe, si
+  seminano i **default** da `logic.js` (come fa `giochi.js` con `seedDadiFacce`).
+- **RLS:** policy `ALL` su `is_member(couple_id)`.
+
+### 3.3 Migrazione SQL — `supabase/giri.sql` (nuovo file)
 
 ```sql
 -- Economia a giri: ledger dei movimenti. Rimpiazza la mai-usata ruota_giri.
@@ -132,12 +158,30 @@ create index if not exists giri_mov_couple_idx on giri_movimenti (couple_id, use
 alter table giri_movimenti enable row level security;
 create policy giri_mov_all on giri_movimenti
   for all using (is_member(couple_id)) with check (is_member(couple_id));
+
+-- Contenuti editabili delle fette 🔥/🎁.
+create table if not exists ruota_contenuti (
+  id          uuid primary key default gen_random_uuid(),
+  couple_id   uuid not null references couples(id),
+  categoria   text not null check (categoria in ('piccante','buono')),
+  emoji       text,
+  testo       text not null,
+  descrizione text,
+  ordine      int  not null default 0,
+  creato      timestamptz not null default now()
+);
+create index if not exists ruota_cont_idx on ruota_contenuti (couple_id, categoria, ordine);
+
+alter table ruota_contenuti enable row level security;
+create policy ruota_cont_all on ruota_contenuti
+  for all using (is_member(couple_id)) with check (is_member(couple_id));
 ```
 
 E si aggiorna `supabase/schema.sql` (installazioni nuove): si **rimuove** la tabella
-`ruota_giri` e la sua policy `ruota_all`, si **aggiunge** `giri_movimenti` con la sua policy.
+`ruota_giri` e la sua policy `ruota_all`, si **aggiungono** `giri_movimenti` e
+`ruota_contenuti` con le rispettive policy.
 
-### 3.3 Cosa NON serve
+### 3.4 Cosa NON serve
 
 I segreti vivono già nella tabella `buoni` (vedi spec segreti). Buoni/desideri vinti si
 **materializzano** sulle tabelle esistenti (`buoni`, `desideri`) — nessuna colonna nuova lì.
@@ -170,9 +214,9 @@ export const FETTE = [
   { key: 'ancora',    emoji: '🔁', label: 'Gira ancora',       peso: 1 },
 ];
 
-// Proposte piccanti (le 8 della vecchia ruota settimanale → diventano UN premio: ne pesca una).
-// BOZZA approvata dall'utente il 2026-05-27 (rifinibile).
-export const PROPOSTE_PICCANTI = [
+// SOLO DEFAULT di seeding: i contenuti veri vivono in `ruota_contenuti` (editabili dalla
+// coppia in qualsiasi momento). Approvati dall'utente il 2026-05-27.
+export const PROPOSTE_PICCANTI_DEFAULT = [
   'Spogliatevi a vicenda, lentamente, senza dire una parola.',
   'Massaggio con l’olio: dieci minuti a testa, niente fretta.',
   'Uno dei due bendato: si lascia guidare solo dal tatto.',
@@ -183,9 +227,7 @@ export const PROPOSTE_PICCANTI = [
   'Striptease privato: una canzone intera, pubblico di una persona.',
 ];
 
-// Buoni a sorpresa: pool da cui materializzare un regalo per chi vince la fetta 🎁.
-// BOZZA approvata dall'utente il 2026-05-27 (rifinibile).
-export const BUONI_SORPRESA = [
+export const BUONI_SORPRESA_DEFAULT = [
   { emoji: '💆', titolo: 'Massaggio completo', descrizione: 'Quindici minuti di massaggio, quando lo riscatti.' },
   { emoji: '🛁', titolo: 'Bagno caldo preparato', descrizione: 'Te lo prepara il partner, candele incluse.' },
   { emoji: '😈', titolo: 'Un sì garantito',      descrizione: 'Una richiesta piccante a tua scelta, senza poter dire di no.' },
@@ -194,6 +236,9 @@ export const BUONI_SORPRESA = [
   { emoji: '🍳', titolo: 'Colazione a letto',    descrizione: 'Una mattina a tua scelta, te la porta il partner.' },
 ];
 ```
+
+> I default servono **solo** a seminare `ruota_contenuti` la prima volta. Da lì in poi la
+> fonte di verità è il DB e l'utente li modifica dall'editor (§7.5).
 
 ---
 
@@ -207,13 +252,22 @@ Tutte pure (dati in → dati out), `now`/`rnd` iniettabili dove serve. Stile dei
   settimanale**: guarda il movimento `motivo==='settimanale'` più recente dell'utente;
   `ok = now − ultimo ≥ GRATIS_OGNI_GIORNI giorni` (o nessun movimento). `prossimoSblocco` =
   data del prossimo gratis. (È la funzione un tempo chiamata `ruotaEleggibile`, ora sui movimenti.)
-- **`fetteRuota({ haSegreti, haCarte })`** → copia di `FETTE` con i pesi delle fette
-  **condizionali** forzati a 0 quando la condizione manca: `segreto` → 0 se `!haSegreti`;
-  `tod` → 0 se `!haCarte`. Le fette restano nell'array per la geometria (8 spicchi sempre).
+- **`fetteRuota({ haSegreti, haCarte, haProposte, haBuoni })`** → copia di `FETTE` con i
+  pesi delle fette **condizionali** forzati a 0 quando la condizione manca: `segreto` → 0
+  se `!haSegreti`; `tod` → 0 se `!haCarte`; `piccante` → 0 se `!haProposte`; `buono` → 0 se
+  `!haBuoni` (liste editabili svuotate). Le fette restano nell'array per la geometria (8
+  spicchi sempre).
 - **`estraiFetta(fette, rnd = Math.random)`** → estrazione **pesata** (salta peso 0) →
   `{ indice, fetta }`. `indice` serve al modulo per calcolare l'angolo di atterraggio.
 - **`ultimiPremi(movimenti, userId, n = ECONOMIA.ULTIMI_PREMI)`** → ultimi `n` movimenti
   `motivo==='giro'` dell'utente, ordinati per data desc, con la fetta risolta da `esito`.
+- **Contenuti editabili (seeding + lettura):**
+  - **`ruotaContenutiDefaultRows(coupleId)`** → righe piatte per il seeding dei default
+    (categoria `'piccante'` da `PROPOSTE_PICCANTI_DEFAULT`, categoria `'buono'` da
+    `BUONI_SORPRESA_DEFAULT`), con `ordine` = posizione. Stile `tipiDefaultRows`/`facceDefaultRows`.
+  - **`proposteDa(contenuti)`** → righe `categoria==='piccante'` ordinate (`ordine`).
+  - **`buoniSorpresaDa(contenuti)`** → righe `categoria==='buono'` ordinate.
+  - **`pescaContenuto(lista, rnd = Math.random)`** → un elemento a caso (rnd iniettabile); `null` se vuota.
 
 > Nota: l'**angolo di atterraggio** e l'animazione (spotlight, proiezione di luce, emoji
 > contro-ruotate) sono UI → vivono nel modulo, non in `logic.js`.
@@ -233,6 +287,11 @@ Nessun fallimento silenzioso: errore → eccezione → toast nel modulo.
 - **`concediGiro(client, { couple_id, user_id })`** → **hook** per i giochi: accredita
   `ECONOMIA.GIRI_PER_VITTORIA` con `motivo:'gioco'`. Lo chiamano i moduli-gioco quando
   qualcuno vince (oggi Strip Poker; domani altri). Wrapper sottile su `accreditaGiro`.
+- **Contenuti editabili** (stile `listDadiFacce`/`seedDadiFacce`/`updateDadiFaccia`):
+  - **`listRuotaContenuti(client, coupleId)`** → tutte le righe `ruota_contenuti` della coppia.
+  - **`seedRuotaContenuti(client, rows)`** → insert dei default (solo prima apertura).
+  - **`addRuotaContenuto(client, { couple_id, categoria, emoji, testo, descrizione, ordine })`**.
+  - **`updateRuotaContenuto(client, id, patch)`** / **`deleteRuotaContenuto(client, id)`**.
 
 > **Concorrenza/atomicità:** essendo insert-only, la "spesa" non è un decremento da
 > proteggere. Il modulo controlla `puoGirare(saldo)` **prima** di girare; un eventuale
@@ -261,10 +320,14 @@ Ruota**; gli altri giochi si aggiungono quando esistono.
    giriEleggibile(mov, me, now)`.
 2. Se `ok`, **matura il gratis**: `accreditaGiro({ motivo:'settimanale' })`, poi ricarica.
    (Maturazione **pigra**, all'apertura — niente cron.)
-3. Determina le condizioni: `haSegreti = segretiDaRivelare(buoni, me).length > 0` (richiede i
-   `buoni`; vedi spec segreti) e `haCarte = listCarte(...).length > 0` →
-   `fette = fetteRuota({ haSegreti, haCarte })`.
-4. Disegna: card saldo (pallini-gettone = saldo, "gratis tra Ng" = countdown da
+3. **Contenuti editabili:** `listRuotaContenuti`; se vuoto → `seedRuotaContenuti(
+   ruotaContenutiDefaultRows(couple_id))` e ricarica (come `giochi.js` con i Dadi). Tieni
+   `proposte = proposteDa(cont)` e `buoni = buoniSorpresaDa(cont)` per la risoluzione.
+4. Determina le condizioni: `haSegreti = segretiDaRivelare(buoni, me).length > 0` (richiede i
+   `buoni`; vedi spec segreti), `haCarte = listCarte(...).length > 0`,
+   `haProposte = proposte.length > 0`, `haBuoni = buoni.length > 0` →
+   `fette = fetteRuota({ haSegreti, haCarte, haProposte, haBuoni })`.
+5. Disegna: card saldo (pallini-gettone = saldo, "gratis tra Ng" = countdown da
    `prossimoSblocco`), la ruota (8 spicchi, emoji dritte), il bottone ghost "GIRA LA RUOTA"
    (disabilitato se `!puoGirare(saldo)`), lo storico `ultimiPremi`.
 
@@ -283,6 +346,28 @@ Ruota**; gli altri giochi si aggiungono quando esistono.
 Come da Fase 4: `renderGiochi` resta il contenitore della tab Giochi e instrada al
 sotto-modulo Ruota. Nessuna nuova voce di navigazione (la Ruota sta **dentro** Giochi).
 
+### 7.5 Editor dei contenuti (proposte 🔥 + buoni a sorpresa 🎁)
+
+L'utente modifica i contenuti **in qualsiasi momento**, riusando il **pattern dell'editor
+Dadi** (`openSheet` con righe input, salvataggio per riga; vedi `giochi.js#openEditor`):
+
+- **Apertura:** dal FAB quando il gioco selezionato è la Ruota. Poiché la tab Giochi ora ha
+  più giochi, il FAB instrada all'editor del **gioco corrente** (Dadi → editor facce; Ruota
+  → editor contenuti). Il modulo `giochi.js` tiene lo stato del gioco selezionato e smista
+  `fab:giochi` di conseguenza.
+- **Due sezioni nel foglio:** "🔥 Proposte piccanti" (lista di righe-testo) e "🎁 Buoni a
+  sorpresa" (per riga: emoji + titolo + descrizione). Ogni sezione: righe esistenti
+  modificabili, "＋ Aggiungi", e cestino per eliminare.
+- **Salvataggio:** `addRuotaContenuto` / `updateRuotaContenuto` / `deleteRuotaContenuto`;
+  validazione "testo non vuoto" (come l'editor Dadi). Alla chiusura, ridisegna la Ruota.
+- **Vincolo minimo:** non si può svuotare del tutto una categoria usata da una fetta attiva
+  (se resti con 0 proposte, la fetta 🔥 si comporta come le condizionali → peso 0, oppure si
+  blocca il salvataggio con un avviso). **Decisione:** peso 0 + resa smorzata, coerente con
+  segreto/ToD (nessun blocco fastidioso). Aggiornare `fetteRuota` per azzerare anche
+  `piccante`/`buono` se la rispettiva lista è vuota.
+- **Estetica:** riusa lo stile-sheet esistente (Dadi/Tipi) → **nessuna nuova scelta grafica**.
+  Se in futuro si vorrà un editor dedicato più curato, si farà prima un mockup approvato.
+
 ---
 
 ## 8. Risoluzione dei premi
@@ -293,8 +378,8 @@ dipendono dalla fetta:
 | fetta | tipo | cosa fa | dipendenze |
 |---|---|---|---|
 | 💋 `segreto` | flusso | bottone "**Scegli quale busta →**" → apre la scelta tra i segreti in attesa; alla scelta parte l'animazione-busta e la transizione `'rivela'` | spec **segreti** |
-| 🔥 `piccante` | immediato | mostra **una** proposta a caso da `PROPOSTE_PICCANTI` | nessuna |
-| 🎁 `buono` | **differito** | materializza un **regalo** nei Buoni: `addBuono({ tipo:'regalo', stato:'attivo', a_id:me, da_id:partner, …pool BUONI_SORPRESA })`; il pop-up dice "lo trovi nei Buoni" | `addBuono` |
+| 🔥 `piccante` | immediato | `pescaContenuto(proposte)` (lista editabile DB) → mostra la frase nel pop-up | `ruota_contenuti` |
+| 🎁 `buono` | **differito** | `pescaContenuto(buoni)` (lista editabile DB) → materializza un **regalo** nei Buoni: `addBuono({ tipo:'regalo', stato:'attivo', a_id:me, da_id:partner, emoji, titolo, descrizione })`; pop-up "lo trovi nei Buoni" | `addBuono` + `ruota_contenuti` |
 | 💌 `desiderio` | **differito** | pesca un desiderio `da_provare` a caso e lo **evidenzia** nei Desideri; pop-up "te l'abbiamo scelto noi" | tab Desideri |
 | 🃏 `tod` | immediato | pesca una **carta** a caso (`pescaCarta`) e la mostra nel pop-up. **Fetta spenta** (peso 0) se il mazzo è vuoto → non vincibile finché non si aggiungono carte | `listCarte` + `pescaCarta` (carte esistono nel DB; modulo ToD non necessario) |
 | ⭐ `jolly` | scelta | bottone "**Scegli tu →**" → l'utente sceglie uno degli altri premi | — |
@@ -342,25 +427,34 @@ dipendono dalla fetta:
 - `saldoGiri`: somma corretta di accrediti/spese; 0 senza movimenti; mai conta l'altro utente.
 - `giriEleggibile`: `ok` senza movimenti; in cooldown con `prossimoSblocco` corretto; al
   confine dei 7 giorni (`now` iniettato).
-- `fetteRuota`: peso `segreto` = 0 quando niente buste, > 0 quando ce n'è; sempre 8 fette.
+- `fetteRuota`: peso 0 per le condizionali quando manca la condizione (segreto/carte/proposte/buoni),
+  > 0 quando c'è; sempre 8 fette.
 - `estraiFetta`: con `rnd` deterministico atterra sulla fetta attesa; **non** estrae mai una
   fetta a peso 0; copre l'intervallo.
 - `ultimiPremi`: ordina per data desc, taglia a `n`, solo `motivo==='giro'`, solo dell'utente.
+- **Contenuti:** `ruotaContenutiDefaultRows` produce le righe attese (categorie + ordine);
+  `proposteDa`/`buoniSorpresaDa` filtrano e ordinano per categoria; `pescaContenuto` estrae
+  con `rnd` deterministico e dà `null` su lista vuota.
 
 **Store** con client Supabase **finto iniettato**: `accreditaGiro`/`spendiGiro`/`concediGiro`
-fanno l'insert giusto (delta, motivo, esito); `listGiri` mappa le righe.
+fanno l'insert giusto (delta, motivo, esito); `listGiri` mappa le righe;
+`add/update/delete/seedRuotaContenuti` fanno le query attese.
 
 **Smoke Playwright** prima di "fatto": la Ruota gira, scala il saldo, mostra il pop-up dallo
 spicchio con **emoji dritte**; si **blocca** a saldo 0; il gratis matura quando dovuto; un
 premio differito (buono) **compare** nei Buoni; "apri segreto" appare **solo** con una busta
-in attesa; storico "Ultimi premi" si aggiorna; layout mobile corretto; persistenza dopo reload.
+in attesa; **editor contenuti**: aggiungi/modifica/elimina una proposta e un buono → si
+riflette al giro successivo (e la fetta si spegne se svuoti la categoria); storico "Ultimi
+premi" si aggiorna; layout mobile corretto; persistenza dopo reload.
 
 ---
 
 ## 12. Domande aperte → CHIUSE il 2026-05-27
 
-1. **Contenuti** `PROPOSTE_PICCANTI` (8 frasi) e `BUONI_SORPRESA` (pool) → **bozza scritta
-   e approvata** dall'utente, ora in §4 (rifinibile in seguito).
+1. **Contenuti** proposte 🔥 (8 frasi) e buoni a sorpresa 🎁 (pool) → **bozza scritta,
+   mostrata in mockup** (`mockups/ruota-contenuti.html`) e **approvata** dall'utente. I
+   testi sono ora i **default di seeding** (§4) e diventano **editabili dall'app in qualsiasi
+   momento** via `ruota_contenuti` + editor (§3.2, §7.5).
 2. **Pesi delle fette** → **tutti uguali** (peso 1) per ora; si tara dopo l'uso dal vivo.
 3. **Giri per vittoria** → **resta aperto di proposito**: dipende da giochi non costruiti e
    un gioco potrà dare giri *o altri premi*; `GIRI_PER_VITTORIA = 1` è solo default
