@@ -1,5 +1,5 @@
 const CACHE = 'lussuria-v1';
-const SHELL = ['./', './index.html', './styles.css'];
+const SHELL = ['./', './index.html', './styles.css', './js/app.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
@@ -15,9 +15,12 @@ self.addEventListener('fetch', e => {
     e.respondWith(
       fetch(e.request).then(res => {
         const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy));
+        e.waitUntil(caches.open(CACHE).then(c => c.put(e.request, copy)));
         return res;
-      }).catch(() => caches.match(e.request))
+      }).catch(async () => {
+        const cached = await caches.match(e.request);
+        return cached || Response.error();
+      })
     );
     return;
   }
