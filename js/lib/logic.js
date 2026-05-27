@@ -52,6 +52,45 @@ export function fiammeLabel(voto) {
   return '🔥'.repeat(v) + '🤍'.repeat(5 - v);
 }
 
+// ---- TIPI di momento (editabili per coppia) ----
+// Default seminati alla prima apertura della coppia.
+export const TIPI_DEFAULT = [
+  { emoji: '🌶️', label: 'Scopata' },
+  { emoji: '🍑', label: 'Anale' },
+  { emoji: '🫦', label: 'Pompino' },
+  { emoji: '👅', label: 'Leccata' },
+];
+
+// Righe pronte per l'insert (con ordine = posizione).
+export function tipiDefaultRows(coupleId) {
+  return TIPI_DEFAULT.map((t, i) => ({ couple_id: coupleId, emoji: t.emoji, label: t.label, ordine: i }));
+}
+
+// Tipo per id, con fallback per eventi senza tipo (o tipo eliminato).
+export function findTipo(tipi, id) {
+  return tipi.find(t => t.id === id) || { emoji: '✦', label: 'Evento' };
+}
+
+// Un'esperienza senza titolo è un "momento rapido" (creato dal tally); con titolo è un evento ricco.
+export function isMomentoRapido(e) {
+  return !e.titolo;
+}
+
+// Quante esperienze di un tipo in una certa data (badge del tally "Segna al volo").
+export function countTipoOnDate(events, tipoId, iso) {
+  return events.filter(e => e.tipo_id === tipoId && e.data === iso).length;
+}
+
+// Divide gli eventi di un giorno: card ricche (con titolo) + conteggi dei momenti rapidi per tipo,
+// nell'ordine dei tipi. `conteggi` = [{ tipo, n }].
+export function splitGiorno(events, tipi) {
+  const ricchi = events.filter(e => !isMomentoRapido(e));
+  const counts = {};
+  for (const e of events) if (isMomentoRapido(e)) counts[e.tipo_id] = (counts[e.tipo_id] || 0) + 1;
+  const conteggi = tipi.filter(t => counts[t.id]).map(t => ({ tipo: t, n: counts[t.id] }));
+  return { ricchi, conteggi };
+}
+
 // Path deterministico nel bucket 'foto'. `now` iniettabile per i test.
 export function fotoPath(coupleId, contesto, refId, filename, now = Date.now()) {
   const safe = filename.replace(/[^a-zA-Z0-9._-]/g, '_');

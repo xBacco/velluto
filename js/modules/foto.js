@@ -26,6 +26,20 @@ export function fotoEditor(ctx, { contesto, refId }) {
   return { el: wrap, flush };
 }
 
+// Carica la copertina (prima foto) sfocata dentro `coverEl`; badge "📷 N" se più d'una.
+// Non lancia: in caso d'errore lascia la copertina vuota. Riempie in modo asincrono.
+export async function loadCoverInto(ctx, { contesto, refId }, coverEl) {
+  let foto;
+  try { foto = await listFoto(ctx.client, { contesto, refId }); }
+  catch { return; }
+  if (!foto.length) return;
+  coverEl.classList.add('thumb-blur');
+  const img = mk('img'); img.alt = '';
+  try { img.src = await signedUrl(ctx.client, foto[0].storage_path); } catch { return; }
+  coverEl.appendChild(img);
+  if (foto.length > 1) coverEl.appendChild(mk('span', 'nmore', '📷 ' + foto.length));
+}
+
 // Carica le thumbnail via signed URL dentro `container`. withRemove=true mostra la ✕.
 export async function loadThumbsInto(ctx, { contesto, refId }, container, withRemove) {
   const foto = await listFoto(ctx.client, { contesto, refId });

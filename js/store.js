@@ -29,22 +29,62 @@ export async function deleteDesiderio(client, id) {
   return check(res);
 }
 
+// ---- TIPI di momento (editabili per coppia) ----
+export async function listTipi(client, coupleId) {
+  const res = await client.from('tipi').select('*').eq('couple_id', coupleId).order('ordine', { ascending: true });
+  return check(res);
+}
+
+// Inserisce le righe default (vedi logic.tipiDefaultRows) la prima volta per la coppia.
+export async function seedTipi(client, rows) {
+  const res = await client.from('tipi').insert(rows);
+  return check(res);
+}
+
+export async function addTipo(client, { couple_id, emoji, label, ordine }) {
+  const res = await client.from('tipi').insert({
+    couple_id, emoji, label, ordine: ordine ?? 0,
+  }).select().single();
+  return check(res);
+}
+
+export async function updateTipo(client, id, { emoji, label }) {
+  const res = await client.from('tipi').update({ emoji, label }).eq('id', id);
+  return check(res);
+}
+
+export async function deleteTipo(client, id) {
+  const res = await client.from('tipi').delete().eq('id', id);
+  return check(res);
+}
+
 // ---- ESPERIENZE ----
 export async function listEsperienze(client, coupleId) {
   const res = await client.from('esperienze').select('*').eq('couple_id', coupleId).order('data', { ascending: false });
   return check(res);
 }
 
-export async function addEsperienza(client, { couple_id, autore_id, titolo, testo, data, voto }) {
+// Evento ricco: tipo + titolo (voto/testo/foto opzionali).
+export async function addEsperienza(client, { couple_id, autore_id, tipo_id, titolo, testo, data, voto }) {
   const res = await client.from('esperienze').insert({
-    couple_id, autore_id, titolo, testo: testo || null, data, voto: voto ?? 0,
+    couple_id, autore_id, tipo_id: tipo_id || null,
+    titolo: titolo || null, testo: testo || null, data, voto: voto ?? 0,
   }).select().single();
   return check(res);
 }
 
-export async function updateEsperienza(client, id, { titolo, testo, data, voto }) {
+export async function updateEsperienza(client, id, { tipo_id, titolo, testo, data, voto }) {
   const res = await client.from('esperienze')
-    .update({ titolo, testo: testo || null, data, voto: voto ?? 0 }).eq('id', id);
+    .update({ tipo_id: tipo_id || null, titolo: titolo || null, testo: testo || null, data, voto: voto ?? 0 })
+    .eq('id', id);
+  return check(res);
+}
+
+// Momento rapido (tally "Segna al volo"): solo tipo + data, niente titolo/voto/foto.
+export async function addMomento(client, { couple_id, autore_id, tipo_id, data }) {
+  const res = await client.from('esperienze').insert({
+    couple_id, autore_id, tipo_id, titolo: null, testo: null, data, voto: 0,
+  }).select().single();
   return check(res);
 }
 

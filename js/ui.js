@@ -11,6 +11,12 @@ export function add(parent, ...kids) {
 }
 export function clear(node) { node.replaceChildren(); }
 
+// Blocca lo scroll del body finché è aperta una modale centrata (.modal) o lo scrim dei dadi
+// (.dadi-scrim). Centralizzato qui: vale per qualunque modulo, comunque apra/chiuda l'overlay.
+new MutationObserver(() => {
+  document.body.classList.toggle('locked', document.querySelector('.modal,.dadi-scrim') != null);
+}).observe(document.body, { childList: true });
+
 // Toast d'errore/avviso visibile (no fallimenti silenziosi)
 export function toast(message, kind = 'info') {
   const t = mk('div', 'toast toast-' + kind, message);

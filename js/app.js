@@ -2,7 +2,7 @@ import { client } from './supabase.js';
 import { login, logout, currentProfile } from './auth.js';
 import { mk, add, clear, toast } from './ui.js';
 import { renderDesideri } from './modules/desideri.js';
-import { renderCalendario } from './modules/calendario.js';
+import { renderCalendario, openTipiSettings } from './modules/calendario.js';
 import { renderBuoni } from './modules/buoni.js';
 import { renderGalleria } from './modules/galleria.js';
 import { renderGiochi } from './modules/giochi.js';
@@ -43,6 +43,9 @@ async function enterApp() {
   $('login').classList.add('gone');
   $('app').style.display = '';
   $('fab').style.display = '';
+  const gear = $('gear');
+  gear.style.display = '';
+  gear.onclick = () => openTipiSettings({ client, me }, () => render());
   const chip = $('meChip');
   clear(chip);
   add(chip, mk('span', null, me.avatar), mk('span', null, me.display_name + ' · esci'));

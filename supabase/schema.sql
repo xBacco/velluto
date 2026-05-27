@@ -39,12 +39,23 @@ create table if not exists desideri (
   creato timestamptz not null default now()
 );
 
--- 4. ESPERIENZE (+foto in Fase 2)
+-- 4. TIPI di momento (editabili per coppia; vedi anche supabase/tipi.sql)
+create table if not exists tipi (
+  id uuid primary key default gen_random_uuid(),
+  couple_id uuid not null references couples(id),
+  emoji text not null,
+  label text not null,
+  ordine int not null default 0,
+  creato timestamptz not null default now()
+);
+
+-- ESPERIENZE (+foto in Fase 2; tipo_id + titolo facoltativo nel redesign Calendario)
 create table if not exists esperienze (
   id uuid primary key default gen_random_uuid(),
   couple_id uuid not null references couples(id),
   autore_id uuid not null references auth.users(id),
-  titolo text not null,
+  tipo_id uuid references tipi(id) on delete set null,
+  titolo text,
   testo text,
   data date not null,
   voto int not null default 0 check (voto between 0 and 5),
@@ -110,6 +121,7 @@ create unique index if not exists dadi_facce_slot_idx on dadi_facce (couple_id, 
 alter table couples        enable row level security;
 alter table profiles       enable row level security;
 alter table desideri       enable row level security;
+alter table tipi           enable row level security;
 alter table esperienze     enable row level security;
 alter table esperienza_foto enable row level security;
 alter table buoni          enable row level security;
@@ -127,6 +139,7 @@ create policy profiles_upd on profiles for update using (id = auth.uid());
 
 -- macro per tabelle "di coppia": una policy ALL basata su is_member
 create policy desideri_all   on desideri        for all using (is_member(couple_id)) with check (is_member(couple_id));
+create policy tipi_all       on tipi            for all using (is_member(couple_id)) with check (is_member(couple_id));
 create policy esperienze_all on esperienze       for all using (is_member(couple_id)) with check (is_member(couple_id));
 create policy expfoto_all    on esperienza_foto  for all using (is_member(couple_id)) with check (is_member(couple_id));
 create policy buoni_all      on buoni            for all using (is_member(couple_id)) with check (is_member(couple_id));
