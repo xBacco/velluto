@@ -465,3 +465,57 @@ export function pescaContenuto(lista, rnd = Math.random) {
   if (!lista.length) return null;
   return lista[Math.floor(rnd() * lista.length)];
 }
+
+// ---- LUOGHI / MAPPA (pure) ----
+// data_evento = 'YYYY-MM-DD'. mese ritornato 0..11, oppure null se senza data.
+export function meseDi(luogo) {
+  return luogo.data_evento ? Number(luogo.data_evento.slice(5, 7)) - 1 : null;
+}
+
+// Conteggi per mese: vis = tutti i luoghi, fat = solo intimi. Salta i luoghi senza data.
+export function aggregaPerMese(luoghi) {
+  const vis = Array(12).fill(0), fat = Array(12).fill(0);
+  for (const l of luoghi) {
+    const m = meseDi(l);
+    if (m == null) continue;
+    vis[m]++;
+    if (l.intimo) fat[m]++;
+  }
+  return { vis, fat };
+}
+
+export function soloIntimi(luoghi) {
+  return luoghi.filter(l => l.intimo);
+}
+
+// Totali per le etichette: luoghi totali, volte (= intimi), mesi con almeno un luogo.
+export function totaliLuoghi(luoghi) {
+  const { vis } = aggregaPerMese(luoghi);
+  return {
+    luoghi: luoghi.length,
+    volte: soloIntimi(luoghi).length,
+    mesiAttivi: vis.filter(n => n > 0).length,
+  };
+}
+
+// Luoghi di un mese (0..11): visited (tutti) + fatto (solo intimi).
+export function luoghiDelMese(luoghi, mese) {
+  const visited = luoghi.filter(l => meseDi(l) === mese);
+  return { visited, fatto: visited.filter(l => l.intimo) };
+}
+
+// Voto a cuori per il retro della polaroid.
+export function cuoriLabel(voto) {
+  const v = Math.max(0, Math.min(5, voto | 0));
+  return '❤'.repeat(v) + '♡'.repeat(5 - v);
+}
+
+// Etichetta data breve italiana. conGiorno=false → "Ago 2025"; true → "21 ago 2025".
+const MESI_BREVI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
+export function etichettaData(iso, { conGiorno = false } = {}) {
+  if (!iso) return '';
+  const [y, mm, dd] = iso.slice(0, 10).split('-');
+  const mese = MESI_BREVI[Number(mm) - 1] || '';
+  if (conGiorno) return `${Number(dd)} ${mese} ${y}`;
+  return `${mese.charAt(0).toUpperCase() + mese.slice(1)} ${y}`;
+}
