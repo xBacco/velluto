@@ -10,11 +10,11 @@ import { renderMappa } from './modules/mappa.js';
 
 const TABS = [
   ['desideri', '🔥', 'Desideri'],
+  ['giochi', '🎲', 'Giochi'],
   ['calendario', '📅', 'Esperienze'],
+  ['mappa', '🗺️', 'Mappa'],
   ['buoni', '🎟️', 'Buoni'],
   ['galleria', '🖼️', 'Galleria'],
-  ['giochi', '🎲', 'Giochi'],
-  ['mappa', '🗺️', 'Mappa'],
 ];
 
 let me = null;     // profilo loggato
@@ -62,9 +62,27 @@ async function enterApp() {
 function buildNav() {
   const n = $('nav'); clear(n);
   for (const [k, i, l] of TABS) {
-    const b = mk('button'); add(b, mk('span', null, i + ' '), mk('span', null, l));
+    const b = mk('button'); add(b, mk('span', null, i), mk('span', 'lab', l));
     b.dataset.k = k; b.onclick = () => go(k); n.appendChild(b);
   }
+  enableSwipe(n);
+}
+
+// swipe orizzontale sulla dock → tab precedente/successiva (con wrap-around)
+function enableSwipe(n) {
+  let startX = null;
+  const navByOffset = d => {
+    const i = TABS.findIndex(t => t[0] === cur);
+    go(TABS[(i + d + TABS.length) % TABS.length][0]);
+  };
+  n.addEventListener('pointerdown', e => { startX = e.clientX; });
+  n.addEventListener('pointerup', e => {
+    if (startX === null) return;
+    const dx = e.clientX - startX; startX = null;
+    if (Math.abs(dx) > 34) navByOffset(dx < 0 ? 1 : -1);
+  });
+  n.addEventListener('pointercancel', () => { startX = null; });
+  n.addEventListener('pointerleave', () => { startX = null; });
 }
 
 function go(k) {

@@ -14,7 +14,7 @@ body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:1
 
 /* layout mobile-first: colonna singola */
 .wrap{max-width:540px;margin:0 auto;padding:26px 16px 110px;}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
 .brand{font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);}
 .topbar-right{display:flex;align-items:center;gap:8px;}
 .gear{background:rgba(255,255,255,.04);border:1px solid rgba(212,168,108,.3);border-radius:999px;
@@ -23,14 +23,19 @@ body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:1
   border:1px solid rgba(212,168,108,.3);border-radius:999px;padding:6px 13px;color:var(--cream);
   font-size:14px;cursor:pointer;min-height:40px;}
 
-/* nav scrollabile orizzontale */
-.nav{display:flex;gap:6px;overflow-x:auto;padding:12px 0;margin:6px 0 14px;scrollbar-width:none;}
-.nav::-webkit-scrollbar{display:none;}
-.nav button{flex:0 0 auto;font-size:12px;background:rgba(255,255,255,.03);
-  border:1px solid rgba(212,168,108,.22);color:#d9b9a6;padding:11px 14px;border-radius:12px;
-  cursor:pointer;white-space:nowrap;min-height:44px;}
-.nav button.on{color:#fff;border-color:var(--wine2);
-  background:linear-gradient(180deg,rgba(122,21,51,.6),rgba(92,16,38,.3));}
+/* nav: dock fissa in basso — icone che si espandono sull'attiva + swipe sulla barra */
+.nav{position:fixed;left:12px;right:12px;bottom:14px;z-index:35;max-width:516px;margin:0 auto;
+  display:flex;gap:4px;background:rgba(13,3,7,.86);backdrop-filter:blur(10px);
+  border:1px solid rgba(212,168,108,.3);border-radius:22px;padding:8px;
+  box-shadow:0 12px 30px rgba(0,0,0,.55);touch-action:pan-y;user-select:none;}
+.nav button{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:7px;
+  font-size:21px;padding:12px 4px;border-radius:15px;color:#c8a89c;min-height:44px;cursor:pointer;
+  transition:flex .38s cubic-bezier(.34,1.15,.4,1),background .38s,color .38s,transform .38s;}
+.nav button.on{flex:2.5 1 0;color:#fff;
+  background:linear-gradient(180deg,rgba(122,21,51,.9),rgba(92,16,38,.6));
+  box-shadow:0 5px 18px rgba(122,21,51,.55);transform:translateY(-3px);}
+.nav button .lab{font-size:12.5px;max-width:0;overflow:hidden;white-space:nowrap;opacity:0;transition:.38s;}
+.nav button.on .lab{max-width:120px;opacity:1;}
 
 .panel{display:none;}
 .panel.on{display:block;animation:fade .3s ease;}
@@ -85,8 +90,8 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
 .filters button.on{background:var(--wine);color:#fff;border-color:var(--wine2);}
 .empty{text-align:center;color:#9c7f88;font-size:14px;padding:34px 10px;line-height:1.6;white-space:pre-line;}
 
-/* FAB */
-.fab{position:fixed;right:18px;bottom:22px;z-index:30;width:58px;height:58px;border-radius:50%;
+/* FAB — tondo dorato, sopra la dock a destra */
+.fab{position:fixed;right:18px;bottom:96px;z-index:36;width:58px;height:58px;border-radius:50%;
   font-size:30px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;
   background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;
   box-shadow:0 10px 26px rgba(212,168,108,.45);}
