@@ -64,7 +64,8 @@ function draw() {
   add(left, mk('p', 'k', 'I tuoi giri'));
   const coins = mk('div', 'coins');
   const n = Math.max(state.saldo, 0);
-  for (let i = 0; i < Math.max(n, 1); i++) coins.appendChild(mk('span', 'coin ' + (i < n ? 'full' : 'empty')));
+  if (n === 0) coins.appendChild(mk('span', 'coins-empty', 'nessun giro'));
+  else for (let i = 0; i < n; i++) coins.appendChild(mk('span', 'coin full'));
   left.appendChild(coins);
   const right = mk('div', 'right');
   right.textContent = state.elegg.ok ? 'gratis disponibile' : 'gratis tra ' + giorniA(state.elegg.prossimoSblocco);

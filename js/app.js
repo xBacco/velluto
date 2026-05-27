@@ -3,7 +3,6 @@ import { login, logout, currentProfile } from './auth.js';
 import { mk, add, clear, toast } from './ui.js';
 import { renderDesideri } from './modules/desideri.js';
 import { renderCalendario, openTipiSettings } from './modules/calendario.js';
-import { renderDati } from './modules/dati.js';
 import { renderBuoni } from './modules/buoni.js';
 import { renderGalleria } from './modules/galleria.js';
 import { renderGiochi } from './modules/giochi.js';
@@ -11,7 +10,6 @@ import { renderGiochi } from './modules/giochi.js';
 const TABS = [
   ['desideri', '🔥', 'Desideri'],
   ['calendario', '📅', 'Esperienze'],
-  ['dati', '📊', 'Dati'],
   ['buoni', '🎟️', 'Buoni'],
   ['galleria', '🖼️', 'Galleria'],
   ['giochi', '🎲', 'Giochi'],
@@ -78,7 +76,6 @@ function go(k) {
 function render() {
   if (cur === 'desideri') renderDesideri({ client, me, panel: $('p-desideri') }).catch(err => toast('Errore: ' + err.message, 'err'));
   else if (cur === 'calendario') renderCalendario({ client, me, panel: $('p-calendario') }).catch(err => toast('Errore: ' + err.message, 'err'));
-  else if (cur === 'dati') renderDati({ client, me, panel: $('p-dati') }).catch(err => toast('Errore: ' + err.message, 'err'));
   else if (cur === 'buoni') renderBuoni({ client, me, panel: $('p-buoni') }).catch(err => toast('Errore: ' + err.message, 'err'));
   else if (cur === 'galleria') renderGalleria({ client, me, panel: $('p-galleria') }).catch(err => toast('Errore: ' + err.message, 'err'));
   else if (cur === 'giochi') renderGiochi({ client, me, panel: $('p-giochi') }).catch(err => toast('Errore: ' + err.message, 'err'));

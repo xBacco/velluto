@@ -178,11 +178,14 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
   background:rgba(20,4,9,.35);margin-bottom:8px;}
 .bars{display:flex;align-items:flex-end;gap:2px;height:74px;}
 .bar{flex:1;background:linear-gradient(180deg,#d4a86c,#7a1533);border-radius:3px 3px 0 0;min-height:2px;}
+/* blocco "I nostri numeri" incorporato in fondo al Calendario */
+.dati-embed{margin-top:28px;padding-top:20px;border-top:1px solid rgba(212,168,108,.22);}
+.dati-embed .ptitle{margin-top:0;}
 
 /* ===== Calendario redesign: tally, momenti, card evento, tag ===== */
 .tally-lbl{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
   margin:2px 0 8px;font-family:Arial,sans-serif;}
-.tally-row{display:flex;gap:8px;margin:0 0 20px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.tally-row{display:flex;gap:8px;margin:-10px 0 20px;overflow-x:auto;padding:10px 4px 4px;scrollbar-width:none;}
 .tally-row::-webkit-scrollbar{display:none;}
 .tally{flex:0 0 86px;position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;
   padding:13px 6px;border-radius:14px;cursor:pointer;border:1px solid rgba(212,168,108,.3);
@@ -364,7 +367,7 @@ body.locked{overflow:hidden;touch-action:none;}
 .coins{display:flex;gap:7px;align-items:center;}
 .coin{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--gold);}
 .coin.full{background:radial-gradient(circle at 38% 32%,var(--gold-soft),var(--gold));}
-.coin.empty{opacity:.45;}
+.coins-empty{font-family:Georgia,serif;font-style:italic;font-size:14px;color:#b9908f;}
 .giri-card .right{text-align:right;font-family:Arial,sans-serif;}
 .giri-card .right .big{font-family:Georgia,serif;font-size:16px;color:var(--gold-soft);}
 .giri-card .right .mut{font-size:11px;color:#b9908f;}

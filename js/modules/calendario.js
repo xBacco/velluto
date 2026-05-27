@@ -8,6 +8,7 @@ import {
   listTipi, seedTipi, addTipo, updateTipo, deleteTipo,
 } from '../store.js';
 import { fotoEditor, loadThumbsInto, loadCoverInto } from './foto.js';
+import { renderDati } from './dati.js';
 
 let ctx = null;        // { client, me, panel }
 let rows = [];         // esperienze della coppia
@@ -51,6 +52,11 @@ function draw() {
   const byDay = groupByDay(rows);
   const giorni = Object.keys(byDay).sort().reverse().slice(0, 8);
   for (const iso of giorni) p.appendChild(dayBlock(iso, sortByDateDesc(byDay[iso])));
+
+  // I numeri (ex tab "Dati") incorporati in fondo alla pagina
+  const stats = mk('div', 'dati-embed');
+  p.appendChild(stats);
+  renderDati({ client: ctx.client, me: ctx.me, panel: stats }).catch(() => {});
 }
 
 // ---- "Segna al volo · oggi": una tally per tipo, col conteggio di oggi ----
