@@ -256,3 +256,34 @@ test('deleteRuotaContenuto elimina per id', async () => {
   const del = c._calls.find(x => x.op === 'delete');
   assert.equal(del.filters.id, 'id1');
 });
+
+import { segretiDaRivelare } from '../js/lib/logic.js';
+import { listCarte } from '../js/store.js';
+
+test('segretiDaRivelare: oggi nessun buono ha tipo "segreto" -> [] (fetta 💋 spenta)', () => {
+  const buoni = [
+    { tipo: 'regalo', a_id: 'me', stato: 'attivo' },
+    { tipo: 'richiesta', a_id: 'me', stato: 'in_attesa' },
+  ];
+  assert.deepEqual(segretiDaRivelare(buoni, 'me'), []);
+  assert.deepEqual(segretiDaRivelare(undefined, 'me'), []);
+});
+
+test('segretiDaRivelare: filtra segreti attivi ricevuti da me (futura spec segreti)', () => {
+  const buoni = [
+    { id: '1', tipo: 'segreto', a_id: 'me', stato: 'attivo' },
+    { id: '2', tipo: 'segreto', a_id: 'altro', stato: 'attivo' },
+    { id: '3', tipo: 'segreto', a_id: 'me', stato: 'riscattato' },
+  ];
+  assert.deepEqual(segretiDaRivelare(buoni, 'me').map(b => b.id), ['1']);
+});
+
+test('listCarte seleziona dalla tabella carte per couple_id', async () => {
+  const c = fakeClient([
+    { id: '1', couple_id: 'cpl', tipo: 'verita', testo: 'x' },
+    { id: '2', couple_id: 'altra', tipo: 'sfida', testo: 'y' },
+  ]);
+  const data = await listCarte(c, 'cpl');
+  assert.equal(data.length, 1);
+  assert.equal(c._calls[0].table, 'carte');
+});

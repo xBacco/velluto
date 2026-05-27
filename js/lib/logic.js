@@ -337,6 +337,14 @@ export function richiesteInviate(buoni, me) {
   return buoni.filter(b => b.tipo === 'richiesta' && b.stato === 'in_attesa' && b.a_id === me);
 }
 
+// Segreti (buste sigillate) ancora da aprire ricevuti da `me`.
+// NB: 'segreto' non è ancora un tipo valido nel check constraint di `buoni`
+// (oggi solo 'regalo'/'richiesta'), quindi finché i segreti non sono implementati
+// questa ritorna [] e la fetta 💋 della ruota resta spenta. Nessun crash.
+export function segretiDaRivelare(buoni, me) {
+  return (buoni || []).filter(b => b.tipo === 'segreto' && b.a_id === me && b.stato === 'attivo');
+}
+
 // ---- ECONOMIA A GIRI (pure) ----
 export const ECONOMIA = {
   GRATIS_OGNI_GIORNI: 7,   // ogni quanto matura il giro gratis settimanale

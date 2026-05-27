@@ -187,6 +187,14 @@ export async function deleteBuono(client, id) {
   return check(res);
 }
 
+// ---- CARTE (Obbligo o Verità) ----
+// Il modulo ToD non è ancora costruito; la ruota legge il mazzo per la fetta 🃏.
+export async function listCarte(client, coupleId) {
+  const res = await client.from('carte').select('*')
+    .eq('couple_id', coupleId).order('creato', { ascending: false });
+  return check(res);
+}
+
 // ---- ECONOMIA A GIRI (ledger insert-only) ----
 export async function listGiri(client, coupleId) {
   const res = await client.from('giri_movimenti').select('*')
