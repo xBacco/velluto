@@ -267,6 +267,15 @@ export async function getPartner(client, coupleId, meId) {
   return rows.find(r => r.id !== meId) || null;
 }
 
+// ---- PROFILO ----
+export async function updateProfile(client, id, { display_name, avatar } = {}) {
+  const patch = {};
+  if (display_name !== undefined) patch.display_name = display_name;
+  if (avatar !== undefined) patch.avatar = avatar;
+  const res = await client.from('profiles').update(patch).eq('id', id);
+  return check(res);
+}
+
 // ---- LUOGHI (Mappa) ----
 export async function listLuoghi(client, coupleId) {
   const res = await client.from('luoghi').select('*')
