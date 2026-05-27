@@ -1,5 +1,4 @@
 .superpowers/
 node_modules/
-config.js
 .DS_Store
 .playwright-mcp/
