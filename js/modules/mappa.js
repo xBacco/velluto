@@ -339,3 +339,6 @@ function startAdd() {
 
 // Il FAB globale delega al tab corrente via evento 'fab:<tab>'.
 document.addEventListener('fab:mappa', startAdd);
+
+// Quando il pager porta la mappa in vista, Leaflet deve ricalcolare le dimensioni.
+document.addEventListener('mappa:resize', () => { if (map) map.invalidateSize(); });

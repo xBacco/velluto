@@ -22,6 +22,11 @@ let cur = 'desideri';
 
 const $ = id => document.getElementById(id);
 
+const viewport = () => $('viewport');
+const track = () => $('track');
+let index = 0;                 // pagina corrente
+const rendered = new Set();    // indici già renderizzati
+
 async function boot() {
   const { data: { session } } = await client.auth.getSession();
   if (session) await enterApp();
@@ -46,8 +51,10 @@ async function enterApp() {
   $('app').style.display = '';
   $('fab').style.display = '';
   const gear = $('gear');
-  gear.style.display = '';
-  gear.onclick = () => openTipiSettings({ client, me }, () => render());
+  if (gear) {
+    gear.style.display = '';
+    gear.onclick = () => openTipiSettings({ client, me }, () => renderTab('calendario'));
+  }
   const chip = $('meChip');
   clear(chip);
   add(chip, mk('span', null, me.avatar), mk('span', null, me.display_name + ' · esci'));
@@ -61,45 +68,93 @@ async function enterApp() {
 
 function buildNav() {
   const n = $('nav'); clear(n);
-  for (const [k, i, l] of TABS) {
+  TABS.forEach(([k, i, l], idx) => {
     const b = mk('button'); add(b, mk('span', null, i), mk('span', 'lab', l));
     b.dataset.k = k; b.onclick = () => go(k); n.appendChild(b);
-  }
-  enableSwipe(n);
-}
-
-// swipe orizzontale sulla dock → tab precedente/successiva (con wrap-around)
-function enableSwipe(n) {
-  let startX = null;
-  const navByOffset = d => {
-    const i = TABS.findIndex(t => t[0] === cur);
-    go(TABS[(i + d + TABS.length) % TABS.length][0]);
-  };
-  n.addEventListener('pointerdown', e => { startX = e.clientX; });
-  n.addEventListener('pointerup', e => {
-    if (startX === null) return;
-    const dx = e.clientX - startX; startX = null;
-    if (Math.abs(dx) > 34) navByOffset(dx < 0 ? 1 : -1);
   });
-  n.addEventListener('pointercancel', () => { startX = null; });
-  n.addEventListener('pointerleave', () => { startX = null; });
+  enablePager();
+  layout(false);
+  renderNear();
 }
 
 function go(k) {
-  cur = k;
-  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
-  $('p-' + k).classList.add('on');
-  render();
+  const i = TABS.findIndex(t => t[0] === k);
+  if (i < 0) return;
+  index = i; cur = k;
+  layout(true);
+  renderNear();
 }
 
-function render() {
-  if (cur === 'desideri') renderDesideri({ client, me, panel: $('p-desideri') }).catch(err => toast('Errore: ' + err.message, 'err'));
-  else if (cur === 'calendario') renderCalendario({ client, me, panel: $('p-calendario') }).catch(err => toast('Errore: ' + err.message, 'err'));
-  else if (cur === 'buoni') renderBuoni({ client, me, panel: $('p-buoni') }).catch(err => toast('Errore: ' + err.message, 'err'));
-  else if (cur === 'galleria') renderGalleria({ client, me, panel: $('p-galleria') }).catch(err => toast('Errore: ' + err.message, 'err'));
-  else if (cur === 'giochi') renderGiochi({ client, me, panel: $('p-giochi') }).catch(err => toast('Errore: ' + err.message, 'err'));
-  else if (cur === 'mappa') renderMappa({ client, me, panel: $('p-mappa') }).catch(err => toast('Errore: ' + err.message, 'err'));
+function layout(animate) {
+  const W = viewport().clientWidth;
+  track().style.transition = animate ? 'transform .34s cubic-bezier(.17,.67,.18,1)' : 'none';
+  track().style.transform = 'translateX(' + (-index * W) + 'px)';
+  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.k === cur));
+}
+
+// renderizza la pagina corrente e le adiacenti (lazy, una volta)
+function renderNear() {
+  [index - 1, index, index + 1].forEach(i => {
+    if (i < 0 || i >= TABS.length || rendered.has(i)) return;
+    rendered.add(i);
+    renderTab(TABS[i][0]);
+  });
+  if (cur === 'mappa') setTimeout(() => document.dispatchEvent(new CustomEvent('mappa:resize')), 360);
+}
+
+function renderTab(k) {
+  const map = {
+    desideri:   () => renderDesideri({ client, me, panel: $('p-desideri') }),
+    calendario: () => renderCalendario({ client, me, panel: $('p-calendario') }),
+    buoni:      () => renderBuoni({ client, me, panel: $('p-buoni') }),
+    galleria:   () => renderGalleria({ client, me, panel: $('p-galleria') }),
+    giochi:     () => renderGiochi({ client, me, panel: $('p-giochi') }),
+    mappa:      () => renderMappa({ client, me, panel: $('p-mappa') }),
+  };
+  (map[k] || (() => Promise.resolve()))().catch(err => toast('Errore: ' + err.message, 'err'));
+}
+
+// motore gesto: il track segue il dito, snap al rilascio, niente wrap, mappa = isola
+function enablePager() {
+  const vp = viewport();
+  let startX = 0, startY = 0, dragging = false, decided = false, horiz = false;
+  vp.addEventListener('pointerdown', e => {
+    if (e.target.closest('.mappa-area')) return;   // dentro la mappa: lascia fare a Leaflet
+    dragging = true; decided = false; horiz = false;
+    startX = e.clientX; startY = e.clientY;
+    track().style.transition = 'none';
+    try { vp.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  vp.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    if (!decided) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      decided = true; horiz = Math.abs(dx) > Math.abs(dy);
+      if (!horiz) { dragging = false; return; }     // verticale → scroll nativo della pagina
+    }
+    e.preventDefault();
+    const W = vp.clientWidth;
+    let t = -index * W + dx;
+    const min = -(TABS.length - 1) * W, max = 0;
+    if (t > max) t = max + (t - max) * 0.35;          // rubber-band ai bordi
+    if (t < min) t = min + (t - min) * 0.35;
+    track().style.transform = 'translateX(' + t + 'px)';
+  }, { passive: false });
+  function end(e) {
+    if (!dragging) return;
+    dragging = false;
+    if (!horiz) return;
+    const W = vp.clientWidth;
+    const dx = (e.clientX != null ? e.clientX : startX) - startX;
+    const threshold = W * 0.22;
+    if (dx < -threshold && index < TABS.length - 1) go(TABS[index + 1][0]);
+    else if (dx > threshold && index > 0) go(TABS[index - 1][0]);
+    else layout(true);
+  }
+  vp.addEventListener('pointerup', end);
+  vp.addEventListener('pointercancel', () => { dragging = false; layout(true); });
+  window.addEventListener('resize', () => layout(false));
 }
 
 // il FAB delega al modulo corrente tramite evento
