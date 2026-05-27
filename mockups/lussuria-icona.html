@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mockup · Icona Lussuria</title>
+<style>
+  :root{--gold:#d4a86c;--gold-soft:#e9c98f;--cream:#f3d9b0;--wine:#5c1026;--wine2:#7a1533;--rose:#c2557a;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--cream);min-height:100vh;
+    background:linear-gradient(170deg,#0a0205,#150410);
+    display:flex;flex-direction:column;align-items:center;gap:18px;padding:26px 12px 60px;}
+  h1{font-family:Georgia;font-size:18px;color:var(--gold-soft);font-weight:normal;margin:0;letter-spacing:.5px;}
+  .hint{font-size:12px;color:#9d8478;max-width:380px;text-align:center;line-height:1.5;}
+
+  /* home screen */
+  .home{width:390px;max-width:96vw;border:10px solid #0a0205;border-radius:42px;padding:30px 26px 40px;
+    background:radial-gradient(130% 60% at 50% 0,#3a1320,#0c0207 60%);
+    box-shadow:0 30px 70px rgba(0,0,0,.6),0 0 0 1px rgba(212,168,108,.16);}
+  .clock{text-align:center;font-family:Georgia;color:#f3d9b0;opacity:.85;margin-bottom:24px;}
+  .clock .t{font-size:46px;line-height:1;}
+  .clock .d{font-size:13px;opacity:.7;margin-top:4px;}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 14px;}
+  .app{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+  .ico{width:62px;height:62px;border-radius:15px;overflow:hidden;position:relative;
+    box-shadow:0 6px 14px rgba(0,0,0,.5);outline:2px solid transparent;transition:outline .15s,transform .15s;}
+  .app.sel .ico{outline:2px solid var(--gold);transform:scale(1.06);}
+  .app .nm{font-size:11px;color:#e7d4c2;}
+  .app.sel .nm{color:var(--gold-soft);}
+  .ico svg{width:100%;height:100%;display:block;}
+  .filler .ico{background:linear-gradient(160deg,#2a2230,#14101a);opacity:.5;}
+  .pick{font-size:12.5px;color:var(--gold-soft);min-height:18px;}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:390px;}
+  .legend span{font-size:11px;color:#9d8478;background:rgba(122,21,51,.18);border:1px solid rgba(212,168,108,.18);
+    border-radius:12px;padding:5px 9px;}
+</style>
+</head>
+<body>
+  <h1>Mockup · Icona «Lussuria» sulla Home</h1>
+  <div class="hint">Sei direzioni per l'icona installata. Toccane una per selezionarla e dimmi il numero che preferisci (o un mix). Le altre app sono finte, servono solo a darti il contesto.</div>
+
+  <div class="home">
+    <div class="clock"><div class="t">21:30</div><div class="d">mercoledì 27 maggio</div></div>
+    <div class="grid" id="grid">
+      <!-- 1 · Monogramma L -->
+      <div class="app" data-n="1">
+        <div class="ico"><svg viewBox="0 0 100 100">
+          <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#7a1533"/><stop offset="1" stop-color="#3d0a1a"/></linearGradient></defs>
+          <rect width="100" height="100" fill="url(#g1)"/>
+          <text x="50" y="72" font-family="Georgia,serif" font-size="64" fill="#e9c98f" text-anchor="middle" font-style="italic">L</text>
+        </svg></div>
+        <div class="nm">Lussuria</div>
+      </div>
+
+      <!-- 2 · Fiamma -->
+      <div class="app" data-n="2">
+        <div class="ico"><svg viewBox="0 0 100 100">
+          <defs><radialGradient id="g2" cx="50%" cy="65%" r="60%">
+            <stop offset="0" stop-color="#3a0d1c"/><stop offset="1" stop-color="#120308"/></radialGradient>
+            <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0" stop-color="#7a1533"/><stop offset=".5" stop-color="#c2557a"/><stop offset="1" stop-color="#e9c98f"/></linearGradient></defs>
+          <rect width="100" height="100" fill="url(#g2)"/>
+          <path d="M50 22 C40 40 30 46 36 64 C39 76 50 82 50 82 C50 82 61 76 64 64 C70 46 60 40 50 22 Z" fill="url(#fl)"/>
+          <path d="M50 48 C46 56 44 60 48 68 C50 73 50 74 50 74 C50 74 53 70 53 64 C53 56 50 54 50 48 Z" fill="#160409" opacity=".55"/>
+        </svg></div>
+        <div class="nm">Lussuria</div>
+      </div>
+
+      <!-- 3 · Bacio / labbra -->
+      <div class="app" data-n="3">
+        <div class="ico"><svg viewBox="0 0 100 100">
+          <defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#2a0813"/><stop offset="1" stop-color="#5c1026"/></linearGradient>
+            <linearGradient id="lip" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#e9c98f"/><stop offset="1" stop-color="#c2557a"/></linearGradient></defs>
+          <rect width="100" height="100" fill="url(#g3)"/>
+          <path d="M30 46 C36 40 46 40 50 46 C54 40 64 40 70 46 C66 56 58 64 50 64 C42 64 34 56 30 46 Z" fill="url(#lip)"/>
+          <path d="M30 46 C40 48 60 48 70 46" stroke="#2a0813" stroke-width="2" fill="none" opacity=".6"/>
+        </svg></div>
+        <div class="nm">Lussuria</div>
+      </div>
+
+      <!-- 4 · Sigillo di ceralacca -->
+      <div class="app" data-n="4">
+        <div class="ico"><svg viewBox="0 0 100 100">
+          <defs><radialGradient id="g4" cx="40%" cy="35%" r="75%">
+            <stop offset="0" stop-color="#241018"/><stop offset="1" stop-color="#0e0206"/></radialGradient>
+            <radialGradient id="wax" cx="38%" cy="32%" r="75%">
+            <stop offset="0" stop-color="#a8324a"/><stop offset="1" stop-color="#5c1026"/></radialGradient></defs>
+          <rect width="100" height="100" fill="url(#g4)"/>
+          <circle cx="50" cy="52" r="26" fill="url(#wax)" stroke="#7a1533" stroke-width="2"/>
+          <circle cx="50" cy="52" r="20" fill="none" stroke="#e9c98f" stroke-width="1" opacity=".5"/>
+          <text x="50" y="63" font-family="Georgia,serif" font-size="28" fill="#e9c98f" text-anchor="middle" font-style="italic">L</text>
+        </svg></div>
+        <div class="nm">Lussuria</div>
+      </div>
+
+      <!-- 5 · Candela -->
+      <div class="app" data-n="5">
+        <div class="ico"><svg viewBox="0 0 100 100">
+          <defs><radialGradient id="g5" cx="50%" cy="40%" r="65%">
+            <stop offset="0" stop-color="#3a1320"/><stop offset="1" stop-color="#0c0207"/></radialGradient>
+            <radialGradient id="halo" cx="50%" cy="34%" r="30%">
+            <stop offset="0" stop-color="#e9c98f" stop-opacity=".55"/><stop offset="1" stop-color="#e9c98f" stop-opacity="0"/></radialGradient></defs>
+          <rect width="100" height="100" fill="url(#g5)"/>
+          <circle cx="50" cy="40" r="28" fill="url(#halo)"/>
+          <rect x="43" y="46" width="14" height="34" rx="3" fill="#f3d9b0"/>
+          <rect x="43" y="46" width="6" height="34" rx="3" fill="#fff" opacity=".4"/>
+          <path d="M50 28 C46 35 47 40 50 43 C53 40 54 35 50 28 Z" fill="#e9c98f"/>
+          <line x1="50" y1="43" x2="50" y2="47" stroke="#7a4a30" stroke-width="2"/>
+        </svg></div>
+        <div class="nm">Lussuria</div>
+      </div>
+
+      <!-- 6 · Ciliegie -->
+      <div class="app" data-n="6">
+        <div class="ico"><svg viewBox="0 0 100 100">
+          <defs><linearGradient id="g6" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#2a0813"/><stop offset="1" stop-color="#3d0a1a"/></linearGradient>
+            <radialGradient id="ch" cx="38%" cy="35%" r="70%">
+            <stop offset="0" stop-color="#c2557a"/><stop offset="1" stop-color="#7a1533"/></radialGradient></defs>
+          <rect width="100" height="100" fill="url(#g6)"/>
+          <path d="M52 30 C60 38 72 40 74 34" stroke="#d4a86c" stroke-width="2.4" fill="none"/>
+          <path d="M52 30 C50 44 44 52 40 58" stroke="#d4a86c" stroke-width="2.4" fill="none"/>
+          <path d="M52 30 C58 44 62 54 64 60" stroke="#d4a86c" stroke-width="2.4" fill="none"/>
+          <circle cx="38" cy="64" r="13" fill="url(#ch)"/>
+          <circle cx="66" cy="66" r="13" fill="url(#ch)"/>
+          <circle cx="34" cy="60" r="4" fill="#e9c98f" opacity=".5"/>
+          <circle cx="62" cy="62" r="4" fill="#e9c98f" opacity=".5"/>
+        </svg></div>
+        <div class="nm">Lussuria</div>
+      </div>
+
+      <div class="app filler"><div class="ico"></div><div class="nm">&nbsp;</div></div>
+      <div class="app filler"><div class="ico"></div><div class="nm">&nbsp;</div></div>
+    </div>
+  </div>
+
+  <div class="pick" id="pick">Toccane una per sceglierla</div>
+  <div class="legend">
+    <span>1 · Monogramma L</span><span>2 · Fiamma</span><span>3 · Bacio</span>
+    <span>4 · Sigillo di ceralacca</span><span>5 · Candela</span><span>6 · Ciliegie</span>
+  </div>
+
+<script>
+  const pick=document.getElementById('pick');
+  document.querySelectorAll('.app[data-n]').forEach(a=>{
+    a.onclick=()=>{
+      document.querySelectorAll('.app').forEach(x=>x.classList.remove('sel'));
+      a.classList.add('sel');
+      pick.textContent='Hai scelto la #'+a.dataset.n;
+    };
+  });
+</script>
+</body>
+</html>

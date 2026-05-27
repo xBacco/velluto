@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mockup · Impostazioni Lussuria</title>
+<style>
+  :root{
+    --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+    --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a;
+    --ok:#7fb069; --err:#e0556a; --spin:cubic-bezier(.17,.67,.18,1);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;
+    background:linear-gradient(170deg,#0a0205,#150410);
+    display:flex;flex-direction:column;align-items:center;gap:16px;padding:22px 12px 56px;}
+  .sans,input,button,.muted{font-family:Arial,Helvetica,sans-serif;}
+  h1.page{font-size:18px;letter-spacing:.5px;color:var(--gold-soft);margin:0;font-weight:normal;}
+  .hint{font-family:Arial;font-size:12px;color:#9d8478;max-width:360px;text-align:center;line-height:1.5;}
+
+  .phone{width:390px;max-width:96vw;height:768px;max-height:84vh;position:relative;
+    border:10px solid #0a0205;border-radius:42px;overflow:hidden;
+    box-shadow:0 30px 70px rgba(0,0,0,.6),0 0 0 1px rgba(212,168,108,.18);
+    background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+               linear-gradient(170deg,var(--bg),var(--bg2));}
+
+  .behind{position:absolute;inset:0;padding:26px 16px;opacity:.5;filter:saturate(.7);pointer-events:none;}
+  .behind .topbar{display:flex;justify-content:space-between;align-items:center;}
+  .behind .brand{font-size:24px;color:var(--gold);letter-spacing:1px;}
+  .behind .chip{font-family:Arial;font-size:13px;color:var(--cream);background:rgba(122,21,51,.4);
+    border:1px solid rgba(212,168,108,.3);border-radius:20px;padding:7px 12px;pointer-events:auto;cursor:pointer;}
+  .behind .blk{height:90px;border-radius:16px;margin-top:14px;
+    background:linear-gradient(160deg,rgba(122,21,51,.25),rgba(92,16,38,.1));border:1px solid rgba(212,168,108,.12);}
+
+  .scrim{position:absolute;inset:0;background:rgba(8,2,5,.66);backdrop-filter:blur(3px);
+    opacity:0;pointer-events:none;transition:opacity .3s;}
+  .scrim.show{opacity:1;pointer-events:auto;}
+
+  .sheet{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;
+    background:linear-gradient(175deg,#1d0610,#11040a);
+    transform:translateY(100%);transition:transform .42s var(--spin);}
+  .sheet.show{transform:translateY(0);}
+
+  /* two stacked views (main + svuota) */
+  .views{flex:1 1 auto;position:relative;overflow:hidden;}
+  .view{position:absolute;inset:0;display:flex;flex-direction:column;transition:transform .34s var(--spin);}
+  #vMain{transform:translateX(0);}
+  #vMain.pushed{transform:translateX(-30%);opacity:.4;}
+  #vSvuota{transform:translateX(100%);}
+  #vSvuota.show{transform:translateX(0);}
+
+  .head{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 14px;
+    border-bottom:1px solid rgba(212,168,108,.16);flex:0 0 auto;}
+  .head h2{margin:0;font-size:20px;color:var(--gold-soft);font-weight:normal;letter-spacing:.5px;}
+  .head .back{font-family:Arial;background:transparent;border:0;color:var(--gold-soft);font-size:15px;cursor:pointer;display:flex;align-items:center;gap:5px;}
+  .x{font-family:Arial;background:rgba(212,168,108,.12);border:1px solid rgba(212,168,108,.25);
+    color:var(--cream);width:34px;height:34px;border-radius:50%;font-size:17px;cursor:pointer;}
+  .body{overflow:auto;padding:6px 16px 26px;flex:1 1 auto;}
+
+  .sec{margin-top:20px;}
+  .sec-t{font-family:Arial;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;
+    color:#a87e6a;margin:0 4px 9px;}
+  .card{background:rgba(122,21,51,.16);border:1px solid rgba(212,168,108,.16);border-radius:16px;padding:4px 14px;}
+  .card.pad{padding:14px;}
+
+  /* generic row */
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 2px;
+    border-bottom:1px solid rgba(212,168,108,.1);}
+  .row:last-child{border-bottom:0;}
+  .row .l{display:flex;align-items:center;gap:11px;min-width:0;}
+  .row .em{font-size:19px;flex:0 0 auto;}
+  .row .nm{font-size:15px;}
+  .row .sub{font-family:Arial;font-size:11px;color:#9d8478;margin-top:1px;}
+  .chev{color:#a87e6a;font-size:18px;font-family:Arial;}
+  .row.tap{cursor:pointer;}
+
+  /* switch */
+  .sw{width:46px;height:27px;border-radius:14px;background:rgba(8,2,5,.6);border:1px solid rgba(212,168,108,.3);
+    position:relative;cursor:pointer;transition:.2s;flex:0 0 auto;}
+  .sw.on{background:linear-gradient(180deg,#a8324a,#7a1533);border-color:#a8324a;}
+  .sw .knob{position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:#f3d9b0;transition:.2s;}
+  .sw.on .knob{left:21px;}
+
+  /* profilo */
+  .prof{display:flex;align-items:center;gap:14px;padding:10px 0;}
+  .avatar{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-size:30px;
+    background:radial-gradient(circle at 35% 30%,rgba(212,168,108,.35),rgba(92,16,38,.5));
+    border:1px solid rgba(212,168,108,.4);cursor:pointer;position:relative;flex:0 0 auto;}
+  .avatar .pen{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:50%;
+    background:var(--wine2);border:1px solid var(--gold);display:grid;place-items:center;font-size:11px;}
+  .grow{flex:1 1 auto;min-width:0;}
+  label.lbl{font-family:Arial;font-size:11px;color:#9d8478;display:block;margin:0 0 4px 2px;}
+  input.fld{width:100%;font-family:Arial;font-size:15px;color:var(--cream);background:rgba(8,2,5,.5);
+    border:1px solid rgba(212,168,108,.25);border-radius:11px;padding:10px 12px;}
+  input.fld:focus{outline:none;border-color:var(--gold);}
+  .picker{display:none;grid-template-columns:repeat(6,1fr);gap:6px;padding:4px 0 12px;}
+  .picker.show{display:grid;}
+  .picker button{font-size:22px;background:rgba(8,2,5,.4);border:1px solid transparent;border-radius:10px;padding:7px 0;cursor:pointer;}
+  .picker button:hover{border-color:rgba(212,168,108,.4);}
+
+  .chips{display:flex;flex-wrap:wrap;gap:7px;padding:12px 0;}
+  .chip2{font-family:Arial;font-size:13px;background:rgba(8,2,5,.45);border:1px solid rgba(212,168,108,.25);
+    border-radius:18px;padding:7px 11px;display:flex;align-items:center;gap:7px;}
+  .chip2 .del{color:var(--rose);cursor:pointer;font-size:15px;}
+  .chip2.add{color:var(--gold-soft);border-style:dashed;cursor:pointer;}
+
+  .logout{width:100%;font-family:Arial;font-size:15px;color:var(--cream);
+    background:rgba(8,2,5,.5);border:1px solid rgba(212,168,108,.25);border-radius:13px;padding:13px;cursor:pointer;}
+  .appinfo{text-align:center;font-family:Arial;font-size:11.5px;color:#7a6358;margin-top:22px;}
+  .appinfo .nm{font-family:Georgia;font-size:16px;color:var(--gold);letter-spacing:2px;}
+  .appinfo .inst{display:inline-block;margin-top:10px;color:var(--gold-soft);border:1px solid rgba(212,168,108,.3);
+    border-radius:11px;padding:8px 14px;cursor:pointer;}
+
+  /* svuota checklist */
+  .check{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid rgba(212,168,108,.1);cursor:pointer;}
+  .check:last-child{border-bottom:0;}
+  .box{width:24px;height:24px;border-radius:7px;border:1.5px solid rgba(212,168,108,.4);flex:0 0 auto;
+    display:grid;place-items:center;color:#fff;font-size:15px;font-family:Arial;}
+  .check.on .box{background:linear-gradient(180deg,#a8324a,#7a1533);border-color:#a8324a;}
+  .check .nm{font-size:15px;}
+  .check .sub{font-family:Arial;font-size:11px;color:#9d8478;margin-top:1px;}
+  .wipe-cta{width:100%;font-family:Arial;font-size:15px;color:#fff;margin-top:18px;
+    background:linear-gradient(180deg,#a8324a,#7a1533);border:0;border-radius:13px;padding:14px;cursor:pointer;}
+  .wipe-note{font-family:Arial;font-size:11.5px;color:#9d8478;text-align:center;margin-top:12px;line-height:1.5;}
+
+  .confirm{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:24px;z-index:5;
+    background:rgba(8,2,5,.8);backdrop-filter:blur(4px);}
+  .confirm.show{display:flex;}
+  .confirm .cbox{background:linear-gradient(175deg,#26080f,#16050c);border:1px solid rgba(224,85,106,.4);
+    border-radius:18px;padding:22px;max-width:300px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.6);}
+  .confirm h3{margin:0 0 8px;color:var(--err);font-weight:normal;font-size:18px;}
+  .confirm p{font-family:Arial;font-size:13px;color:#cbb09c;line-height:1.55;margin:0 0 16px;}
+  .confirm .crow{display:flex;gap:9px;}
+  .confirm .crow button{flex:1;font-family:Arial;font-size:14px;border-radius:11px;padding:11px;cursor:pointer;}
+  .confirm .ann{background:transparent;border:1px solid rgba(212,168,108,.3);color:var(--cream);}
+  .confirm .go{background:linear-gradient(180deg,#a8324a,#7a1533);border:0;color:#fff;}
+</style>
+</head>
+<body>
+  <h1 class="page">Mockup · Impostazioni «Lussuria»</h1>
+  <div class="hint">Tocca il chip del profilo in alto a destra per aprire (schermo intero). Tutto è cliccabile: cambia icona, nome, interruttori, tag, e prova "Svuota dati" → apre la sotto-schermata con la checklist.</div>
+
+  <div class="phone">
+    <div class="behind">
+      <div class="topbar"><div class="brand">Lussuria</div><div class="chip" id="openChip">🔥 Tomas</div></div>
+      <div class="blk"></div><div class="blk"></div><div class="blk"></div>
+    </div>
+
+    <div class="scrim" id="scrim"></div>
+
+    <div class="sheet" id="sheet">
+      <div class="views">
+
+        <!-- ===== VIEW MAIN ===== -->
+        <div class="view" id="vMain">
+          <div class="head"><h2>Impostazioni</h2><button class="x" id="btnClose">✕</button></div>
+          <div class="body">
+
+            <div class="sec">
+              <div class="sec-t">Profilo</div>
+              <div class="card pad">
+                <div class="prof">
+                  <div class="avatar" id="avatar"><span id="face">🐻</span><div class="pen">✎</div></div>
+                  <div class="grow"><label class="lbl">Il tuo nome</label><input class="fld" value="Tomas"></div>
+                </div>
+                <div class="picker" id="picker"></div>
+              </div>
+            </div>
+
+            <div class="sec">
+              <div class="sec-t">Privacy &amp; blocco</div>
+              <div class="card">
+                <div class="row">
+                  <div class="l"><span class="em">🔒</span><div><div class="nm">Blocco con codice</div><div class="sub">Chiede un PIN all'apertura</div></div></div>
+                  <div class="sw on" data-sw></div>
+                </div>
+                <div class="row tap" data-toast="Apre: imposta/cambia PIN">
+                  <div class="l"><span class="em">🔑</span><div><div class="nm">Cambia codice</div></div></div>
+                  <span class="chev">›</span>
+                </div>
+                <div class="row">
+                  <div class="l"><span class="em">👆</span><div><div class="nm">Face ID / impronta</div><div class="sub">Sblocco biometrico dove disponibile</div></div></div>
+                  <div class="sw on" data-sw></div>
+                </div>
+                <div class="row">
+                  <div class="l"><span class="em">🙈</span><div><div class="nm">Modalità pudica</div><div class="sub">Sfoca foto e contenuti spinti</div></div></div>
+                  <div class="sw" data-sw></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sec">
+              <div class="sec-t">Personalizza</div>
+              <div class="card">
+                <div class="row" style="flex-direction:column;align-items:stretch;">
+                  <div class="l" style="justify-content:space-between;"><div class="l"><span class="em">🏷️</span><div class="nm">Tag del calendario</div></div></div>
+                  <div class="chips" id="chips"></div>
+                </div>
+                <div class="row tap" data-toast="Apre: proposte piccanti e buoni a sorpresa della ruota">
+                  <div class="l"><span class="em">🎲</span><div><div class="nm">Contenuti dei giochi</div><div class="sub">Proposte piccanti · buoni a sorpresa</div></div></div>
+                  <span class="chev">›</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="sec">
+              <div class="sec-t">Dati</div>
+              <div class="card">
+                <div class="row tap" id="goSvuota">
+                  <div class="l"><span class="em">🗑️</span><div><div class="nm">Svuota dati</div><div class="sub">Scegli quali sezioni azzerare</div></div></div>
+                  <span class="chev">›</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="sec">
+              <div class="sec-t">Account</div>
+              <div class="card">
+                <div class="row tap" data-toast="Apre: cambia password">
+                  <div class="l"><span class="em">🔐</span><div class="nm">Cambia password</div></div>
+                  <span class="chev">›</span>
+                </div>
+              </div>
+              <button class="logout" style="margin-top:12px;">Esci da Lussuria</button>
+            </div>
+
+            <div class="appinfo">
+              <div class="nm">LUSSURIA</div>
+              <div>il vostro spazio · v1.0</div>
+              <div class="inst">📲 Installa sulla Home</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ===== VIEW SVUOTA ===== -->
+        <div class="view" id="vSvuota">
+          <div class="head">
+            <button class="back" id="btnBack">‹ Indietro</button>
+            <h2 style="font-size:17px">Svuota dati</h2>
+            <button class="x" id="btnClose2">✕</button>
+          </div>
+          <div class="body">
+            <div class="sec" style="margin-top:8px">
+              <div class="sec-t">Seleziona cosa azzerare</div>
+              <div class="card" id="checklist"></div>
+            </div>
+            <button class="wipe-cta" id="wipeBtn">Svuota le sezioni selezionate</button>
+            <div class="wipe-note">L'azione è definitiva e vale per tutta la coppia. Verrà chiesta una conferma prima di cancellare.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="confirm" id="confirm">
+      <div class="cbox">
+        <h3>Sei sicuro?</h3>
+        <p id="confirmTxt"></p>
+        <div class="crow">
+          <button class="ann" id="cAnn">Annulla</button>
+          <button class="go" id="cGo">Sì, svuota</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const EMOJI = ['🐻','🧁','🦊','🦋','🐰','🐱','🐺','🦌','🌹','🍑','🔥','💋','🍒','🌙','⭐','🥃','🍫','🐝','🦢','🕯️','🍓','💎'];
+  const TAGS = ['🌶️ Scopata','🍑 Anale','🫦 Pompino','👅 Leccata'];
+  const SECTIONS = [
+    ['🔥','Desideri & fantasie','tutti i desideri della coppia'],
+    ['📅','Esperienze','momenti, eventi, voti e foto del calendario'],
+    ['🎟️','Buoni','tutti i buoni e le foto collegate'],
+    ['🎲','Giochi','giri, storico ruota e partite di strip poker'],
+    ['🗺️','Luoghi','tutti i luoghi sulla mappa e le foto'],
+    ['🏷️','Tag','riporta i tag ai default'],
+  ];
+  function el(t,c){const e=document.createElement(t); if(c)e.className=c; return e;}
+
+  // emoji picker
+  const picker=document.getElementById('picker'), face=document.getElementById('face');
+  EMOJI.forEach(e=>{const b=el('button'); b.textContent=e; b.onclick=()=>{face.textContent=e; picker.classList.remove('show');}; picker.appendChild(b);});
+  document.getElementById('avatar').onclick=()=>picker.classList.toggle('show');
+
+  // tags
+  const chips=document.getElementById('chips');
+  TAGS.forEach(x=>{const c=el('div','chip2'); c.append(document.createTextNode(x)); const d=el('span','del'); d.textContent='×'; d.onclick=()=>c.remove(); c.appendChild(d); chips.appendChild(c);});
+  const addc=el('div','chip2 add'); addc.textContent='+ aggiungi'; chips.appendChild(addc);
+
+  // switches
+  document.querySelectorAll('[data-sw]').forEach(s=>s.onclick=()=>s.classList.toggle('on'));
+
+  // toast rows (mockup)
+  document.querySelectorAll('[data-toast]').forEach(r=>r.onclick=()=>alert(r.dataset.toast));
+
+  // checklist
+  const checklist=document.getElementById('checklist');
+  SECTIONS.forEach(([em,nm,sub])=>{
+    const row=el('div','check');
+    const box=el('div','box');
+    const txt=el('div'); const n=el('div','nm'); n.textContent=em+' '+nm; const s=el('div','sub'); s.textContent=sub; txt.append(n,s);
+    row.append(box,txt);
+    row.onclick=()=>{row.classList.toggle('on'); box.textContent=row.classList.contains('on')?'✓':'';};
+    checklist.appendChild(row);
+  });
+
+  // sheet open/close
+  const scrim=document.getElementById('scrim'), sheet=document.getElementById('sheet');
+  const vMain=document.getElementById('vMain'), vSvuota=document.getElementById('vSvuota');
+  function open(){scrim.classList.add('show'); sheet.classList.add('show');}
+  function close(){scrim.classList.remove('show'); sheet.classList.remove('show'); setTimeout(back,300);}
+  document.getElementById('openChip').onclick=open;
+  scrim.onclick=close;
+  document.getElementById('btnClose').onclick=close;
+  document.getElementById('btnClose2').onclick=close;
+
+  // navigate to svuota
+  function fwd(){vMain.classList.add('pushed'); vSvuota.classList.add('show');}
+  function back(){vMain.classList.remove('pushed'); vSvuota.classList.remove('show');}
+  document.getElementById('goSvuota').onclick=fwd;
+  document.getElementById('btnBack').onclick=back;
+
+  // wipe confirm
+  const confirm=document.getElementById('confirm'), confirmTxt=document.getElementById('confirmTxt');
+  document.getElementById('wipeBtn').onclick=()=>{
+    const sel=[...checklist.querySelectorAll('.check.on .nm')].map(n=>n.textContent.trim());
+    if(!sel.length){alert('Seleziona almeno una sezione'); return;}
+    confirmTxt.textContent='Stai per svuotare: '+sel.join(', ')+'. Questa azione non si può annullare.';
+    confirm.classList.add('show');
+  };
+  document.getElementById('cAnn').onclick=()=>confirm.classList.remove('show');
+  document.getElementById('cGo').onclick=()=>confirm.classList.remove('show');
+</script>
+</body>
+</html>
