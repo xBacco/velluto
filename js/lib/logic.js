@@ -243,13 +243,55 @@ export function giornoRecord(events, prefisso = null) {
   return { iso: bestIso, n: best };
 }
 
-// Record per tipo (di sempre): per ogni tipo il giorno col massimo di eventi di quel tipo.
-// → [{tipo, iso, n}] nell'ordine dei tipi (n 0 / iso null se il tipo non ha eventi).
-export function recordPerTipo(events, tipi) {
-  return tipi.map(t => {
-    const rec = giornoRecord(events.filter(e => e.tipo_id === t.id));
-    return { tipo: t, iso: rec.iso, n: rec.n };
-  });
+// Sotto-categorie hardcoded (match per etichetta, case-insensitive): un figlio conta nel record
+// del padre e ha anche un suo record a parte. Es. un'anale è comunque una scopata.
+export const SOTTO_CATEGORIE = { scopata: ['anale'] };
+
+// Dai tipi della coppia ricava le relazioni padre→figlio secondo SOTTO_CATEGORIE.
+// → { figliDi: {parentId: [tipoFiglio]}, figlioIds: Set(idFiglio) }.
+export function relazioniTipi(tipi) {
+  const byLabel = {};
+  for (const t of tipi) byLabel[(t.label || '').trim().toLowerCase()] = t;
+  const figliDi = {};
+  const figlioIds = new Set();
+  for (const [padreL, figliL] of Object.entries(SOTTO_CATEGORIE)) {
+    const padre = byLabel[padreL];
+    if (!padre) continue;
+    for (const fl of figliL) {
+      const figlio = byLabel[fl];
+      if (!figlio) continue;
+      (figliDi[padre.id] ||= []).push(figlio);
+      figlioIds.add(figlio.id);
+    }
+  }
+  return { figliDi, figlioIds };
+}
+
+// Record combinato padre+figli: giorno col massimo di eventi del padre e dei suoi figli messi insieme.
+// → { iso, n, perFiglio: {childId: n nel giorno record} }.
+export function giornoRecordCombinato(events, parentId, childIds) {
+  const ids = new Set([parentId, ...childIds]);
+  const counts = {};
+  const perDay = {};
+  for (const e of events) {
+    if (!e.data || !ids.has(e.tipo_id)) continue;
+    counts[e.data] = (counts[e.data] || 0) + 1;
+    if (childIds.includes(e.tipo_id)) {
+      (perDay[e.data] ||= {});
+      perDay[e.data][e.tipo_id] = (perDay[e.data][e.tipo_id] || 0) + 1;
+    }
+  }
+  let best = 0, bestIso = null;
+  for (const [iso, n] of Object.entries(counts)) if (n > best) { best = n; bestIso = iso; }
+  return { iso: bestIso, n: best, perFiglio: bestIso ? (perDay[bestIso] || {}) : {} };
+}
+
+// Plurale italiano "buono abbastanza" per le etichette dei tag: anale→anali, scopata→scopate, pompino→pompini.
+export function pluralizzaIt(parola) {
+  const w = (parola || '').trim();
+  if (/a$/i.test(w)) return w.slice(0, -1) + 'e';
+  if (/[eo]$/i.test(w)) return w.slice(0, -1) + 'i';
+  return w;
 }
 
 // Media a settimana nel periodo. 'mese' = giorni trascorsi del mese / 7; 'sempre' = span dal primo evento a oggi.

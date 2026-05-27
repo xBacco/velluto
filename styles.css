@@ -159,6 +159,20 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
 .rec-link:hover,.rec-link:active{border-color:rgba(212,168,108,.5);
   background:linear-gradient(160deg,rgba(122,21,51,.35),rgba(20,4,9,.4));}
 .rec-link .rv{color:var(--gold-soft);}
+/* righe del popup "Record per categoria": corpo a colonna, con sotto-categorie indentate */
+.rrow{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:13px;margin-bottom:8px;
+  border:1px solid rgba(212,168,108,.2);background:linear-gradient(160deg,rgba(92,16,38,.22),rgba(20,4,9,.35));}
+.rrow .re{font-size:24px;}
+.rrow .rbody{flex:1;display:flex;flex-direction:column;}
+.rrow .rk{font-family:Arial,sans-serif;font-size:11px;color:#cbab9e;text-transform:uppercase;letter-spacing:.06em;}
+.rrow .rv{font-size:17px;color:var(--cream);margin-top:2px;}
+.rrow .rv.muted{font-size:14px;}
+.rrow .rv b{color:var(--gold-soft);}
+.rrow .rsub{font-family:Arial,sans-serif;font-size:11.5px;color:var(--rose);margin-top:3px;}
+.rrow .rdate{font-family:Arial,sans-serif;font-size:11px;color:#7e6068;margin-top:2px;}
+.rrow.child{margin-left:26px;border-style:dashed;
+  background:linear-gradient(160deg,rgba(92,16,38,.12),rgba(20,4,9,.28));}
+.rrow.child .re{font-size:20px;}
 .bars-wrap{padding:14px;border-radius:14px;border:1px solid rgba(212,168,108,.22);
   background:rgba(20,4,9,.35);margin-bottom:8px;}
 .bars{display:flex;align-items:flex-end;gap:2px;height:74px;}

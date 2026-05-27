@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   filtraPeriodo, conteggioPerTipo, conteggiGiornalieri,
-  streakAttuale, giornoRecord, recordPerTipo, mediaSettimanale, perGiornoDelMese, nomeMese,
+  streakAttuale, giornoRecord, relazioniTipi, giornoRecordCombinato, pluralizzaIt,
+  mediaSettimanale, perGiornoDelMese, nomeMese,
 } from '../js/lib/logic.js';
 
 // Set di esperienze d'esempio. "oggi" fittizio = 2026-05-27.
@@ -80,17 +81,59 @@ test('giornoRecord: nessun evento -> iso null, n 0', () => {
   assert.equal(r.n, 0);
 });
 
-test('recordPerTipo: una voce per tipo col miglior giorno (di sempre)', () => {
-  const out = recordPerTipo(EVENTI, TIPI);
-  assert.deepEqual(out.map(o => [o.tipo.id, o.iso, o.n]), [
-    ['t1', '2026-05-27', 2], // 2 lo stesso giorno
-    ['t2', '2026-05-26', 1],
-  ]);
+test('relazioniTipi: Anale risulta figlia di Scopata (match per etichetta)', () => {
+  const tipi = [
+    { id: 's', emoji: '🌶️', label: 'Scopata' },
+    { id: 'a', emoji: '🍑', label: 'anale' }, // case-insensitive
+    { id: 'p', emoji: '🫦', label: 'Pompino' },
+  ];
+  const { figliDi, figlioIds } = relazioniTipi(tipi);
+  assert.deepEqual(figliDi['s'].map(t => t.id), ['a']);
+  assert.ok(figlioIds.has('a'));
+  assert.equal(figlioIds.has('p'), false);
+  assert.equal(figliDi['p'], undefined);
 });
 
-test('recordPerTipo: tipo senza eventi -> iso null, n 0', () => {
-  const out = recordPerTipo([{ tipo_id: 't1', data: '2026-05-01' }], TIPI);
-  assert.deepEqual(out[1], { tipo: TIPI[1], iso: null, n: 0 });
+test('relazioniTipi: se manca il padre o il figlio, nessuna relazione', () => {
+  const { figliDi, figlioIds } = relazioniTipi([{ id: 'a', label: 'Anale' }]);
+  assert.deepEqual(figliDi, {});
+  assert.equal(figlioIds.size, 0);
+});
+
+test('giornoRecordCombinato: somma padre+figli, breakdown dei figli nel giorno record', () => {
+  const evs = [
+    { tipo_id: 's', data: '2026-05-27' }, { tipo_id: 's', data: '2026-05-27' }, { tipo_id: 's', data: '2026-05-27' },
+    { tipo_id: 'a', data: '2026-05-27' }, { tipo_id: 'a', data: '2026-05-27' }, // 27: 3 scopate + 2 anali = 5
+    { tipo_id: 'a', data: '2026-05-21' }, { tipo_id: 'a', data: '2026-05-21' }, { tipo_id: 'a', data: '2026-05-21' }, // 21: 3 anali
+  ];
+  const rc = giornoRecordCombinato(evs, 's', ['a']);
+  assert.equal(rc.iso, '2026-05-27');
+  assert.equal(rc.n, 5);
+  assert.deepEqual(rc.perFiglio, { a: 2 });
+});
+
+test('giornoRecordCombinato: nessun evento -> iso null, n 0, perFiglio vuoto', () => {
+  const rc = giornoRecordCombinato([], 's', ['a']);
+  assert.equal(rc.iso, null);
+  assert.equal(rc.n, 0);
+  assert.deepEqual(rc.perFiglio, {});
+});
+
+test('giornoRecord del solo figlio resta separato (record anale a parte)', () => {
+  const evs = [
+    { tipo_id: 'a', data: '2026-05-27' }, { tipo_id: 'a', data: '2026-05-27' },
+    { tipo_id: 'a', data: '2026-05-21' }, { tipo_id: 'a', data: '2026-05-21' }, { tipo_id: 'a', data: '2026-05-21' },
+  ];
+  const rp = giornoRecord(evs.filter(e => e.tipo_id === 'a'));
+  assert.equal(rp.iso, '2026-05-21');
+  assert.equal(rp.n, 3);
+});
+
+test('pluralizzaIt: plurale italiano basilare', () => {
+  assert.equal(pluralizzaIt('anale'), 'anali');
+  assert.equal(pluralizzaIt('scopata'), 'scopate');
+  assert.equal(pluralizzaIt('pompino'), 'pompini');
+  assert.equal(pluralizzaIt('leccata'), 'leccate');
 });
 
 test('mediaSettimanale: "mese" usa i giorni trascorsi del mese', () => {

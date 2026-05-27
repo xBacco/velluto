@@ -1,6 +1,7 @@
 import { mk, add, clear, toast, openSheet } from '../ui.js';
 import {
-  filtraPeriodo, conteggioPerTipo, streakAttuale, recordPerTipo,
+  filtraPeriodo, conteggioPerTipo, streakAttuale, giornoRecord,
+  relazioniTipi, giornoRecordCombinato, pluralizzaIt,
   mediaSettimanale, perGiornoDelMese, nomeMese,
 } from '../lib/logic.js';
 import { listEsperienze, listTipi } from '../store.js';
@@ -95,21 +96,50 @@ function draw() {
   p.appendChild(mk('p', 'muted', 'Ogni barra è un giorno di ' + meseLabel + '; più alta = più momenti.'));
 }
 
-// Popup: il miglior giorno (di sempre) per ogni categoria — un record per tipo.
+// Popup: il miglior giorno (di sempre) per ogni categoria. Le sotto-categorie (es. Anale dentro
+// Scopata) contano nel record del padre — "di cui N anali" — e hanno anche un loro record a parte.
 function openRecordPerCategoria() {
-  const records = recordPerTipo(rows, tipi);
+  const { figliDi, figlioIds } = relazioniTipi(tipi);
   openSheet('🏆 Record per categoria', s => {
     add(s, mk('p', 'muted', 'Il massimo che avete fatto in un solo giorno, per ogni categoria.'));
-    const list = mk('div', 'rec-list'); list.style.marginTop = '12px';
-    for (const r of records) {
-      const row = mk('div', 'rec');
-      const val = r.iso ? `${r.n} in un giorno · ${fmt(r.iso)}` : 'ancora niente';
-      add(row, mk('span', 're', r.tipo.emoji), mk('span', 'rk', r.tipo.label),
-          mk('span', 'rv' + (r.iso ? '' : ' muted'), val));
-      list.appendChild(row);
+    const list = mk('div'); list.style.marginTop = '12px';
+    for (const t of tipi) {
+      if (figlioIds.has(t.id)) continue;              // i figli compaiono sotto il padre
+      const figli = figliDi[t.id] || [];
+      if (figli.length) {
+        const rc = giornoRecordCombinato(rows, t.id, figli.map(f => f.id));
+        const parti = figli
+          .filter(f => rc.perFiglio[f.id])
+          .map(f => `${rc.perFiglio[f.id]} ${pluralizzaIt(f.label).toLowerCase()}`);
+        list.appendChild(recCatRow(t.emoji, t.label, rc.n, rc.iso, parti.length ? 'di cui ' + parti.join(', ') : null, false));
+        for (const f of figli) {
+          const rp = giornoRecord(rows.filter(e => e.tipo_id === f.id));
+          list.appendChild(recCatRow(f.emoji, t.label + ' ' + f.label.toLowerCase(), rp.n, rp.iso, null, true));
+        }
+      } else {
+        const rp = giornoRecord(rows.filter(e => e.tipo_id === t.id));
+        list.appendChild(recCatRow(t.emoji, t.label, rp.n, rp.iso, null, false));
+      }
     }
     s.appendChild(list);
   });
+}
+
+function recCatRow(emoji, label, n, dateIso, sub, child) {
+  const r = mk('div', 'rrow' + (child ? ' child' : ''));
+  r.appendChild(mk('span', 're', emoji));
+  const body = mk('div', 'rbody');
+  body.appendChild(mk('span', 'rk', label));
+  if (n) {
+    const v = mk('span', 'rv'); add(v, mk('b', null, String(n)), document.createTextNode(' in un giorno'));
+    body.appendChild(v);
+    if (sub) body.appendChild(mk('span', 'rsub', sub));
+    if (dateIso) body.appendChild(mk('span', 'rdate', 'il ' + fmt(dateIso)));
+  } else {
+    body.appendChild(mk('span', 'rv muted', 'ancora niente'));
+  }
+  r.appendChild(body);
+  return r;
 }
 
 function fmt(iso) { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; }
