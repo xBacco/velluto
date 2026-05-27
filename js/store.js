@@ -1,6 +1,8 @@
 // Tutte le funzioni ricevono `client` (Supabase) come primo argomento → testabili.
 // Nessun fallimento silenzioso: in caso di error si lancia un'eccezione.
 
+import { ECONOMIA } from './lib/logic.js';
+
 function check({ data, error }) {
   if (error) throw new Error(error.message || 'Errore Supabase');
   return data;
@@ -183,4 +185,28 @@ export async function updateStatoBuono(client, id, patch) {
 export async function deleteBuono(client, id) {
   const res = await client.from('buoni').delete().eq('id', id);
   return check(res);
+}
+
+// ---- ECONOMIA A GIRI (ledger insert-only) ----
+export async function listGiri(client, coupleId) {
+  const res = await client.from('giri_movimenti').select('*')
+    .eq('couple_id', coupleId).order('creato', { ascending: false });
+  return check(res);
+}
+
+// Accredito: delta +1 di default (motivo 'settimanale'/'gioco'/'ancora').
+export async function accreditaGiro(client, { couple_id, user_id, motivo, delta = 1 }) {
+  const res = await client.from('giri_movimenti').insert({ couple_id, user_id, delta, motivo, esito: null });
+  return check(res);
+}
+
+// Spesa di un giro: delta -1, motivo 'giro', esito = chiave della fetta vinta.
+export async function spendiGiro(client, { couple_id, user_id, esito }) {
+  const res = await client.from('giri_movimenti').insert({ couple_id, user_id, delta: -1, motivo: 'giro', esito });
+  return check(res);
+}
+
+// Hook per i giochi: accredita i giri di una vittoria.
+export async function concediGiro(client, { couple_id, user_id }) {
+  return accreditaGiro(client, { couple_id, user_id, motivo: 'gioco', delta: ECONOMIA.GIRI_PER_VITTORIA });
 }

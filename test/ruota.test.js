@@ -4,6 +4,44 @@ import {
   ECONOMIA, saldoGiri, puoGirare, giriEleggibile,
 } from '../js/lib/logic.js';
 
+import {
+  listGiri, accreditaGiro, spendiGiro, concediGiro,
+} from '../js/store.js';
+
+function fakeClient(initialRows = []) {
+  const calls = [];
+  const rows = [...initialRows];
+  function builder() {
+    const state = { table: null, op: null, payload: null, filters: {}, orders: [], single: false };
+    const api = {
+      _state: state,
+      select() { state.op = state.op || 'select'; return api; },
+      insert(p) { state.op = 'insert'; state.payload = p; return api; },
+      update(p) { state.op = 'update'; state.payload = p; return api; },
+      delete() { state.op = 'delete'; return api; },
+      eq(col, val) { state.filters[col] = val; return api; },
+      order(col, opts) { state.orders.push({ col, opts }); return api; },
+      single() { state.single = true; return api; },
+      then(resolve) {
+        calls.push(state);
+        if (state.op === 'select') {
+          const data = rows.filter(r => Object.entries(state.filters).every(([k, v]) => r[k] === v));
+          resolve({ data: state.single ? data[0] : data, error: null });
+        } else if (state.op === 'insert') {
+          const arr = Array.isArray(state.payload) ? state.payload : [state.payload];
+          const created = arr.map((p, i) => ({ id: 'new' + i, ...p }));
+          rows.push(...created);
+          resolve({ data: state.single ? created[0] : created, error: null });
+        } else {
+          resolve({ data: null, error: null });
+        }
+      },
+    };
+    return api;
+  }
+  return { from(table) { const b = builder(); b._state.table = table; return b; }, _calls: calls, _rows: rows };
+}
+
 const mov = (user_id, delta, motivo, creato, esito = null) => ({ user_id, delta, motivo, esito, creato });
 
 test('saldoGiri somma solo i movimenti dell\'utente', () => {
@@ -138,4 +176,40 @@ test('pescaContenuto estrae con rnd e dà null su lista vuota', () => {
   assert.equal(pescaContenuto(l, () => 0).testo, 'x');
   assert.equal(pescaContenuto(l, () => 0.99).testo, 'z');
   assert.equal(pescaContenuto([], () => 0.5), null);
+});
+
+test('listGiri seleziona per couple_id', async () => {
+  const c = fakeClient([
+    { id: '1', couple_id: 'cpl', user_id: 'me', delta: 1, motivo: 'settimanale' },
+    { id: '2', couple_id: 'altra', user_id: 'x', delta: 1, motivo: 'gioco' },
+  ]);
+  const data = await listGiri(c, 'cpl');
+  assert.equal(data.length, 1);
+  assert.equal(c._calls[0].table, 'giri_movimenti');
+});
+
+test('accreditaGiro inserisce delta +1 col motivo dato', async () => {
+  const c = fakeClient();
+  await accreditaGiro(c, { couple_id: 'cpl', user_id: 'me', motivo: 'settimanale' });
+  const ins = c._calls.find(x => x.op === 'insert');
+  assert.equal(ins.payload.delta, 1);
+  assert.equal(ins.payload.motivo, 'settimanale');
+  assert.equal(ins.payload.esito, null);
+});
+
+test('spendiGiro inserisce delta -1, motivo giro, esito', async () => {
+  const c = fakeClient();
+  await spendiGiro(c, { couple_id: 'cpl', user_id: 'me', esito: 'piccante' });
+  const ins = c._calls.find(x => x.op === 'insert');
+  assert.equal(ins.payload.delta, -1);
+  assert.equal(ins.payload.motivo, 'giro');
+  assert.equal(ins.payload.esito, 'piccante');
+});
+
+test('concediGiro accredita motivo gioco con delta = GIRI_PER_VITTORIA', async () => {
+  const c = fakeClient();
+  await concediGiro(c, { couple_id: 'cpl', user_id: 'me' });
+  const ins = c._calls.find(x => x.op === 'insert');
+  assert.equal(ins.payload.motivo, 'gioco');
+  assert.equal(ins.payload.delta, ECONOMIA.GIRI_PER_VITTORIA);
 });
