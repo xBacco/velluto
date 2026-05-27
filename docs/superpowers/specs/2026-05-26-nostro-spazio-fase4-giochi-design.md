@@ -14,7 +14,9 @@ Aggiungere il modulo **Giochi** con quattro giochi, tutti mobile-first, da usare
 sullo stesso telefono, in tema "Velluto notturno":
 
 1. **🎲 Dadi** — tiro libero, client-only (già specificato in v2 §4.5).
-2. **🎡 Ruota** — un giro a settimana a testa, con cooldown (v2 §4.5).
+2. **🎡 Ruota a premi** — **ridisegnata** dal pivot "economia a giri": non più un giro a
+   settimana, ma una **moneta-giro** che si spende per girare e vincere uno di 8 premi.
+   Vedi `2026-05-27-economia-giri-ruota-premi-design.md`.
 3. **🃏 Truth or Dare** — mazzo di carte aggiunte dai due, con carta fisica animata.
 4. **♠️ Strip Poker** — showdown di poker (due modalità), avatar che si spogliano, storico.
 
@@ -29,7 +31,8 @@ sullo stesso telefono, in tema "Velluto notturno":
 - **Una sola tab "Giochi"** con un selettore interno tra i quattro giochi (no quattro tab
   separate nella navigazione principale: resta mobile-first a colonna singola).
 - **Dadi**: nessuna persistenza (in memoria).
-- **Ruota**: persistenza dei giri per il cooldown settimanale (tabella `ruota_giri`, già nel modello v2).
+- **Ruota a premi**: ridisegnata dal pivot "economia a giri" — saldo-giri come **ledger**
+  (`giri_movimenti`), non più la `ruota_giri` settimanale. Dettagli nella spec economia.
 - **Truth or Dare**: mazzo persistente (tabella `carte`, già nel modello v2). La novità Fase 4 è
   l'**esperienza visiva della carta** (fronte, dorso, mescolata, reveal), non lo schema dati.
 - **Strip Poker**:
@@ -48,10 +51,23 @@ sullo stesso telefono, in tema "Velluto notturno":
 - Due dadi: **azione** + **zona del corpo**. Tiro libero, animazione client, **nessun salvataggio**.
 - Contenuti hardcoded (liste in `logic.js`/modulo). Pulsante "Tira".
 
-### 3.2 🎡 Ruota settimanale (invariato rispetto a v2 §4.5)
-- 8 proposte piccanti. **Un giro a settimana per persona** (cooldown indipendente).
-- Si registra `ruota_giri(couple_id, user_id, esito, creato)`. Disponibilità = `now − ultimo_giro ≥ 7 giorni`.
-- In cooldown: conto alla rovescia al prossimo sblocco. Eleggibilità = **funzione pura testabile** (`now` iniettabile).
+### 3.2 🎡 Ruota a premi — RIDISEGNATA (pivot "economia a giri")
+
+> **Questa sezione sostituisce la vecchia "ruota settimanale" (v2 §4.5).** Il design
+> completo e approvato sta in **`2026-05-27-economia-giri-ruota-premi-design.md`**;
+> qui solo il riassunto e l'impatto sulla Fase 4.
+
+- Non più "un giro a settimana": il giro è una **moneta**. Si spende **1 giro** per girare.
+  Fonti: **1 gratis a settimana** (cooldown, funzione pura `giriEleggibile`) + **vinti
+  giocando** (hook `concediGiro`, es. Strip Poker).
+- **8 fette** (una sola estratta a giro): 💋 apri un segreto · 🔥 proposta piccante · 🎁
+  buono a sorpresa · 💌 pesca un desiderio · 🃏 carta ToD · ⭐ jolly · 🎲 tiro dadi · 🔁
+  gira ancora. La fetta 💋 è viva solo se c'è una busta segreto in attesa.
+- Le **8 proposte piccanti** della vecchia ruota diventano **un solo** premio (🔥): ne pesca
+  una. I segreti si **aprono solo** vincendo la fetta 💋 (vedi spec segreti).
+- **Persistenza:** ledger `giri_movimenti` (vedi §4 e spec economia), **non** `ruota_giri`.
+- **Modulo:** `js/modules/ruota.js`, montato dentro la tab Giochi da `giochi.js`. UI, fette,
+  premi, animazioni (spotlight + proiezione di luce + emoji dritte) → spec economia §2/§7/§8.
 
 ### 3.3 🃏 Truth or Dare — CHIUSO (esperienza carta)
 
@@ -125,7 +141,8 @@ strip_partite ( id, couple_id, vincitore_id, perdente_id, modalita['draw'|'holde
 
 - **RLS** come le altre tabelle: operazioni consentite solo se `couple_id` appartiene a una
   coppia di cui `auth.uid()` è membro.
-- **Dadi**: nessuna tabella. **Ruota**: `ruota_giri` (già v2). **ToD**: `carte` (già v2).
+- **Dadi**: nessuna tabella. **Ruota a premi**: ledger `giri_movimenti` (spec economia §3);
+  la vecchia `ruota_giri` è **rimossa**. **ToD**: `carte` (già v2).
 - Stato della partita Strip Poker (mano corrente, guardaroba residuo): **solo in memoria**, non persistito.
 
 ---
@@ -134,7 +151,8 @@ strip_partite ( id, couple_id, vincitore_id, perdente_id, modalita['draw'|'holde
 
 Tutte pure (dati in → dati out), `now`/seed iniettabili dove serve:
 
-- `ruotaEleggibile(giri, userId, now)` → `{ ok, prossimoSblocco }` (cooldown 7 giorni).
+- **Economia giri** (spec economia §5): `saldoGiri`, `giriEleggibile(mov, userId, now)`
+  (il vecchio `ruotaEleggibile`, ora sul ledger), `fetteRuota`, `estraiFetta`, `ultimiPremi`.
 - `pescaCarta(carte, { tipo, intensita }, rnd)` → carta filtrata a caso (rnd iniettabile).
 - **Poker** (cuore dello Strip Poker, molto testabile):
   - `mazzo52()` → array carte `{r, s}`.
@@ -153,7 +171,8 @@ Tutte pure (dati in → dati out), `now`/seed iniettabili dove serve:
 
 ## 6. `js/store.js` — funzioni nuove (client iniettato, `check({data,error})`)
 
-- `listRuotaGiri(client, coupleId)` / `addRuotaGiro(client, {couple_id, user_id, esito})`.
+- **Economia giri** (spec economia §6): `listGiri`, `accreditaGiro`, `spendiGiro`,
+  `concediGiro` (hook vittorie giochi). Sostituiscono `listRuotaGiri`/`addRuotaGiro`.
 - ToD: `listCarte`, `addCarta`, `updateCarta`, `deleteCarta` (se non già presenti dalla v2).
 - Strip: `listStripPartite(client, coupleId)` / `addStripPartita(client, {couple_id, vincitore_id, perdente_id, modalita})`.
 
@@ -189,11 +208,11 @@ wiring `fab:<tab>` una sola volta, disegno via `mk/add/clear` (no `innerHTML`), 
 ## 9. Testing
 
 - **Unit (`node --test`)** sulle funzioni pure §5: in particolare **valutazione e confronto mani di poker**
-  (casi: scala vs colore, full vs poker, parità con tie-break, mano più bassa), **eleggibilità ruota**
-  (cooldown), **strip state machine** (togli capo → nudo → risultato), **testa-a-testa**.
-  `store.js` con client Supabase **finto iniettato**.
+  (casi: scala vs colore, full vs poker, parità con tie-break, mano più bassa), **economia giri**
+  (saldo, eleggibilità gratis, estrazione pesata fette), **strip state machine** (togli capo →
+  nudo → risultato), **testa-a-testa**. `store.js` con client Supabase **finto iniettato**.
 - **Smoke Playwright** prima di "fatto": tab Giochi visibile e navigabile; Dadi tira;
-  Ruota gira e **si blocca** se in cooldown; ToD aggiungi carta → mescola → pesca → reveal leggibile;
+  Ruota gira, **scala il saldo** e si **blocca a 0 giri**; ToD aggiungi carta → mescola → pesca → reveal leggibile;
   Strip una partita completa in **entrambe** le modalità fino al pop-up, storico che **si aggiorna**;
   layout corretto a viewport mobile; persistenza dopo reload (carte, giri ruota, storico strip).
 
@@ -201,8 +220,9 @@ wiring `fab:<tab>` una sola volta, disegno via `mk/add/clear` (no `innerHTML`), 
 
 ## 10. Ordine di build (sotto-fasi)
 
-1. **4a — Dadi + Ruota**: modulo `giochi.js`, selettore, Dadi (in memoria), Ruota con cooldown
-   (`ruota_giri` + RLS + `ruotaEleggibile`). Wiring tab in `app.js`.
+1. **4a — Dadi + Ruota a premi**: `giochi.js` (selettore) + Dadi (in memoria, **già fatto**)
+   + Ruota a premi (`ruota.js`, ledger `giri_movimenti` + RLS + economia giri). Dettagli e
+   sotto-passi nella spec economia. Wiring tab in `app.js`.
 2. **4b — Truth or Dare**: `tod.js`, gestione mazzo, esperienza carta (fronte Editoriale + dorso
    filetto-oro + Cascata + ventaglio + reveal), unendo i tre mockup.
 3. **4c — Strip Poker**: logica poker pura (con test forti), `strip.js`, avatar + guardaroba,

@@ -1,14 +1,24 @@
 # Coupon segreti — design
 
-**Data:** 2026-05-27
+**Data:** 2026-05-27 (aggiornato 2026-05-27 col pivot "economia a giri")
 **Stato:** approvato (brainstorming chiuso), pronto per il piano di implementazione.
+**Si lega a:** `2026-05-27-economia-giri-ruota-premi-design.md` — **l'apertura di un
+segreto non è più libera**: avviene **solo** vincendo la fetta **💋 apri un segreto**
+alla Ruota a premi.
 
 ## Cos'è
 
 Un quarto tipo di buono: il **segreto**. Chi scrive lascia al partner un messaggio
-nascosto dentro una **busta sigillata** (sigillo a bacio 💋). Il partner lo
-**rivela** aprendo la busta con un'animazione (lettera che rimbalza + pioggia di
-💋/❤️/✨). Una volta aperto, il testo resta visibile nello **Storico**.
+nascosto dentro una **busta sigillata** (sigillo a bacio 💋). Il partner non lo apre
+quando vuole: deve **conquistarsi l'apertura** vincendo il premio **💋 apri un segreto**
+alla **Ruota** (vedi spec economia). Vinto il premio, sceglie **quale** busta aprire e la
+**rivela** con un'animazione (lettera che rimbalza + pioggia di 💋/❤️/✨). Una volta
+aperto, il testo resta visibile nello **Storico**.
+
+> **Cambio rispetto alla prima stesura:** prima il destinatario apriva la busta toccandola
+> nella sotto-tab. Ora la sotto-tab **non apre più**: mostra le buste in attesa come
+> *teaser*, e l'apertura è il flusso lanciato dal premio della Ruota. Tutto il resto
+> (busta, sigillo, animazione, modello dati, civetta, notifiche) resta invariato.
 
 Non è una funzione di sicurezza: il segreto è una **sorpresa a fiducia**, non un
 testo cifrato. Con la RLS `is_member` entrambi i membri leggono comunque tutta la
@@ -34,13 +44,16 @@ riga sul DB. Il "nascosto" è solo UI.
 ## Ciclo di vita
 
 ```
-creato (sigillato) ──[il destinatario apre]──> rivelato ──> Storico
-     stato=attivo                                 stato=riscattato
-                                                  riscattato_il=now
+creato (sigillato) ──[il destinatario vince 💋 alla Ruota e sceglie questa busta]──> rivelato ──> Storico
+     stato=attivo                                                                      stato=riscattato
+                                                                                       riscattato_il=now
 ```
 
 - Solo il **destinatario** (`a_id`) può aprire/rivelare. Il mittente non apre il
   proprio segreto: lo vede "in attesa" finché il partner non lo apre.
+- **L'apertura si guadagna alla Ruota:** non è più un tap libero. Il destinatario apre
+  una busta **solo** quando vince la fetta 💋 e, nel flusso del premio, sceglie **quale**
+  busta tra quelle in attesa. La transizione `'rivela'` parte da lì.
 - L'apertura è **irreversibile**: una volta rivelato resta nello Storico.
 
 ## Modello dati
@@ -109,9 +122,10 @@ policy `buoni_all` (`is_member`) copre già i segreti.
   Sul bottone, se `contaNotificheSegreti(rows, me) > 0`, mostrare il pallino
   (riusa il pattern del badge già presente su "Richieste").
 - **`drawSegreti(p, me)`** con tre sezioni:
-  1. **"Da rivelare · N"** — `segretiDaRivelare`: card-busta sigillate, cliccabili.
-     Tap → apre la modale-busta con l'animazione. Alla chiusura, se il segreto era
-     ancora sigillato, esegue la transizione `'rivela'` (passa allo Storico).
+  1. **"In attesa di aprirsi · N"** — `segretiDaRivelare`: card-busta sigillate **NON
+     cliccabili per aprire** (teaser). Mostrano la civetta + "da {partner}" + un invito
+     tipo "Aprine una vincendo 💋 alla Ruota". L'apertura **non** parte da qui: parte dal
+     flusso del premio Ruota (vedi sotto e spec economia §8).
   2. **"Inviati · in attesa"** — `segretiInviatiSigillati`: card-busta in sola
      lettura (civetta + "in attesa che lo apra"), con azione **Elimina**.
   3. **"Storico · rivelati"** — `segretiStorico`: testo in chiaro (titolo + corpo),
@@ -121,10 +135,14 @@ policy `buoni_all` (`is_member`) copre già i segreti.
   (azzera il pallino lato mittente).
 - **Card-busta sigillata:** sigillo-mini 💋 + riga **civetta** in corsivo (o
   fallback "Un segreto da {partner}") + "da {partner} · {quando}" + chevron.
-- **Modale-busta + animazione:** porta il markup/HTML dei mockup
-  (`coupon-segreti-app.html` / `coupon-segreti-fronte.html`): busta, flap, cera in
-  due metà, lettera (titolo + corpo + firma "— con voglia, {mittente}"), burst di
-  emoji, glow. La lettera mostra `titolo` + `descrizione` (corpo).
+- **Modale-busta + animazione (lanciata dalla Ruota):** è una funzione esportata —
+  es. `apriBustaSegreto(client, me, segreto)` — chiamata dal **flusso del premio
+  Ruota** dopo che l'utente ha scelto quale busta aprire. Porta il markup/HTML dei
+  mockup (`coupon-segreti-app.html` / `coupon-segreti-fronte.html`): busta, flap, cera
+  in due metà, lettera (titolo + corpo + firma "— con voglia, {mittente}"), burst di
+  emoji, glow. La lettera mostra `titolo` + `descrizione` (corpo). Alla fine esegue la
+  transizione `'rivela'` (→ Storico). **Non** esiste più un trigger di apertura dalla
+  sotto-tab: l'unico ingresso è la Ruota.
 - **Creazione (`openCrea`):** aggiungere il tab `💋 Segreto`. Quando selezionato:
   - campi: **Emoji** (default 💋), **Civetta** (facoltativa, placeholder
     «Spegni il telefono alle 21…»), **Titolo della lettera** (obbligatorio),
