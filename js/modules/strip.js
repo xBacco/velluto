@@ -343,8 +343,227 @@ function startGame(sLui, sLei) {
   if (mode === 'holdem') dealHold(); else dealDraw();
 }
 
-// placeholder (sostituiti in 7e/7f)
-function drawTavolo() { clear(host); }
-function resetMano() {}
-function dealHold() {}
-function dealDraw() {}
+// ---------------------------------------------------------------------------
+// 7e — tavolo + flusso mano Hold'em/Draw + passa-il-telefono
+// ---------------------------------------------------------------------------
+function cnt(s) { let n = 0; for (const k in s) n += s[k]; return n; }
+function updateCounts() {
+  if (els.capiM) els.capiM.textContent = cnt(stato.lui) + ' capi';
+  if (els.capiF) els.capiF.textContent = cnt(stato.lei) + ' capi';
+}
+
+function drawTavolo() {
+  clear(host);
+  const root = mk('div', 'strip-root'); els.root = root;
+  add(root, mk('div', 'psub', mode === 'holdem' ? "Strip Poker · Hold'em" : 'Strip Poker · Draw'));
+  add(root, mk('div', 'strip-score', 'Mano più bassa = si toglie un capo'));
+
+  const play = mk('div', 'play');
+
+  // seat Lei (top)
+  const seatF = mk('div', 'seat');
+  const whoF = mk('div', 'who'); whoF.appendChild(document.createTextNode('🧁 '));
+  whoF.appendChild(mk('b', null, 'Lei')); whoF.appendChild(document.createTextNode(' · '));
+  els.capiF = mk('span', 'capi'); whoF.appendChild(els.capiF);
+  els.oppHole = mk('div', 'squeeze');
+  els.oppName = mk('div', 'hand-name');
+  add(seatF, whoF, els.oppHole, els.oppName);
+
+  // felt
+  els.feltWrap = mk('div', 'felt');
+  els.feltLabel = mk('div', 'board-label', 'carte comuni');
+  els.board = mk('div', 'board');
+  add(els.feltWrap, els.feltLabel, els.board);
+
+  els.banner = mk('div', 'banner');
+
+  // seat Lui (bottom)
+  const seatM = mk('div', 'seat');
+  els.meName = mk('div', 'hand-name');
+  els.meHole = mk('div', 'squeeze');
+  const whoM = mk('div', 'who'); whoM.appendChild(document.createTextNode('🐻 '));
+  whoM.appendChild(mk('b', null, 'Lui')); whoM.appendChild(document.createTextNode(' · '));
+  els.capiM = mk('span', 'capi'); whoM.appendChild(els.capiM);
+  add(seatM, els.meName, els.meHole, whoM);
+
+  add(play, seatF, els.feltWrap, els.banner, seatM);
+  root.appendChild(play);
+
+  const foot = mk('div', 'foot');
+  els.hint = mk('div', 'hint');
+  const btnrow = mk('div', 'btnrow');
+  els.cta = mk('button', 'btn', 'Distribuisci'); els.cta.onclick = onCta;
+  els.cta2 = mk('button', 'btn ghost hid', 'Cambia modalità'); els.cta2.onclick = () => drawApertura();
+  add(btnrow, els.cta, els.cta2);
+  add(foot, els.hint, btnrow);
+  root.appendChild(foot);
+
+  host.appendChild(root);
+
+  // tap sull'angolo per sbirciare
+  [els.meHole, els.oppHole].forEach(n => {
+    n.addEventListener('click', () => { if (n.classList.contains('live')) n.classList.toggle('peek'); });
+  });
+
+  els.feltWrap.style.display = (mode === 'holdem') ? 'flex' : 'none';
+  updateCounts();
+}
+
+function resetMano() {
+  deck = mescola(mazzo52()); board = []; discard = [];
+  clear(els.oppHole); els.oppHole.className = 'squeeze';
+  clear(els.meHole); els.meHole.className = 'squeeze';
+  clear(els.board);
+  els.oppName.textContent = ''; els.meName.textContent = '';
+  els.banner.textContent = ''; els.banner.classList.remove('show');
+  phase = 'start';
+  els.cta.classList.remove('hid'); els.cta.textContent = 'Distribuisci'; els.cta2.classList.add('hid');
+  els.hint.textContent = mode === 'holdem'
+    ? "Hold'em: 2 coperte a testa + 5 comuni. Niente puntate."
+    : 'Draw: 5 carte a testa, uno scambio, poi showdown.';
+}
+
+// --- overlay generico (passa il telefono / esiti mano) ---
+let ovAction = null;
+function setTitle(node, parts) {
+  clear(node);
+  parts.forEach(p => {
+    if (typeof p === 'string') node.appendChild(document.createTextNode(p));
+    else node.appendChild(mk('b', null, p.b));
+  });
+}
+function showOv(icon, parts, text, btn, action) {
+  const ov = openOv();
+  ov.appendChild(mk('div', 'eye', icon));
+  const h3 = mk('h3'); setTitle(h3, parts); ov.appendChild(h3);
+  ov.appendChild(mk('p', null, text));
+  const b = mk('button', 'btn', btn); b.onclick = onOv;
+  ov.appendChild(b);
+  ovAction = action;
+}
+function onOv() { const a = ovAction; ovAction = null; closeOv(); if (a) a(); }
+function pass(who, emoji, cb) {
+  showOv(emoji, ['Passa il telefono a ', { b: who }],
+    'Quando ce l\'hai tu, tocca l\'angolo delle carte per sbirciare.', 'Tocca, sono ' + who, cb);
+}
+
+// --- HOLD'EM ---
+function dealHold() {
+  meHole = [deck.pop(), deck.pop()]; oppHole = [deck.pop(), deck.pop()];
+  renderCovered(els.oppHole, oppHole); els.oppHole.classList.remove('live');
+  renderCovered(els.meHole, meHole); els.meHole.classList.remove('live');
+  clear(els.board); els.cta.classList.add('hid');
+  pass('Lui', '🐻', () => {
+    els.meHole.classList.add('live'); els.hint.textContent = 'Tocca l\'angolo delle tue carte per sbirciarle.';
+    els.cta.classList.remove('hid'); els.cta.textContent = 'Nascondi e passa a Lei'; phase = 'hideMe';
+  });
+}
+function peekOpp() {
+  els.meHole.classList.remove('live', 'peek'); els.cta.classList.add('hid');
+  pass('Lei', '🧁', () => {
+    els.oppHole.classList.add('live'); els.hint.textContent = 'Carte di Lei: sbircia l\'angolo, poi vai al tavolo.';
+    els.cta.classList.remove('hid'); els.cta.textContent = 'Vai al tavolo'; phase = 'hideOpp';
+  });
+}
+function toTable() {
+  els.oppHole.classList.remove('peek'); els.meHole.classList.add('live'); els.oppHole.classList.add('live');
+  els.cta.textContent = 'Gira il flop'; els.hint.textContent = 'Carte distribuite. Scopri il flop.'; phase = 'preflop';
+}
+function revealStep() {
+  if (board.length === 0) { board = [deck.pop(), deck.pop(), deck.pop()]; els.feltLabel.textContent = 'flop'; renderBoard(); els.cta.textContent = 'Gira il turn'; els.hint.textContent = 'Flop sul tavolo.'; }
+  else if (board.length === 3) { board.push(deck.pop()); els.feltLabel.textContent = 'turn'; renderBoard(); els.cta.textContent = 'Gira il river'; els.hint.textContent = 'Turn scoperto.'; }
+  else if (board.length === 4) { board.push(deck.pop()); els.feltLabel.textContent = 'river'; renderBoard(); els.cta.textContent = 'Showdown'; els.hint.textContent = 'River scoperto.'; phase = 'river'; }
+}
+function renderBoard() { clear(els.board); board.forEach(c => els.board.appendChild(cardFace(c))); }
+
+// --- DRAW ---
+function dealDraw() {
+  meSet = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()];
+  oppSet = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()];
+  renderCovered(els.oppHole, oppSet); els.oppHole.classList.remove('live');
+  renderCovered(els.meHole, meSet); els.meHole.classList.remove('live'); els.cta.classList.add('hid');
+  pass('Lui', '🐻', () => {
+    discard = []; renderSelect(els.meHole, meSet); els.hint.textContent = 'Tocca le carte da cambiare (max 3).';
+    els.cta.classList.remove('hid'); els.cta.textContent = 'Cambia'; phase = 'drawMe';
+  });
+}
+function applyDrawMe() {
+  discard.forEach(i => meSet[i] = deck.pop()); discard = [];
+  renderShown(els.meHole, meSet); els.hint.textContent = 'Le tue nuove carte. Memorizza e passa a Lei.';
+  els.cta.textContent = 'Nascondi e passa a Lei'; phase = 'seenMe';
+}
+function hideMeDraw() {
+  renderCovered(els.meHole, meSet); els.meHole.classList.remove('live'); els.cta.classList.add('hid');
+  pass('Lei', '🧁', () => {
+    discard = []; renderSelect(els.oppHole, oppSet); els.hint.textContent = 'Carte di Lei da cambiare (max 3).';
+    els.cta.classList.remove('hid'); els.cta.textContent = 'Cambia'; phase = 'drawOpp';
+  });
+}
+function applyDrawOpp() {
+  discard.forEach(i => oppSet[i] = deck.pop()); discard = [];
+  renderShown(els.oppHole, oppSet); els.hint.textContent = 'Nuove carte di Lei. Pronti allo showdown.';
+  els.cta.textContent = 'Showdown'; phase = 'seenOpp';
+}
+
+// --- SHOWDOWN ---
+function showdownHold() {
+  const me = miglioreManoDa7(meHole.concat(board));
+  const op = miglioreManoDa7(oppHole.concat(board));
+  showdown(me, op, meHole, oppHole, me.carte, op.carte);
+}
+function showdownDraw() {
+  const me = valutaMano(meSet); const op = valutaMano(oppSet);
+  showdown(me, op, meSet, oppSet, null, null);
+}
+function showdown(me, op, meCards, opCards, meUse, opUse) {
+  const d = confronta(me, op);
+  const win = d > 0 ? 'Lui' : d < 0 ? 'Lei' : null;
+  renderShown(els.meHole, meCards, (win === 'Lui') ? meUse : null);
+  renderShown(els.oppHole, opCards, (win === 'Lei') ? opUse : null);
+  if (mode === 'holdem' && win) {
+    const use = (win === 'Lui') ? meUse : opUse;
+    clear(els.board); board.forEach(c => els.board.appendChild(cardFace(c, use)));
+  }
+  els.meName.textContent = 'Lui · ' + CATEGORIE_POKER[me.categoria];
+  els.oppName.textContent = 'Lei · ' + CATEGORIE_POKER[op.categoria];
+  els.cta.classList.add('hid'); els.hint.textContent = 'Showdown — guarda le carte.';
+  els.banner.textContent = d === 0 ? 'Parità' : (win + ' ha la mano migliore'); els.banner.classList.add('show');
+  setTimeout(() => {
+    if (d === 0) {
+      els.hint.textContent = 'Parità: nessuno si spoglia. Le carte restano in vista.';
+      els.cta.textContent = 'Rigioca'; els.cta.classList.remove('hid'); els.cta2.classList.remove('hid'); phase = 'done';
+      return;
+    }
+    const loser = d > 0 ? 'Lei' : 'Lui';
+    passStrip(win, loser, () => doStrip(loser, win));
+  }, 3000);
+}
+function passStrip(win, loser, cb) {
+  showOv(win === 'Lui' ? '🐻' : '🧁', ['Passa il telefono a ', { b: win }],
+    win + ' ha vinto la mano. Quando ce l\'hai tu, scegli il capo che ' + loser + ' deve togliersi.',
+    'Sono ' + win + ', scelgo io', cb);
+}
+
+function onCta() {
+  if (phase === 'done') { resetMano(); if (mode === 'holdem') dealHold(); else dealDraw(); return; }
+  if (mode === 'holdem') {
+    switch (phase) {
+      case 'start': dealHold(); break;
+      case 'hideMe': peekOpp(); break;
+      case 'hideOpp': toTable(); break;
+      case 'preflop': case 'flop': case 'turn': revealStep(); break;
+      case 'river': showdownHold(); break;
+    }
+  } else {
+    switch (phase) {
+      case 'start': dealDraw(); break;
+      case 'drawMe': applyDrawMe(); break;
+      case 'seenMe': hideMeDraw(); break;
+      case 'drawOpp': applyDrawOpp(); break;
+      case 'seenOpp': showdownDraw(); break;
+    }
+  }
+}
+
+// placeholder (sostituito in 7f)
+function doStrip() {}
