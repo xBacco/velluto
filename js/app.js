@@ -6,13 +6,15 @@ import { renderCalendario, openTipiSettings } from './modules/calendario.js';
 import { renderBuoni } from './modules/buoni.js';
 import { renderGalleria } from './modules/galleria.js';
 import { renderGiochi } from './modules/giochi.js';
+import { renderMappa } from './modules/mappa.js';
 
 const TABS = [
   ['desideri', '🔥', 'Desideri'],
+  ['giochi', '🎲', 'Giochi'],
   ['calendario', '📅', 'Esperienze'],
+  ['mappa', '🗺️', 'Mappa'],
   ['buoni', '🎟️', 'Buoni'],
   ['galleria', '🖼️', 'Galleria'],
-  ['giochi', '🎲', 'Giochi'],
 ];
 
 let me = null;     // profilo loggato
@@ -60,9 +62,27 @@ async function enterApp() {
 function buildNav() {
   const n = $('nav'); clear(n);
   for (const [k, i, l] of TABS) {
-    const b = mk('button'); add(b, mk('span', null, i + ' '), mk('span', null, l));
+    const b = mk('button'); add(b, mk('span', null, i), mk('span', 'lab', l));
     b.dataset.k = k; b.onclick = () => go(k); n.appendChild(b);
   }
+  enableSwipe(n);
+}
+
+// swipe orizzontale sulla dock → tab precedente/successiva (con wrap-around)
+function enableSwipe(n) {
+  let startX = null;
+  const navByOffset = d => {
+    const i = TABS.findIndex(t => t[0] === cur);
+    go(TABS[(i + d + TABS.length) % TABS.length][0]);
+  };
+  n.addEventListener('pointerdown', e => { startX = e.clientX; });
+  n.addEventListener('pointerup', e => {
+    if (startX === null) return;
+    const dx = e.clientX - startX; startX = null;
+    if (Math.abs(dx) > 34) navByOffset(dx < 0 ? 1 : -1);
+  });
+  n.addEventListener('pointercancel', () => { startX = null; });
+  n.addEventListener('pointerleave', () => { startX = null; });
 }
 
 function go(k) {
@@ -79,6 +99,7 @@ function render() {
   else if (cur === 'buoni') renderBuoni({ client, me, panel: $('p-buoni') }).catch(err => toast('Errore: ' + err.message, 'err'));
   else if (cur === 'galleria') renderGalleria({ client, me, panel: $('p-galleria') }).catch(err => toast('Errore: ' + err.message, 'err'));
   else if (cur === 'giochi') renderGiochi({ client, me, panel: $('p-giochi') }).catch(err => toast('Errore: ' + err.message, 'err'));
+  else if (cur === 'mappa') renderMappa({ client, me, panel: $('p-mappa') }).catch(err => toast('Errore: ' + err.message, 'err'));
 }
 
 // il FAB delega al modulo corrente tramite evento

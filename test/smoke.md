@@ -89,3 +89,11 @@ Migrazione: `supabase/foto.sql` eseguita dall'utente; tabella `foto` + RLS attiv
 - [ ] "Ultimi premi" elenca le vincite recenti.
 - [ ] Reload pagina: saldo e contenuti persistono.
 - [ ] Con pop-up aperto, lo sfondo NON scrolla (scroll-lock).
+
+## Mappa (tab 🗺️) — Fase Mappa Luoghi
+- [ ] Migrazione `supabase/luoghi.sql` applicata (tabella `luoghi` + `foto_contesto_check` con 'luogo').
+- [ ] Aggiunta luogo via ricerca indirizzo (Nominatim) e via tap sulla mappa.
+- [ ] Pin → polaroid con flash, flip fronte/retro; francobollo + cuori solo sui luoghi intimi.
+- [ ] Modifica luogo (descrizione, voto, foto) e eliminazione.
+- [ ] Drawer statistiche: switch 📍/🔥, barre per mese, tap mese → posti del mese.
+- [ ] Scroll-lock attivo con overlay aperti.
