@@ -108,7 +108,55 @@ function renderMain() {
 }
 
 // placeholder reali (implementati nei task seguenti) per evitare riferimenti rotti
-function renderPrivacy() { return sec('Privacy & blocco'); }
+function renderPrivacy() {
+  const s = sec('Privacy & blocco'); const c = card();
+
+  // blocco con codice
+  const rLock = row('🔒', 'Blocco con codice', "Chiede un PIN all'apertura");
+  add(rLock, sw(isLockEnabled(), on => { if (on) openSetPin(); else { disableLock(); disableBio(); renderMain(); } }));
+  add(c, rLock);
+
+  // cambia codice (solo se attivo)
+  if (isLockEnabled()) {
+    const rCh = row('🔑', 'Cambia codice'); rCh.classList.add('tap');
+    add(rCh, mk('span', 'set-chev', '›')); rCh.onclick = openSetPin; add(c, rCh);
+  }
+
+  // biometrico (solo se supportato)
+  if (bioSupported()) {
+    const rBio = row('👆', 'Face ID / impronta', 'Sblocco biometrico del dispositivo');
+    add(rBio, sw(isBioEnabled(), async on => {
+      try { if (on) { if (!isLockEnabled()) { toast('Attiva prima il PIN'); renderMain(); return; } await enableBio(); } else disableBio(); }
+      catch (e) { toast('Errore: ' + e.message, 'err'); renderMain(); }
+    }));
+    add(c, rBio);
+  }
+
+  // modalità pudica
+  const rPud = row('🙈', 'Modalità pudica', 'Sfoca foto e contenuti spinti');
+  add(rPud, sw(getPudica(), on => { setPudica(on); document.body.classList.toggle('pudica', on); }));
+  add(c, rPud);
+
+  add(s, c); return s;
+}
+
+function openSetPin() {
+  const ov = mk('div', 'set-confirm show');
+  const box = mk('div', 'set-cbox');
+  add(box, mk('h3', null, 'Imposta codice'));
+  add(box, mk('p', null, 'Scegli un PIN di 4-6 cifre. Resta su questo dispositivo.'));
+  const inp = mk('input', 'set-fld'); inp.type = 'tel'; inp.inputMode = 'numeric'; inp.maxLength = 6; inp.placeholder = '••••';
+  add(box, inp);
+  const rowB = mk('div', 'set-crow');
+  const ann = mk('button', 'set-ann', 'Annulla'); ann.onclick = () => { ov.remove(); renderMain(); };
+  const go = mk('button', 'set-go', 'Salva'); go.onclick = async () => {
+    if (!isPinValid(inp.value)) { toast('PIN non valido (4-6 cifre)'); return; }
+    await setPin(inp.value); ov.remove(); renderMain(); toast('Blocco attivo', 'ok');
+  };
+  add(rowB, ann, go); add(box, rowB); add(ov, box);
+  document.getElementById('setSheet').appendChild(ov);
+  inp.focus();
+}
 function renderPersonalizza() { return sec('Personalizza'); }
 function renderDati() { return sec('Dati'); }
 function openCambiaPassword() {}
