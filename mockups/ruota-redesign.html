@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="it"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ruota · redesign B</title>
+<style>
+  :root{
+    --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+    --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0;
+    --spin:cubic-bezier(.17,.67,.18,1);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;min-height:100vh;font-family:Georgia,serif;color:var(--cream);
+    background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),linear-gradient(170deg,var(--bg),var(--bg2));
+    padding:26px 16px 60px;}
+  .wrap{max-width:460px;margin:0 auto;}
+  h1{font-size:24px;margin:0 0 2px;}
+  .sub{font-size:13px;color:#b89aa2;margin:0 0 8px;}
+  .cap{font-family:Arial,sans-serif;font-size:12px;color:#b9908f;text-align:center;margin:10px 0 0;}
+
+  .wheel-wrap{position:relative;width:300px;height:300px;margin:18px auto 0;}
+  .pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);z-index:7;width:0;height:0;
+    border-left:14px solid transparent;border-right:14px solid transparent;border-top:25px solid var(--gold-soft);
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.7));}
+  .wheel{position:absolute;inset:0;border-radius:50%;z-index:1;
+    border:7px solid var(--gold);
+    box-shadow:0 0 0 3px #2a0813, 0 0 0 7px rgba(212,168,108,.35), 0 16px 46px rgba(0,0,0,.65), inset 0 0 36px rgba(0,0,0,.5);
+    transition:transform 4.2s var(--spin);
+    background:conic-gradient(from 0deg,
+      #7a1533 0 45deg,#42091a 45deg 90deg,#7a1533 90deg 135deg,#42091a 135deg 180deg,
+      #7a1533 180deg 225deg,#42091a 225deg 270deg,#7a1533 270deg 315deg,#42091a 315deg 360deg);}
+  .wheel::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+    background:repeating-conic-gradient(from 0deg,transparent 0 44.4deg,rgba(233,201,143,.7) 44.4deg 45deg);}
+  .slice-lbl{position:absolute;top:50%;left:50%;width:0;height:0;}
+  /* il box che ruota è 44px CENTRATO sul centro ruota (top/left -22) → transform-origin = centro ruota.
+     Così la posizione dipende solo dall'angolo dello spicchio e resta agganciata mentre gira. */
+  .slice-lbl .in{position:absolute;top:-22px;left:-22px;width:44px;height:44px;
+    display:flex;align-items:center;justify-content:center;transition:transform 4.2s var(--spin);}
+  .slice-lbl .in span{font-size:31px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.85));}
+  .slice-lbl .in.spenta{opacity:.32;}
+
+  .hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6;width:58px;height:58px;border-radius:50%;
+    background:radial-gradient(circle at 38% 30%,var(--gold-soft),var(--gold) 58%,#a87a3e);border:4px solid #2a0813;
+    box-shadow:0 4px 12px rgba(0,0,0,.7),inset 0 2px 4px rgba(255,255,255,.4);
+    display:flex;align-items:center;justify-content:center;font-size:22px;}
+
+  .spin-btn{margin:24px auto 0;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+    min-height:56px;border-radius:14px;font-family:Arial,sans-serif;font-size:15px;letter-spacing:.1em;
+    text-transform:uppercase;cursor:pointer;color:var(--gold-soft);
+    background:linear-gradient(180deg,rgba(122,21,51,.5),rgba(42,9,19,.5));border:1.5px solid var(--gold);
+    box-shadow:0 6px 18px rgba(0,0,0,.5);}
+  .spin-btn:active{transform:scale(.98);}
+</style>
+</head><body>
+<div class="wrap">
+  <h1>🎡 Ruota · variante B rifinita</h1>
+  <p class="sub">Emoji grandi e <b>dritte</b>, tirate verso il centro (niente collisioni con pointer/hub),
+     stessa dimensione di box e centrate nello spicchio. Gira più volte per vedere ogni posizione.</p>
+  <div id="host"></div>
+  <button class="spin-btn" id="spin">Gira la ruota 🪙</button>
+  <p class="cap" id="cap">Raggio 98 · box 44px · emoji 31px</p>
+</div>
+<script>
+  const SLICE = 45, R = 98;
+  const fette = ['💋','🔥','🎁','💌','🃏','⭐','🎲','🔁'];
+  const spenta = 7;
+  let rot = 0, busy = false, wheel;
+  const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+  const host=document.getElementById('host');
+
+  function build(){
+    host.textContent='';
+    const wrap=el('div','wheel-wrap');
+    wrap.appendChild(el('div','pointer'));
+    wheel=el('div','wheel'); wheel.style.transform=`rotate(${rot}deg)`;
+    fette.forEach((emoji,i)=>{
+      const center=i*SLICE+SLICE/2;
+      const lbl=el('div','slice-lbl');
+      const inner=el('div','in'+(i===spenta?' spenta':''));
+      inner.style.transform=`rotate(${center}deg) translateY(-${R}px) rotate(${-center-rot}deg)`;
+      inner.appendChild(el('span',null,emoji));
+      lbl.appendChild(inner); wheel.appendChild(lbl);
+    });
+    wrap.appendChild(wheel);
+    wrap.appendChild(el('div','hub','💋'));
+    host.appendChild(wrap);
+  }
+  document.getElementById('spin').onclick=()=>{
+    if(busy) return; busy=true;
+    const pick=Math.floor(Math.random()*7);
+    const center=pick*SLICE+SLICE/2;
+    rot += 360*5 + ((360-(rot%360)-center)%360+360)%360;
+    wheel.style.transform=`rotate(${rot}deg)`;
+    wheel.querySelectorAll('.slice-lbl .in').forEach((inner,i)=>{
+      const c=i*SLICE+SLICE/2;
+      inner.style.transform=`rotate(${c}deg) translateY(-${R}px) rotate(${-c-rot}deg)`;
+    });
+    setTimeout(()=>{busy=false;},4400);
+  };
+  build();
+</script>
+</body></html>

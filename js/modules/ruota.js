@@ -108,7 +108,7 @@ function buildWheel() {
     const center = i * SLICE + SLICE / 2;
     const lbl = mk('div', 'slice-lbl');
     const inner = mk('div', 'in');
-    inner.style.transform = `rotate(${center}deg) translateY(-104px) rotate(${-center - rot}deg)`;
+    inner.style.transform = `rotate(${center}deg) translateY(-98px) rotate(${-center - rot}deg)`;
     const e = mk('span', 'e' + (f.peso === 0 ? ' spenta' : ''), f.emoji);
     inner.appendChild(e); lbl.appendChild(inner); wheel.appendChild(lbl);
   });
@@ -137,7 +137,7 @@ async function spin() {
   wheelEl.style.transform = `rotate(${rot}deg)`;
   wheelEl.querySelectorAll('.slice-lbl .in').forEach((inner, i) => {
     const c = i * SLICE + SLICE / 2;
-    inner.style.transform = `rotate(${c}deg) translateY(-104px) rotate(${-c - rot}deg)`;
+    inner.style.transform = `rotate(${c}deg) translateY(-98px) rotate(${-c - rot}deg)`;
   });
 
   // dopo la rotazione (4.2s): accendi lo spotlight, poi mostra il pop-up
