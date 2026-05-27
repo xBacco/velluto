@@ -252,3 +252,84 @@ function openEdit(l) {
       mk('div', 'mappa-fotolbl', 'Foto'), foto.el, save, del);
   });
 }
+
+// ---- AGGIUNTA LUOGO ----
+function openForm(latlng, prefill = {}) {
+  openSheet('Nuovo luogo', sheet => {
+    const nome = mk('input'); nome.placeholder = 'Nome del posto'; if (prefill.nome) nome.value = prefill.nome;
+    const citta = mk('input'); citta.placeholder = 'Città (facoltativa)'; if (prefill.citta) citta.value = prefill.citta;
+    const data = mk('input'); data.type = 'date'; data.value = todayISO();
+    const intimo = mk('input'); intimo.type = 'checkbox';
+    const intimoRow = mk('label', 'mappa-check'); add(intimoRow, intimo, mk('span', null, " L'abbiamo fatto qui 🔥"));
+    const voto = votoSelector(0);
+    const votoRow = mk('div', 'mappa-field'); add(votoRow, mk('label', null, 'Quanto è stato bello'), voto.el);
+    votoRow.style.display = 'none';
+    intimo.onchange = () => { votoRow.style.display = intimo.checked ? '' : 'none'; };
+    const desc = mk('textarea'); desc.placeholder = 'Descrizione…';
+    const foto = fotoEditor(ctx, { contesto: 'luogo', refId: null });
+    const coordLbl = mk('div', 'mappa-coord', `📍 ${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}`);
+
+    const save = mk('button', 'btn', 'Salva il luogo');
+    save.onclick = async () => {
+      if (!nome.value.trim()) { toast('Serve un nome', 'err'); return; }
+      try {
+        const row = await addLuogo(ctx.client, {
+          couple_id: ctx.me.couple_id, autore_id: ctx.me.id,
+          nome: nome.value.trim(), citta: citta.value.trim(),
+          lat: latlng.lat, lng: latlng.lng,
+          intimo: intimo.checked, voto: voto.get(),
+          descrizione: desc.value.trim(), data_evento: data.value,
+        });
+        await foto.flush(row.id);
+        sheet.closest('.modal').remove();
+        toast('Luogo aggiunto');
+        await renderMappa(ctx);
+      } catch (err) { toast('Errore: ' + err.message, 'err'); }
+    };
+
+    add(sheet, coordLbl, field('Nome', nome), field('Città', citta), field('Quando', data),
+      intimoRow, votoRow, field('Descrizione', desc),
+      mk('div', 'mappa-fotolbl', 'Foto'), foto.el, save);
+  });
+}
+
+// Cerca un indirizzo via Nominatim (OSM, gratuito) oppure scegli toccando la mappa.
+function startAdd() {
+  if (!map) { toast('Apri prima la mappa'); return; }
+  openSheet('Aggiungi un luogo', sheet => {
+    const q = mk('input'); q.placeholder = 'Cerca un indirizzo o una città…';
+    const cerca = mk('button', 'btn', 'Cerca');
+    const results = mk('div', 'mappa-results');
+    cerca.onclick = async () => {
+      const term = q.value.trim(); if (!term) return;
+      clear(results); add(results, mk('div', 'mst-empty', 'Cerco…'));
+      try {
+        const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=5&q=' + encodeURIComponent(term),
+          { headers: { 'Accept-Language': 'it' } });
+        const list = await r.json();
+        clear(results);
+        if (!list.length) { add(results, mk('div', 'mst-empty', 'Nessun risultato.')); return; }
+        for (const it of list) {
+          const row = mk('button', 'mappa-result', it.display_name);
+          row.onclick = () => {
+            sheet.closest('.modal').remove();
+            const latlng = { lat: parseFloat(it.lat), lng: parseFloat(it.lon) };
+            map.setView([latlng.lat, latlng.lng], 14);
+            openForm(latlng, { citta: (it.display_name.split(',')[0] || '').trim() });
+          };
+          add(results, row);
+        }
+      } catch (err) { clear(results); toast('Ricerca fallita: ' + err.message, 'err'); }
+    };
+    const orTap = mk('button', 'mappa-tbtn', '📍 …o tocca un punto sulla mappa');
+    orTap.onclick = () => {
+      sheet.closest('.modal').remove();
+      toast('Tocca la mappa nel punto giusto');
+      map.once('click', e => openForm(e.latlng));
+    };
+    add(sheet, field('Indirizzo', q), cerca, results, mk('div', 'mappa-or', 'oppure'), orTap);
+  });
+}
+
+// Il FAB globale delega al tab corrente via evento 'fab:<tab>'.
+document.addEventListener('fab:mappa', startAdd);
