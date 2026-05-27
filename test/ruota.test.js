@@ -41,3 +41,64 @@ test('giriEleggibile: passati 7 giorni -> ok', () => {
   const r = giriEleggibile(m, 'me', new Date('2026-05-27T10:00:01Z'));
   assert.equal(r.ok, true);
 });
+
+import {
+  FETTE, fetteRuota, estraiFetta, ultimiPremi,
+} from '../js/lib/logic.js';
+
+test('FETTE sono 8, con le chiavi attese', () => {
+  assert.equal(FETTE.length, 8);
+  assert.deepEqual(FETTE.map(f => f.key),
+    ['segreto','piccante','buono','desiderio','tod','jolly','dadi','ancora']);
+});
+
+test('fetteRuota azzera le condizionali quando manca la condizione', () => {
+  const f = fetteRuota({ haSegreti: false, haCarte: false, haProposte: false, haBuoni: false });
+  assert.equal(f.length, 8);
+  const peso = k => f.find(x => x.key === k).peso;
+  assert.equal(peso('segreto'), 0);
+  assert.equal(peso('tod'), 0);
+  assert.equal(peso('piccante'), 0);
+  assert.equal(peso('buono'), 0);
+  assert.equal(peso('dadi'), 1); // non condizionale resta a 1
+});
+
+test('fetteRuota lascia attive le condizionali quando la condizione c\'è', () => {
+  const f = fetteRuota({ haSegreti: true, haCarte: true, haProposte: true, haBuoni: true });
+  assert.equal(f.find(x => x.key === 'segreto').peso, 1);
+  assert.equal(f.find(x => x.key === 'tod').peso, 1);
+});
+
+test('estraiFetta non estrae mai una fetta a peso 0', () => {
+  const fette = fetteRuota({ haSegreti: false, haCarte: false, haProposte: true, haBuoni: true });
+  for (let i = 0; i < 100; i++) {
+    const r = estraiFetta(fette, () => i / 100);
+    assert.notEqual(r.fetta.key, 'segreto');
+    assert.notEqual(r.fetta.key, 'tod');
+  }
+});
+
+test('estraiFetta con rnd deterministico atterra sulla fetta attesa', () => {
+  const fette = FETTE.map(f => ({ ...f, peso: 1 })); // 8 fette uguali
+  assert.equal(estraiFetta(fette, () => 0).indice, 0);        // primo spicchio
+  assert.equal(estraiFetta(fette, () => 0.99).indice, 7);     // ultimo spicchio
+});
+
+test('estraiFetta restituisce null se tutti i pesi sono 0', () => {
+  const fette = FETTE.map(f => ({ ...f, peso: 0 }));
+  assert.equal(estraiFetta(fette, () => 0.5), null);
+});
+
+test('ultimiPremi: solo giri dell\'utente, ordinati desc, tagliati a n, con fetta risolta', () => {
+  const m = [
+    { user_id: 'me', delta: -1, motivo: 'giro', esito: 'dadi', creato: '2026-05-01' },
+    { user_id: 'me', delta: 1,  motivo: 'settimanale', esito: null, creato: '2026-05-02' },
+    { user_id: 'me', delta: -1, motivo: 'giro', esito: 'piccante', creato: '2026-05-03' },
+    { user_id: 'altro', delta: -1, motivo: 'giro', esito: 'jolly', creato: '2026-05-04' },
+  ];
+  const r = ultimiPremi(m, 'me', 5);
+  assert.equal(r.length, 2);
+  assert.equal(r[0].esito, 'piccante');     // più recente prima
+  assert.equal(r[0].fetta.emoji, '🔥');
+  assert.equal(r[1].esito, 'dadi');
+});

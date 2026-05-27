@@ -365,3 +365,51 @@ export function giriEleggibile(movimenti, userId, now = new Date()) {
   const prossimo = new Date(settimanali[0].getTime() + ECONOMIA.GRATIS_OGNI_GIORNI * 864e5);
   return { ok: now >= prossimo, prossimoSblocco: prossimo.toISOString() };
 }
+
+// ---- RUOTA (fette, estrazione, storico premi) ----
+
+// Le 8 fette, in ordine sulla ruota. peso = probabilità relativa (tutti 1 = uniforme).
+export const FETTE = [
+  { key: 'segreto',   emoji: '💋', label: 'Apri un segreto',         peso: 1, differito: false },
+  { key: 'piccante',  emoji: '🔥', label: 'Proposta piccante',       peso: 1, differito: false },
+  { key: 'buono',     emoji: '🎁', label: 'Buono a sorpresa',        peso: 1, differito: true },
+  { key: 'desiderio', emoji: '💌', label: 'Pesca un desiderio',      peso: 1, differito: true },
+  { key: 'tod',       emoji: '🃏', label: 'Carta Obbligo o Verità',  peso: 1, differito: false },
+  { key: 'jolly',     emoji: '⭐', label: 'Jolly: scegli tu',        peso: 1, differito: false },
+  { key: 'dadi',      emoji: '🎲', label: 'Tiro di dadi',            peso: 1, differito: false },
+  { key: 'ancora',    emoji: '🔁', label: 'Gira ancora',             peso: 1, differito: false },
+];
+
+// Copia di FETTE con i pesi delle fette condizionali azzerati quando manca la condizione.
+// Le fette restano tutte e 8 (la ruota ha geometria fissa).
+export function fetteRuota({ haSegreti, haCarte, haProposte, haBuoni }) {
+  return FETTE.map(f => {
+    let peso = f.peso;
+    if (f.key === 'segreto'  && !haSegreti)  peso = 0;
+    if (f.key === 'tod'      && !haCarte)    peso = 0;
+    if (f.key === 'piccante' && !haProposte) peso = 0;
+    if (f.key === 'buono'    && !haBuoni)    peso = 0;
+    return { ...f, peso };
+  });
+}
+
+// Estrazione pesata. rnd ∈ [0,1) iniettabile. Salta i pesi 0. null se tutti 0.
+export function estraiFetta(fette, rnd = Math.random) {
+  const tot = fette.reduce((s, f) => s + f.peso, 0);
+  if (tot <= 0) return null;
+  let x = rnd() * tot;
+  for (let i = 0; i < fette.length; i++) {
+    x -= fette[i].peso;
+    if (x < 0) return { indice: i, fetta: fette[i] };
+  }
+  return { indice: fette.length - 1, fetta: fette[fette.length - 1] };
+}
+
+// Ultimi n premi (movimenti motivo='giro') dell'utente, recenti prima, con la fetta risolta.
+export function ultimiPremi(movimenti, userId, n = ECONOMIA.ULTIMI_PREMI) {
+  return movimenti
+    .filter(m => m.user_id === userId && m.motivo === 'giro')
+    .sort((a, b) => new Date(b.creato) - new Date(a.creato))
+    .slice(0, n)
+    .map(m => ({ ...m, fetta: FETTE.find(f => f.key === m.esito) || null }));
+}
