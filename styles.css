@@ -602,7 +602,7 @@ body.locked{overflow:hidden;touch-action:none;}
 .strip-ov .chip.live:hover{transform:translateY(-2px);box-shadow:inset 0 0 0 1px var(--gold-soft), 0 0 14px rgba(232,196,131,.5);}
 .strip-ov .chip.gone{opacity:0;transform:scale(.7);pointer-events:none;}
 .strip-ov .chip.dead{pointer-events:none;opacity:.5;}
-.strip-ov .strip-btnrow{display:flex;gap:8px;align-items:center;}
+.strip-ov .btnrow{display:flex;gap:8px;align-items:center;}
 .strip-ov .btn{border:none;border-radius:99px;padding:11px 26px;cursor:pointer;font-family:'EB Garamond',serif;font-size:15px;letter-spacing:.03em;
   background:linear-gradient(180deg,var(--gold-soft),#b6843f);color:var(--bg2);box-shadow:0 8px 22px rgba(212,168,108,.32);transition:transform .15s;}
 .strip-ov .btn.ghost{background:transparent;color:var(--cream);box-shadow:inset 0 0 0 1px rgba(212,168,108,.6);padding:11px 18px;}

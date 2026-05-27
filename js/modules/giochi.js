@@ -4,6 +4,7 @@ import {
 } from '../lib/logic.js';
 import { listDadiFacce, seedDadiFacce, updateDadiFaccia } from '../store.js';
 import { renderRuota, openEditorRuota } from './ruota.js';
+import { renderStrip } from './strip.js';
 
 let giocoCorrente = 'dadi';   // 'dadi' | 'ruota'
 let ctx = null;          // { client, me, panel }
@@ -33,7 +34,7 @@ export async function renderGiochi(context) {
 function drawSelettore() {
   const p = ctx.panel; clear(p);
   const sel = mk('div', 'gioco-selettore');
-  for (const [k, lbl] of [['dadi', '🎲 Dadi'], ['ruota', '🎡 Ruota']]) {
+  for (const [k, lbl] of [['dadi', '🎲 Dadi'], ['ruota', '🎡 Ruota'], ['strip', '♠️ Strip Poker']]) {
     const b = mk('button', 'gioco-tab' + (giocoCorrente === k ? ' on' : ''), lbl);
     b.onclick = () => { giocoCorrente = k; renderGiochi(ctx); };
     sel.appendChild(b);
@@ -46,6 +47,8 @@ async function montaGiocoCorrente() {
   const host = ctx.panel.querySelector('.gioco-host');
   if (giocoCorrente === 'ruota') {
     await renderRuota({ client: ctx.client, me: ctx.me, panel: host });
+  } else if (giocoCorrente === 'strip') {
+    await renderStrip({ client: ctx.client, me: ctx.me, panel: host });
   } else {
     await montaDadi(host);
   }
