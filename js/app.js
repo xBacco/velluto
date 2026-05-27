@@ -108,4 +108,8 @@ $('fab').onclick = () => document.dispatchEvent(new CustomEvent('fab:' + cur));
 // la Galleria chiede di navigare alla sezione d'origine di una foto
 document.addEventListener('goto', e => go(e.detail));
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
 boot().catch(err => toast('Errore avvio: ' + err.message, 'err'));
