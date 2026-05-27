@@ -3,7 +3,7 @@ import { mk, add, clear, toast, openSheet } from '../ui.js';
 import {
   aggregaPerMese, totaliLuoghi, luoghiDelMese, cuoriLabel, etichettaData, nomeMese,
 } from '../lib/logic.js';
-import { listLuoghi, addLuogo, updateLuogo, deleteLuogo, listFoto, signedUrl } from '../store.js';
+import { listLuoghi, addLuogo, updateLuogo, deleteLuogo, listFoto, signedUrl, deleteFotoDi } from '../store.js';
 import { fotoEditor, loadThumbsInto } from './foto.js';
 
 const TILE_DARK = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
@@ -14,6 +14,7 @@ let ctx = null;
 let luoghi = [];
 let map = null;
 let statView = 'vis';
+let pendingTap = null;   // listener "tocca la mappa" in attesa, da annullare al re-render
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -31,6 +32,8 @@ function handleLabel() {
 
 function draw() {
   const p = ctx.panel; clear(p);
+  if (map && pendingTap) { map.off('click', pendingTap); }
+  pendingTap = null;
   if (map) { map.remove(); map = null; }
   add(p, mk('h2', 'ptitle', '🗺️ La nostra mappa'),
          mk('p', 'psub', 'I posti che ci portiamo dietro.'));
@@ -240,6 +243,7 @@ function openEdit(l) {
     const del = mk('button', 'mappa-del', 'Elimina luogo');
     del.onclick = async () => {
       try {
+        await deleteFotoDi(ctx.client, { contesto: 'luogo', refId: l.id });
         await deleteLuogo(ctx.client, l.id);
         sheet.closest('.modal').remove();
         toast('Eliminato');
@@ -306,6 +310,7 @@ function startAdd() {
       try {
         const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=5&q=' + encodeURIComponent(term),
           { headers: { 'Accept-Language': 'it' } });
+        if (!r.ok) throw new Error('Nominatim ' + r.status);
         const list = await r.json();
         clear(results);
         if (!list.length) { add(results, mk('div', 'mst-empty', 'Nessun risultato.')); return; }
@@ -325,7 +330,8 @@ function startAdd() {
     orTap.onclick = () => {
       sheet.closest('.modal').remove();
       toast('Tocca la mappa nel punto giusto');
-      map.once('click', e => openForm(e.latlng));
+      pendingTap = e => { pendingTap = null; openForm(e.latlng); };
+      map.once('click', pendingTap);
     };
     add(sheet, field('Indirizzo', q), cerca, results, mk('div', 'mappa-or', 'oppure'), orTap);
   });
