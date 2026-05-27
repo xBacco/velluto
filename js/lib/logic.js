@@ -602,3 +602,12 @@ export function risultatoPartita(stato) {
   if (eNudo(stato, 'lei')) return { vincitore: 'lui', perdente: 'lei' };
   return null;
 }
+
+export function testaATesta(partite, me, partner) {
+  let mie = 0, sue = 0;
+  for (const p of partite) {
+    if (p.vincitore_id === me) mie++;
+    else if (p.vincitore_id === partner) sue++;
+  }
+  return { mie, sue };
+}

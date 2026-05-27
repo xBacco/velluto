@@ -127,3 +127,15 @@ test('risultatoPartita: chi resta nudo perde, l\'altro vince; null se nessuno è
   }
   assert.deepEqual(risultatoPartita(s), { vincitore: 'lei', perdente: 'lui' });
 });
+
+import { testaATesta } from '../js/lib/logic.js';
+
+test('testaATesta conta le vittorie per me e per il partner', () => {
+  const partite = [
+    { vincitore_id: 'u1', perdente_id: 'u2' },
+    { vincitore_id: 'u2', perdente_id: 'u1' },
+    { vincitore_id: 'u1', perdente_id: 'u2' },
+  ];
+  assert.deepEqual(testaATesta(partite, 'u1', 'u2'), { mie: 2, sue: 1 });
+  assert.deepEqual(testaATesta([], 'u1', 'u2'), { mie: 0, sue: 0 });
+});
