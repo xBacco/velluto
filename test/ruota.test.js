@@ -213,3 +213,46 @@ test('concediGiro accredita motivo gioco con delta = GIRI_PER_VITTORIA', async (
   assert.equal(ins.payload.motivo, 'gioco');
   assert.equal(ins.payload.delta, ECONOMIA.GIRI_PER_VITTORIA);
 });
+
+import {
+  listRuotaContenuti, seedRuotaContenuti, addRuotaContenuto, updateRuotaContenuto, deleteRuotaContenuto,
+} from '../js/store.js';
+
+test('listRuotaContenuti seleziona per couple_id', async () => {
+  const c = fakeClient([{ id: '1', couple_id: 'cpl', categoria: 'piccante', testo: 'x', ordine: 0 }]);
+  const data = await listRuotaContenuti(c, 'cpl');
+  assert.equal(data.length, 1);
+  assert.equal(c._calls[0].table, 'ruota_contenuti');
+});
+
+test('seedRuotaContenuti inserisce un array di righe', async () => {
+  const c = fakeClient();
+  await seedRuotaContenuti(c, [{ couple_id: 'cpl', categoria: 'piccante', testo: 'a', ordine: 0 }]);
+  const ins = c._calls.find(x => x.op === 'insert');
+  assert.ok(Array.isArray(ins.payload));
+});
+
+test('addRuotaContenuto inserisce e ritorna la riga (single)', async () => {
+  const c = fakeClient();
+  const r = await addRuotaContenuto(c, { couple_id: 'cpl', categoria: 'buono', emoji: '💆', testo: 'Massaggio', descrizione: 'x', ordine: 2 });
+  const ins = c._calls.find(x => x.op === 'insert');
+  assert.equal(ins.payload.categoria, 'buono');
+  assert.equal(ins.payload.emoji, '💆');
+  assert.equal(ins.single, true);
+  assert.equal(r.testo, 'Massaggio');
+});
+
+test('updateRuotaContenuto aggiorna per id', async () => {
+  const c = fakeClient();
+  await updateRuotaContenuto(c, 'id1', { emoji: '🔥', testo: 'nuovo', descrizione: null });
+  const upd = c._calls.find(x => x.op === 'update');
+  assert.equal(upd.filters.id, 'id1');
+  assert.equal(upd.payload.testo, 'nuovo');
+});
+
+test('deleteRuotaContenuto elimina per id', async () => {
+  const c = fakeClient();
+  await deleteRuotaContenuto(c, 'id1');
+  const del = c._calls.find(x => x.op === 'delete');
+  assert.equal(del.filters.id, 'id1');
+});

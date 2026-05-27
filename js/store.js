@@ -210,3 +210,34 @@ export async function spendiGiro(client, { couple_id, user_id, esito }) {
 export async function concediGiro(client, { couple_id, user_id }) {
   return accreditaGiro(client, { couple_id, user_id, motivo: 'gioco', delta: ECONOMIA.GIRI_PER_VITTORIA });
 }
+
+// ---- CONTENUTI RUOTA (editabili per coppia) ----
+export async function listRuotaContenuti(client, coupleId) {
+  const res = await client.from('ruota_contenuti').select('*')
+    .eq('couple_id', coupleId).order('categoria', { ascending: true }).order('ordine', { ascending: true });
+  return check(res);
+}
+
+// Semina i default (vedi logic.ruotaContenutiDefaultRows) la prima volta per la coppia.
+export async function seedRuotaContenuti(client, rows) {
+  const res = await client.from('ruota_contenuti').insert(rows);
+  return check(res);
+}
+
+export async function addRuotaContenuto(client, { couple_id, categoria, emoji, testo, descrizione, ordine }) {
+  const res = await client.from('ruota_contenuti').insert({
+    couple_id, categoria, emoji: emoji || null, testo, descrizione: descrizione || null, ordine: ordine ?? 0,
+  }).select().single();
+  return check(res);
+}
+
+export async function updateRuotaContenuto(client, id, { emoji, testo, descrizione }) {
+  const res = await client.from('ruota_contenuti')
+    .update({ emoji: emoji || null, testo, descrizione: descrizione || null }).eq('id', id);
+  return check(res);
+}
+
+export async function deleteRuotaContenuto(client, id) {
+  const res = await client.from('ruota_contenuti').delete().eq('id', id);
+  return check(res);
+}
