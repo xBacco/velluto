@@ -2,7 +2,8 @@ import { client } from './supabase.js';
 import { login, logout, currentProfile } from './auth.js';
 import { mk, add, clear, toast } from './ui.js';
 import { renderDesideri } from './modules/desideri.js';
-import { renderCalendario, openTipiSettings } from './modules/calendario.js';
+import { renderCalendario } from './modules/calendario.js';
+import { openImpostazioni } from './modules/impostazioni.js';
 import { renderBuoni } from './modules/buoni.js';
 import { renderGalleria } from './modules/galleria.js';
 import { renderGiochi } from './modules/giochi.js';
@@ -46,6 +47,11 @@ async function onLogin(e) {
   }
 }
 
+function refreshChip() {
+  const chip = $('meChip'); clear(chip);
+  add(chip, mk('span', null, me.avatar), mk('span', null, me.display_name));
+}
+
 async function enterApp() {
   me = await currentProfile();
   if (!me) { location.reload(); return; } // token scaduto/non valido → torna al login
@@ -54,18 +60,8 @@ async function enterApp() {
   $('login').classList.add('gone');
   $('app').style.display = '';
   $('fab').style.display = '';
-  const gear = $('gear');
-  if (gear) {
-    gear.style.display = '';
-    gear.onclick = () => openTipiSettings({ client, me }, () => renderTab('calendario'));
-  }
-  const chip = $('meChip');
-  clear(chip);
-  add(chip, mk('span', null, me.avatar), mk('span', null, me.display_name + ' · esci'));
-  chip.onclick = async () => {
-    try { await logout(); } catch { /* la sessione locale si pulisce comunque */ }
-    location.reload();
-  };
+  refreshChip();
+  $('meChip').onclick = () => openImpostazioni({ client, me, onProfileChange: () => refreshChip() });
   buildNav();
   go('desideri');
 }
