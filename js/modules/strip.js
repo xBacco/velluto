@@ -224,5 +224,39 @@ export async function renderStrip(context) {
   drawApertura();
 }
 
-// placeholder finché non porto l'apertura (sostituito in 7c)
-function drawApertura() { clear(host); }
+// ---------------------------------------------------------------------------
+// 7c — apertura + testa-a-testa + scelta modalità
+// ---------------------------------------------------------------------------
+// `me` (profilo) ha id, couple_id, display_name, avatar — NESSUN partner_id.
+// Il partner si deduce dallo storico delle partite (l'altro id coinvolto).
+function partnerId() {
+  for (const p of partite) {
+    if (p.vincitore_id && p.vincitore_id !== ctx.me.id) return p.vincitore_id;
+    if (p.perdente_id && p.perdente_id !== ctx.me.id) return p.perdente_id;
+  }
+  return null;
+}
+
+function drawApertura() {
+  clear(host);
+  const root = mk('div', 'strip-root');
+  add(root, mk('h2', 'ptitle', '♠️ Strip Poker'), mk('p', 'psub', 'Mano più bassa = si toglie un capo.'));
+  const tt = testaATesta(partite, ctx.me.id, partnerId());
+  add(root, mk('div', 'strip-score', `🐻 Tu ${tt.mie} — ${tt.sue} Lei 🧁`));
+  const pick = mk('div', 'pick-modes');
+  const card = (m, titolo, sub) => {
+    const c = mk('div', 'pm');
+    add(c, mk('div', 'pm-t', titolo), mk('div', 'pm-s', sub));
+    c.onclick = () => chooseMode(m);
+    return c;
+  };
+  add(pick,
+    card('holdem', '♣ Texas Hold\'em', '2 carte coperte a testa + 5 comuni sul tavolo.'),
+    card('draw', '♦ Draw poker', '5 carte a testa, uno scambio fino a 3, poi showdown.'));
+  add(root, pick);
+  host.appendChild(root);
+}
+function chooseMode(m) { mode = m; drawSetup(); }
+
+// placeholder (sostituito in 7d)
+function drawSetup() { clear(host); }
