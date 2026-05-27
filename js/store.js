@@ -306,3 +306,30 @@ export async function deleteLuogo(client, id) {
   const res = await client.from('luoghi').delete().eq('id', id);
   return check(res);
 }
+
+// ---- SVUOTA DATI (per couple) ----
+export async function wipeDesideri(client, coupleId) {
+  return check(await client.from('desideri').delete().eq('couple_id', coupleId));
+}
+export async function wipeEsperienze(client, coupleId) {
+  const list = await listEsperienze(client, coupleId);
+  for (const e of list) await deleteFotoDi(client, { contesto: 'esperienza', refId: e.id });
+  return check(await client.from('esperienze').delete().eq('couple_id', coupleId));
+}
+export async function wipeBuoni(client, coupleId) {
+  const list = await listBuoni(client, coupleId);
+  for (const b of list) await deleteFotoDi(client, { contesto: 'buono', refId: b.id });
+  return check(await client.from('buoni').delete().eq('couple_id', coupleId));
+}
+export async function wipeGiochi(client, coupleId) {
+  await client.from('giri_movimenti').delete().eq('couple_id', coupleId);
+  return check(await client.from('strip_partite').delete().eq('couple_id', coupleId));
+}
+export async function wipeLuoghi(client, coupleId) {
+  const list = await listLuoghi(client, coupleId);
+  for (const l of list) await deleteFotoDi(client, { contesto: 'luogo', refId: l.id });
+  return check(await client.from('luoghi').delete().eq('couple_id', coupleId));
+}
+export async function wipeTipi(client, coupleId) {
+  return check(await client.from('tipi').delete().eq('couple_id', coupleId));
+}

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { updateProfile } from '../js/store.js';
+import { updateProfile, wipeDesideri, wipeEsperienze, wipeBuoni, wipeGiochi, wipeLuoghi, wipeTipi } from '../js/store.js';
 
 function fakeClient(initialRows = []) {
   const calls = [];
@@ -50,4 +50,47 @@ test('updateProfile manda solo i campi forniti', async () => {
   await updateProfile(c, 'u1', { avatar: '🧁' });
   const up = c._calls.find(x => x.op === 'update');
   assert.deepEqual(Object.keys(up.payload), ['avatar']);
+});
+
+test('wipeDesideri cancella i desideri della coppia', async () => {
+  const c = fakeClient();
+  await wipeDesideri(c, 'cpl');
+  const del = c._calls.find(x => x.op === 'delete');
+  assert.equal(del.table, 'desideri');
+  assert.equal(del.filters.couple_id, 'cpl');
+});
+
+test('wipeEsperienze pulisce le foto delle esperienze poi le righe', async () => {
+  const c = fakeClient([{ id: 'e1', couple_id: 'cpl' }, { id: 'e9', couple_id: 'altra' }]);
+  await wipeEsperienze(c, 'cpl');
+  assert.ok(c._calls.some(x => x.table === 'foto' && x.op === 'select' && x.filters.ref_id === 'e1'));
+  const del = c._calls.find(x => x.table === 'esperienze' && x.op === 'delete');
+  assert.equal(del.filters.couple_id, 'cpl');
+});
+
+test('wipeBuoni pulisce foto buono poi righe', async () => {
+  const c = fakeClient([{ id: 'b1', couple_id: 'cpl' }]);
+  await wipeBuoni(c, 'cpl');
+  assert.ok(c._calls.some(x => x.table === 'foto' && x.op === 'select' && x.filters.ref_id === 'b1'));
+  assert.ok(c._calls.some(x => x.table === 'buoni' && x.op === 'delete' && x.filters.couple_id === 'cpl'));
+});
+
+test('wipeGiochi azzera giri_movimenti e strip_partite', async () => {
+  const c = fakeClient();
+  await wipeGiochi(c, 'cpl');
+  assert.ok(c._calls.some(x => x.table === 'giri_movimenti' && x.op === 'delete' && x.filters.couple_id === 'cpl'));
+  assert.ok(c._calls.some(x => x.table === 'strip_partite' && x.op === 'delete' && x.filters.couple_id === 'cpl'));
+});
+
+test('wipeLuoghi pulisce foto luogo poi righe', async () => {
+  const c = fakeClient([{ id: 'l1', couple_id: 'cpl' }]);
+  await wipeLuoghi(c, 'cpl');
+  assert.ok(c._calls.some(x => x.table === 'foto' && x.op === 'select' && x.filters.ref_id === 'l1'));
+  assert.ok(c._calls.some(x => x.table === 'luoghi' && x.op === 'delete' && x.filters.couple_id === 'cpl'));
+});
+
+test('wipeTipi cancella i tipi della coppia', async () => {
+  const c = fakeClient();
+  await wipeTipi(c, 'cpl');
+  assert.ok(c._calls.some(x => x.table === 'tipi' && x.op === 'delete' && x.filters.couple_id === 'cpl'));
 });
