@@ -249,3 +249,34 @@ export async function deleteRuotaContenuto(client, id) {
   const res = await client.from('ruota_contenuti').delete().eq('id', id);
   return check(res);
 }
+
+// ---- LUOGHI (Mappa) ----
+export async function listLuoghi(client, coupleId) {
+  const res = await client.from('luoghi').select('*')
+    .eq('couple_id', coupleId).order('creato', { ascending: false });
+  return check(res);
+}
+
+export async function addLuogo(client, { couple_id, autore_id, nome, citta, lat, lng, intimo, voto, descrizione, data_evento, esperienza_id }) {
+  const res = await client.from('luoghi').insert({
+    couple_id, autore_id, nome,
+    citta: citta || null, lat, lng,
+    intimo: !!intimo, voto: voto ?? 0,
+    descrizione: descrizione || null, data_evento,
+    esperienza_id: esperienza_id || null,
+  }).select().single();
+  return check(res);
+}
+
+export async function updateLuogo(client, id, { nome, citta, intimo, voto, descrizione, data_evento }) {
+  const res = await client.from('luoghi').update({
+    nome, citta: citta || null, intimo: !!intimo, voto: voto ?? 0,
+    descrizione: descrizione || null, data_evento,
+  }).eq('id', id);
+  return check(res);
+}
+
+export async function deleteLuogo(client, id) {
+  const res = await client.from('luoghi').delete().eq('id', id);
+  return check(res);
+}
