@@ -258,5 +258,93 @@ function drawApertura() {
 }
 function chooseMode(m) { mode = m; drawSetup(); }
 
-// placeholder (sostituito in 7d)
-function drawSetup() { clear(host); }
+// ---------------------------------------------------------------------------
+// overlay helper: nodo appeso a document.body con classe "dadi-scrim strip-ov"
+// (ui.js blocca lo scroll finché esiste). Ritorna il nodo radice.
+// ---------------------------------------------------------------------------
+function closeOv() { const o = document.querySelector('.strip-ov'); if (o) o.remove(); }
+function openOv() {
+  closeOv();
+  const ov = mk('div', 'dadi-scrim strip-ov');
+  document.body.appendChild(ov);
+  return ov;
+}
+
+// ---------------------------------------------------------------------------
+// 7d — setup guardaroba (checklist Lui/Lei)
+// ---------------------------------------------------------------------------
+let selLui = {}, selLei = {};
+function initSel() {
+  selLui = {}; selLei = {};
+  for (const c of capiIniziali('lui')) selLui[c.k] = true;   // default: tutto selezionato
+  for (const c of capiIniziali('lei')) selLei[c.k] = true;
+}
+
+function totCapi(sel) {
+  let n = 0;
+  for (const k in sel) if (sel[k]) n += GUARDAROBA_META[k].qty;
+  return n;
+}
+
+function renderList(box, who, sel, onChange) {
+  clear(box); let lastG = null;
+  GUARDAROBA.filter(c => !c.sesso || c.sesso === who).forEach(c => {
+    if (c.gruppo !== lastG) { box.appendChild(mk('div', 'grp', c.gruppo)); lastG = c.gruppo; }
+    const row = mk('div', 'it' + (sel[c.k] ? ' on' : ''));
+    add(row, mk('span', 'em', GUARDAROBA_META[c.k].e), mk('span', null, c.n));
+    if (c.qty > 1) row.appendChild(mk('span', 'qty', '×' + c.qty));
+    row.appendChild(mk('span', 'ck'));
+    row.onclick = () => { sel[c.k] = !sel[c.k]; onChange(); };
+    box.appendChild(row);
+  });
+}
+
+function drawSetup() {
+  initSel();
+  const ov = openOv();
+  const head = mk('div', 'setHead');
+  const h3 = mk('h3'); h3.appendChild(document.createTextNode('Cosa avete '));
+  h3.appendChild(mk('b', null, 'addosso')); h3.appendChild(document.createTextNode('?'));
+  add(head, h3, mk('div', 'sub', 'Spunta quello che indossate adesso. Scarpe e calzini contano 2 e si tolgono uno alla volta.'));
+  ov.appendChild(head);
+
+  const cols = mk('div', 'cols');
+  const cardLui = mk('div', 'who-card'); const totLui = mk('div', 'tot', '0 capi'); const listLui = mk('div', 'list');
+  add(cardLui, mk('h4', null, '🐻 Lui'), totLui, listLui);
+  const cardLei = mk('div', 'who-card'); const totLei = mk('div', 'tot', '0 capi'); const listLei = mk('div', 'list');
+  add(cardLei, mk('h4', null, '🧁 Lei'), totLei, listLei);
+  add(cols, cardLui, cardLei);
+  ov.appendChild(cols);
+
+  const eqNote = mk('div', 'eqNote', 'Consiglio: stesso numero di capi per una partita equilibrata.');
+  ov.appendChild(eqNote);
+
+  const go = mk('button', 'btn', 'Inizia a giocare →'); go.disabled = true;
+  const refresh = () => {
+    renderList(listLui, 'lui', selLui, refresh);
+    renderList(listLei, 'lei', selLei, refresh);
+    const nL = totCapi(selLui), nF = totCapi(selLei);
+    totLui.textContent = nL + ' capi'; totLei.textContent = nF + ' capi';
+    go.disabled = !(nL > 0 && nF > 0);
+    eqNote.textContent = (nL && nF && nL !== nF)
+      ? ('Sbilanciata: Lui ' + nL + ' · Lei ' + nF + ' (ok lo stesso).')
+      : 'Consiglio: stesso numero di capi per una partita equilibrata.';
+  };
+  go.onclick = () => { closeOv(); startGame(selLui, selLei); };
+  ov.appendChild(go);
+  refresh();
+}
+
+function startGame(sLui, sLei) {
+  stato = { lui: {}, lei: {} };
+  for (const c of capiIniziali('lui')) if (sLui[c.k]) stato.lui[c.k] = c.qty;
+  for (const c of capiIniziali('lei')) if (sLei[c.k]) stato.lei[c.k] = c.qty;
+  drawTavolo(); resetMano();
+  if (mode === 'holdem') dealHold(); else dealDraw();
+}
+
+// placeholder (sostituiti in 7e/7f)
+function drawTavolo() { clear(host); }
+function resetMano() {}
+function dealHold() {}
+function dealDraw() {}
