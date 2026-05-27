@@ -190,6 +190,98 @@ export function componiFrase(facce, picks) {
   return { emos, act, rest };
 }
 
+// ---- DATI / STATISTICHE (pure) ----
+// Tutto derivato dalle esperienze; nessuna tabella nuova. `todayISO` ('YYYY-MM-DD') iniettabile.
+
+const NOMI_MESE = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+
+export function nomeMese(month) {
+  return NOMI_MESE[month];
+}
+
+// Filtra per periodo: 'sempre' = tutto, 'mese' = stesso mese (YYYY-MM) di oggi. Salta gli eventi senza data.
+export function filtraPeriodo(events, periodo, todayISO) {
+  const conData = events.filter(e => e.data);
+  if (periodo === 'sempre') return conData;
+  const m = todayISO.slice(0, 7);
+  return conData.filter(e => e.data.slice(0, 7) === m);
+}
+
+// Conteggio per tipo nel set dato → [{tipo, n}] nell'ordine dei tipi (tipi senza eventi restano a 0).
+export function conteggioPerTipo(events, tipi) {
+  return tipi.map(t => ({ tipo: t, n: events.filter(e => e.tipo_id === t.id).length }));
+}
+
+// Mappa { iso: numero eventi }. Salta gli eventi senza data.
+export function conteggiGiornalieri(events) {
+  const m = {};
+  for (const e of events) if (e.data) m[e.data] = (m[e.data] || 0) + 1;
+  return m;
+}
+
+// Giorni consecutivi (fino a oggi incluso) con almeno un evento.
+export function streakAttuale(events, todayISO) {
+  const counts = conteggiGiornalieri(events);
+  let streak = 0;
+  const d = new Date(todayISO + 'T00:00:00Z');
+  while (counts[d.toISOString().slice(0, 10)]) {
+    streak++;
+    d.setUTCDate(d.getUTCDate() - 1);
+  }
+  return streak;
+}
+
+// Giorno record { iso, n } col massimo di eventi. `prefisso` ('YYYY-MM') opzionale per limitare al mese.
+export function giornoRecord(events, prefisso = null) {
+  const counts = conteggiGiornalieri(events);
+  let best = 0, bestIso = null;
+  for (const [iso, n] of Object.entries(counts)) {
+    if (prefisso && iso.slice(0, 7) !== prefisso) continue;
+    if (n > best) { best = n; bestIso = iso; }
+  }
+  return { iso: bestIso, n: best };
+}
+
+// Record per tipo (di sempre): per ogni tipo il giorno col massimo di eventi di quel tipo.
+// → [{tipo, iso, n}] nell'ordine dei tipi (n 0 / iso null se il tipo non ha eventi).
+export function recordPerTipo(events, tipi) {
+  return tipi.map(t => {
+    const rec = giornoRecord(events.filter(e => e.tipo_id === t.id));
+    return { tipo: t, iso: rec.iso, n: rec.n };
+  });
+}
+
+// Media a settimana nel periodo. 'mese' = giorni trascorsi del mese / 7; 'sempre' = span dal primo evento a oggi.
+export function mediaSettimanale(eventsPeriodo, allEvents, periodo, todayISO) {
+  const n = eventsPeriodo.length;
+  if (!n) return 0;
+  let settimane;
+  if (periodo === 'mese') {
+    settimane = Number(todayISO.slice(8, 10)) / 7;
+  } else {
+    const dates = Object.keys(conteggiGiornalieri(allEvents)).sort();
+    if (!dates.length) return 0;
+    const span = (new Date(todayISO + 'T00:00:00Z') - new Date(dates[0] + 'T00:00:00Z')) / 6048e5;
+    settimane = span;
+  }
+  return n / Math.max(settimane, 1);
+}
+
+// Array lungo i giorni del mese corrente, con il conteggio di eventi per ciascun giorno.
+export function perGiornoDelMese(events, todayISO) {
+  const [y, m] = todayISO.split('-').map(Number);
+  const giorni = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const prefisso = todayISO.slice(0, 7);
+  const arr = new Array(giorni).fill(0);
+  for (const e of events) {
+    if (!e.data || e.data.slice(0, 7) !== prefisso) continue;
+    const d = Number(e.data.slice(8, 10));
+    if (d >= 1 && d <= giorni) arr[d - 1]++;
+  }
+  return arr;
+}
+
 export function buoniRicevuti(buoni, me) {
   return buoni.filter(b => b.a_id === me && b.tipo === 'regalo');
 }

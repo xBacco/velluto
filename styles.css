@@ -130,6 +130,40 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
 .section-label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
   margin:6px 0 10px;font-family:Arial,sans-serif;}
 
+/* ===== Dati: hero, grid per tipo, record & medie, barre giorno-per-giorno ===== */
+.seg2{display:flex;background:rgba(0,0,0,.3);border:1px solid rgba(212,168,108,.25);
+  border-radius:999px;padding:4px;width:fit-content;margin:0 0 16px;}
+.seg2 button{border:none;background:transparent;color:#cbab9e;font-family:Arial,sans-serif;
+  font-size:13px;padding:8px 18px;border-radius:999px;cursor:pointer;min-height:40px;}
+.seg2 button.on{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;}
+.stat-hero{text-align:center;padding:22px;border-radius:18px;margin-bottom:14px;
+  background:linear-gradient(160deg,rgba(122,21,51,.45),rgba(20,4,9,.5));
+  border:1px solid rgba(212,168,108,.3);}
+.stat-hero .big{font-size:48px;color:#fff;line-height:1;}
+.stat-hero .lbl{font-family:Arial,sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  color:#e8cda0;margin-top:8px;}
+.stat-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.stat-card{flex:1 1 calc(50% - 8px);text-align:center;padding:15px 8px;border-radius:14px;
+  border:1px solid rgba(212,168,108,.25);background:linear-gradient(160deg,rgba(92,16,38,.3),rgba(20,4,9,.4));}
+.stat-card .se{font-size:26px;}
+.stat-card .sl{font-family:Arial,sans-serif;font-size:11px;color:#cbab9e;margin:3px 0 9px;}
+.stat-card .sn{font-size:32px;color:var(--gold-soft);line-height:1;}
+.stat-card .sm{font-family:Arial,sans-serif;font-size:11px;color:#9c7f88;margin-top:7px;}
+.rec-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.rec{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:13px;
+  border:1px solid rgba(212,168,108,.2);background:linear-gradient(160deg,rgba(92,16,38,.22),rgba(20,4,9,.35));}
+.rec .re{font-size:22px;}
+.rec .rk{flex:1;font-family:Arial,sans-serif;font-size:11px;color:#cbab9e;text-transform:uppercase;letter-spacing:.06em;}
+.rec .rv{font-size:15px;color:var(--cream);text-align:right;}
+.rec-link{cursor:pointer;transition:border-color .15s ease,background .15s ease;}
+.rec-link:hover,.rec-link:active{border-color:rgba(212,168,108,.5);
+  background:linear-gradient(160deg,rgba(122,21,51,.35),rgba(20,4,9,.4));}
+.rec-link .rv{color:var(--gold-soft);}
+.bars-wrap{padding:14px;border-radius:14px;border:1px solid rgba(212,168,108,.22);
+  background:rgba(20,4,9,.35);margin-bottom:8px;}
+.bars{display:flex;align-items:flex-end;gap:2px;height:74px;}
+.bar{flex:1;background:linear-gradient(180deg,#d4a86c,#7a1533);border-radius:3px 3px 0 0;min-height:2px;}
+
 /* ===== Calendario redesign: tally, momenti, card evento, tag ===== */
 .tally-lbl{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
   margin:2px 0 8px;font-family:Arial,sans-serif;}
