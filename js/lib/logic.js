@@ -465,3 +465,80 @@ export function pescaContenuto(lista, rnd = Math.random) {
   if (!lista.length) return null;
   return lista[Math.floor(rnd() * lista.length)];
 }
+
+// ============================================================================
+// STRIP POKER (Fase 4c) — motore poker puro
+// Carta: { r, s } con r 2..14 (11=J,12=Q,13=K,14=A), s 0..3 (0♠ 1♥ 2♦ 3♣).
+// ============================================================================
+
+export const CATEGORIE_POKER = [
+  'Carta alta', 'Coppia', 'Doppia coppia', 'Tris', 'Scala', 'Colore', 'Full', 'Poker', 'Scala colore',
+];
+
+export function mazzo52() {
+  const d = [];
+  for (let s = 0; s < 4; s++) for (let r = 2; r <= 14; r++) d.push({ r, s });
+  return d;
+}
+
+export function mescola(deck, rnd = Math.random) {
+  const d = [...deck];
+  for (let i = d.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    const t = d[i]; d[i] = d[j]; d[j] = t;
+  }
+  return d;
+}
+
+export function valutaMano(carte5) {
+  const rs = carte5.map(c => c.r).sort((a, b) => b - a);
+  const flush = carte5.every(c => c.s === carte5[0].s);
+  const uniq = rs.filter((v, i) => rs.indexOf(v) === i);
+  let straight = false, hi = rs[0];
+  if (uniq.length === 5) {
+    if (uniq[0] - uniq[4] === 4) { straight = true; hi = uniq[0]; }
+    else if (uniq[0] === 14 && uniq[1] === 5 && uniq[4] === 2) { straight = true; hi = 5; }
+  }
+  const cnt = {}; rs.forEach(r => { cnt[r] = (cnt[r] || 0) + 1; });
+  const groups = Object.keys(cnt).map(r => [cnt[r], +r]).sort((a, b) => b[0] - a[0] || b[1] - a[1]);
+  const counts = groups.map(g => g[0]);
+  const ordered = groups.map(g => g[1]);
+  let categoria, tieBreakers;
+  if (straight && flush) { categoria = 8; tieBreakers = [hi]; }
+  else if (counts[0] === 4) { categoria = 7; tieBreakers = ordered; }
+  else if (counts[0] === 3 && counts[1] === 2) { categoria = 6; tieBreakers = ordered; }
+  else if (flush) { categoria = 5; tieBreakers = rs; }
+  else if (straight) { categoria = 4; tieBreakers = [hi]; }
+  else if (counts[0] === 3) { categoria = 3; tieBreakers = ordered; }
+  else if (counts[0] === 2 && counts[1] === 2) { categoria = 2; tieBreakers = ordered; }
+  else if (counts[0] === 2) { categoria = 1; tieBreakers = ordered; }
+  else { categoria = 0; tieBreakers = rs; }
+  return { categoria, tieBreakers };
+}
+
+export function confronta(a, b) {
+  const va = [a.categoria, ...a.tieBreakers];
+  const vb = [b.categoria, ...b.tieBreakers];
+  for (let i = 0; i < Math.max(va.length, vb.length); i++) {
+    const x = va[i] || 0, y = vb[i] || 0;
+    if (x !== y) return x - y;
+  }
+  return 0;
+}
+
+function combinazioni5(carte) {
+  const r = [], n = carte.length;
+  for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) for (let c = b + 1; c < n; c++)
+    for (let d = c + 1; d < n; d++) for (let e = d + 1; e < n; e++)
+      r.push([carte[a], carte[b], carte[c], carte[d], carte[e]]);
+  return r;
+}
+
+export function miglioreManoDa7(carte7) {
+  let best = null, bestCarte = null;
+  for (const combo of combinazioni5(carte7)) {
+    const v = valutaMano(combo);
+    if (!best || confronta(v, best) > 0) { best = v; bestCarte = combo; }
+  }
+  return { categoria: best.categoria, tieBreakers: best.tieBreakers, carte: bestCarte };
+}
