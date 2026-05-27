@@ -66,3 +66,64 @@ test('miglioreManoDa7 sceglie la migliore mano da 5 su 7 (Hold\'em)', () => {
   assert.equal(best.carte.length, 5);
   assert.ok(best.carte.every(c => c.s === 1));
 });
+
+import {
+  GUARDAROBA, capiIniziali, statoInizialePartita, togliCapo, eNudo, risultatoPartita,
+} from '../js/lib/logic.js';
+
+test('capiIniziali: 13 capi a testa, simmetrici per conteggio', () => {
+  const conta = lista => lista.reduce((n, c) => n + c.qty, 0);
+  assert.equal(conta(capiIniziali('lui')), 13);
+  assert.equal(conta(capiIniziali('lei')), 13);
+});
+
+test('capiIniziali: Lei ha gonna+reggiseno, Lui ha pantaloncini+canottiera; niente autoreggenti', () => {
+  const lei = capiIniziali('lei').map(c => c.k);
+  const lui = capiIniziali('lui').map(c => c.k);
+  assert.ok(lei.includes('gonna') && lei.includes('reggiseno'));
+  assert.ok(!lei.includes('pantaloncini') && !lei.includes('canottiera'));
+  assert.ok(lui.includes('pantaloncini') && lui.includes('canottiera'));
+  assert.ok(!lui.includes('gonna') && !lui.includes('reggiseno'));
+  assert.ok(!lei.includes('autoreggenti') && !lui.includes('autoreggenti'));
+});
+
+test('capiIniziali: ordine dal più esterno (cappello) al più intimo (intimo)', () => {
+  const lui = capiIniziali('lui').map(c => c.k);
+  assert.equal(lui[0], 'cappello');
+  assert.equal(lui[lui.length - 1], 'canottiera');
+});
+
+test('scarpe e calzini hanno qty 2', () => {
+  const m = Object.fromEntries(capiIniziali('lui').map(c => [c.k, c.qty]));
+  assert.equal(m.scarpe, 2);
+  assert.equal(m.calzini, 2);
+  assert.equal(m.cappello, 1);
+});
+
+test('togliCapo decrementa la quantità e non muta lo stato in ingresso', () => {
+  const s0 = statoInizialePartita();
+  const s1 = togliCapo(s0, 'lui', 'scarpe');
+  assert.equal(s0.lui.scarpe, 2, 'originale intatto');
+  assert.equal(s1.lui.scarpe, 1);
+  const s2 = togliCapo(s1, 'lui', 'scarpe');
+  assert.equal(s2.lui.scarpe, undefined, 'a 0 la chiave sparisce');
+});
+
+test('eNudo vero solo quando tutti i capi sono stati tolti', () => {
+  let s = statoInizialePartita();
+  assert.equal(eNudo(s, 'lei'), false);
+  for (const c of capiIniziali('lei')) {
+    for (let i = 0; i < c.qty; i++) s = togliCapo(s, 'lei', c.k);
+  }
+  assert.equal(eNudo(s, 'lei'), true);
+  assert.equal(eNudo(s, 'lui'), false);
+});
+
+test('risultatoPartita: chi resta nudo perde, l\'altro vince; null se nessuno è nudo', () => {
+  let s = statoInizialePartita();
+  assert.equal(risultatoPartita(s), null);
+  for (const c of capiIniziali('lui')) {
+    for (let i = 0; i < c.qty; i++) s = togliCapo(s, 'lui', c.k);
+  }
+  assert.deepEqual(risultatoPartita(s), { vincitore: 'lei', perdente: 'lui' });
+});

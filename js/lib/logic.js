@@ -542,3 +542,63 @@ export function miglioreManoDa7(carte7) {
   }
   return { categoria: best.categoria, tieBreakers: best.tieBreakers, carte: bestCarte };
 }
+
+// ============================================================================
+// STRIP POKER — guardaroba e state machine (pura)
+// Lista simmetrica: 13 capi a testa. Differenze per sesso solo su capo "sotto"
+// (gonna/pantaloncini) e intimo (reggiseno/canottiera). Ordine = dal più esterno
+// al più intimo (ordine in cui si tolgono). via:'avatar' = si tocca la zona del
+// corpo; via:'chip' = chip a lato (scarpe/calzini, qty 2).
+// ============================================================================
+
+export const GUARDAROBA = [
+  { k: 'cappello',   n: 'Cappello',   e: '🎩', gruppo: 'Testa',  qty: 1, via: 'avatar', zona: 'head' },
+  { k: 'occhiali',   n: 'Occhiali',   e: '🕶️', gruppo: 'Testa',  qty: 1, via: 'avatar', acc: 'occhiali' },
+  { k: 'sciarpa',    n: 'Sciarpa',    e: '🧣', gruppo: 'Testa',  qty: 1, via: 'avatar', acc: 'sciarpa' },
+  { k: 'giacca',     n: 'Giacca',     e: '🧥', gruppo: 'Sopra',  qty: 1, via: 'avatar', zona: 'torso' },
+  { k: 'felpa',      n: 'Felpa',      e: '🧶', gruppo: 'Sopra',  qty: 1, via: 'avatar', zona: 'torso' },
+  { k: 'maglietta',  n: 'Maglietta',  e: '👕', gruppo: 'Sopra',  qty: 1, via: 'avatar', zona: 'torso' },
+  { k: 'gonna',      n: 'Gonna',      e: '👗', gruppo: 'Sotto',  qty: 1, via: 'avatar', zona: 'legs', sesso: 'lei' },
+  { k: 'pantaloncini', n: 'Pantaloncini', e: '🩳', gruppo: 'Sotto', qty: 1, via: 'avatar', zona: 'legs', sesso: 'lui' },
+  { k: 'scarpe',     n: 'Scarpe',     e: '👟', gruppo: 'Piedi',  qty: 2, via: 'chip' },
+  { k: 'calzini',    n: 'Calzini',    e: '🧦', gruppo: 'Piedi',  qty: 2, via: 'chip' },
+  { k: 'mutande',    n: 'Mutande',    e: '🩲', gruppo: 'Intimo', qty: 1, via: 'avatar', zona: 'pelvis' },
+  { k: 'reggiseno',  n: 'Reggiseno',  e: '👙', gruppo: 'Intimo', qty: 1, via: 'avatar', zona: 'torso', sesso: 'lei' },
+  { k: 'canottiera', n: 'Canottiera', e: '🦺', gruppo: 'Intimo', qty: 1, via: 'avatar', zona: 'torso', sesso: 'lui' },
+];
+
+export const GUARDAROBA_META = Object.fromEntries(GUARDAROBA.map(c => [c.k, c]));
+
+export function capiIniziali(sesso) {
+  return GUARDAROBA
+    .filter(c => !c.sesso || c.sesso === sesso)
+    .map(c => ({ k: c.k, qty: c.qty }));
+}
+
+export function statoInizialePartita() {
+  const build = sesso => {
+    const o = {};
+    for (const c of capiIniziali(sesso)) o[c.k] = c.qty;
+    return o;
+  };
+  return { lui: build('lui'), lei: build('lei') };
+}
+
+export function togliCapo(stato, persona, capoId) {
+  const cur = stato[persona];
+  if (!cur || !cur[capoId]) return stato;
+  const next = { ...cur, [capoId]: cur[capoId] - 1 };
+  if (next[capoId] <= 0) delete next[capoId];
+  return { ...stato, [persona]: next };
+}
+
+export function eNudo(stato, persona) {
+  const cur = stato[persona] || {};
+  return Object.values(cur).reduce((a, b) => a + b, 0) === 0;
+}
+
+export function risultatoPartita(stato) {
+  if (eNudo(stato, 'lui')) return { vincitore: 'lei', perdente: 'lui' };
+  if (eNudo(stato, 'lei')) return { vincitore: 'lui', perdente: 'lei' };
+  return null;
+}
