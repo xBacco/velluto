@@ -413,3 +413,47 @@ export function ultimiPremi(movimenti, userId, n = ECONOMIA.ULTIMI_PREMI) {
     .slice(0, n)
     .map(m => ({ ...m, fetta: FETTE.find(f => f.key === m.esito) || null }));
 }
+
+// ---- CONTENUTI RUOTA (default di seeding; la fonte di verità è ruota_contenuti) ----
+// Approvati dall'utente il 2026-05-27 (mockups/ruota-contenuti.html). Editabili dall'app.
+export const PROPOSTE_PICCANTI_DEFAULT = [
+  'Spogliatevi a vicenda, lentamente, senza dire una parola.',
+  'Massaggio con l’olio: dieci minuti a testa, niente fretta.',
+  'Uno dei due bendato: si lascia guidare solo dal tatto.',
+  'Doccia insieme, luci basse.',
+  'Chi ha girato detta le regole per i prossimi dieci minuti.',
+  'Un bacio lungo un minuto intero — mani dietro la schiena.',
+  'Raccontatevi una fantasia che non vi siete mai detti.',
+  'Striptease privato: una canzone intera, pubblico di una persona.',
+];
+
+export const BUONI_SORPRESA_DEFAULT = [
+  { emoji: '💆', titolo: 'Massaggio completo',    descrizione: 'Quindici minuti di massaggio, quando lo riscatti.' },
+  { emoji: '🛁', titolo: 'Bagno caldo preparato', descrizione: 'Te lo prepara il partner, candele incluse.' },
+  { emoji: '😈', titolo: 'Un sì garantito',       descrizione: 'Una richiesta piccante a tua scelta, senza poter dire di no.' },
+  { emoji: '🎬', titolo: 'Serata, scegli tu',     descrizione: 'Film e coccole decisi da te, per una sera.' },
+  { emoji: '💋', titolo: 'Tre voglie express',    descrizione: 'Tre piccoli desideri esauditi stasera.' },
+  { emoji: '🍳', titolo: 'Colazione a letto',     descrizione: 'Una mattina a tua scelta, te la porta il partner.' },
+];
+
+// Righe piatte per seminare ruota_contenuti la prima volta (stile facceDefaultRows/tipiDefaultRows).
+export function ruotaContenutiDefaultRows(coupleId) {
+  const rows = [];
+  PROPOSTE_PICCANTI_DEFAULT.forEach((testo, i) =>
+    rows.push({ couple_id: coupleId, categoria: 'piccante', emoji: null, testo, descrizione: null, ordine: i }));
+  BUONI_SORPRESA_DEFAULT.forEach((b, i) =>
+    rows.push({ couple_id: coupleId, categoria: 'buono', emoji: b.emoji, testo: b.titolo, descrizione: b.descrizione, ordine: i }));
+  return rows;
+}
+
+export function proposteDa(contenuti) {
+  return contenuti.filter(c => c.categoria === 'piccante').sort((a, b) => a.ordine - b.ordine);
+}
+export function buoniSorpresaDa(contenuti) {
+  return contenuti.filter(c => c.categoria === 'buono').sort((a, b) => a.ordine - b.ordine);
+}
+// Un elemento a caso da una lista; null se vuota. rnd iniettabile.
+export function pescaContenuto(lista, rnd = Math.random) {
+  if (!lista.length) return null;
+  return lista[Math.floor(rnd() * lista.length)];
+}

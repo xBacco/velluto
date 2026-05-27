@@ -102,3 +102,40 @@ test('ultimiPremi: solo giri dell\'utente, ordinati desc, tagliati a n, con fett
   assert.equal(r[0].fetta.emoji, '🔥');
   assert.equal(r[1].esito, 'dadi');
 });
+
+import {
+  PROPOSTE_PICCANTI_DEFAULT, BUONI_SORPRESA_DEFAULT,
+  ruotaContenutiDefaultRows, proposteDa, buoniSorpresaDa, pescaContenuto,
+} from '../js/lib/logic.js';
+
+test('ruotaContenutiDefaultRows produce righe piccante + buono con ordine progressivo', () => {
+  const rows = ruotaContenutiDefaultRows('cpl');
+  assert.equal(rows.length, PROPOSTE_PICCANTI_DEFAULT.length + BUONI_SORPRESA_DEFAULT.length);
+  const picc = rows.filter(r => r.categoria === 'piccante');
+  const buoni = rows.filter(r => r.categoria === 'buono');
+  assert.equal(picc.length, PROPOSTE_PICCANTI_DEFAULT.length);
+  assert.equal(picc[0].couple_id, 'cpl');
+  assert.equal(picc[0].ordine, 0);
+  assert.equal(picc[0].emoji, null);
+  assert.equal(picc[0].testo, PROPOSTE_PICCANTI_DEFAULT[0]);
+  assert.equal(buoni[0].emoji, BUONI_SORPRESA_DEFAULT[0].emoji);
+  assert.equal(buoni[0].testo, BUONI_SORPRESA_DEFAULT[0].titolo);
+  assert.equal(buoni[0].descrizione, BUONI_SORPRESA_DEFAULT[0].descrizione);
+});
+
+test('proposteDa / buoniSorpresaDa filtrano per categoria e ordinano per ordine', () => {
+  const cont = [
+    { categoria: 'piccante', testo: 'b', ordine: 1 },
+    { categoria: 'piccante', testo: 'a', ordine: 0 },
+    { categoria: 'buono', testo: 'B', ordine: 0 },
+  ];
+  assert.deepEqual(proposteDa(cont).map(c => c.testo), ['a', 'b']);
+  assert.deepEqual(buoniSorpresaDa(cont).map(c => c.testo), ['B']);
+});
+
+test('pescaContenuto estrae con rnd e dà null su lista vuota', () => {
+  const l = [{ testo: 'x' }, { testo: 'y' }, { testo: 'z' }];
+  assert.equal(pescaContenuto(l, () => 0).testo, 'x');
+  assert.equal(pescaContenuto(l, () => 0.99).testo, 'z');
+  assert.equal(pescaContenuto([], () => 0.5), null);
+});
