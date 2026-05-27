@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ruota · 3 pop-up premio</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a;
+}
+*{box-sizing:border-box;}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;margin:0;
+  background:#0c0306;display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 14px 70px;}
+.intro{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;max-width:440px;line-height:1.5;}
+.intro b{color:var(--gold-soft);}
+.tabs{display:flex;gap:8px;margin:4px 0;flex-wrap:wrap;justify-content:center;}
+.tabs button{font-family:Arial,sans-serif;font-size:13px;background:rgba(255,255,255,.04);border:1px solid rgba(212,168,108,.3);
+  color:var(--gold-soft);padding:9px 15px;border-radius:999px;cursor:pointer;}
+.tabs button.on{background:var(--wine);color:#fff;border-color:var(--wine2);}
+.vdesc{font-family:Arial,sans-serif;font-size:12px;color:#b9908f;text-align:center;max-width:400px;line-height:1.5;margin:0;min-height:34px;}
+
+.phone{width:100%;max-width:390px;border-radius:30px;overflow:hidden;border:1px solid rgba(212,168,108,.25);
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),linear-gradient(170deg,var(--bg),var(--bg2));
+  box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;min-height:760px;display:flex;flex-direction:column;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:15px 18px 8px;}
+.brand{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);}
+.me-chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid rgba(212,168,108,.3);
+  border-radius:999px;padding:5px 11px;color:var(--cream);font-family:Arial,sans-serif;font-size:12px;}
+.scr{flex:1;overflow-y:auto;padding:4px 18px 14px;}
+.nav{display:flex;gap:4px;justify-content:space-between;padding:8px 8px 12px;background:linear-gradient(0deg,#1c0610,transparent);overflow-x:auto;}
+.nav button{flex:0 0 auto;font-family:Arial,sans-serif;font-size:11px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(212,168,108,.18);color:var(--gold-soft);padding:7px 9px;border-radius:10px;cursor:pointer;white-space:nowrap;}
+.nav button.on{color:#fff;border-color:var(--wine2);background:linear-gradient(180deg,rgba(122,21,51,.6),rgba(92,16,38,.3));}
+
+.giri-card{display:flex;align-items:center;justify-content:space-between;margin-top:12px;
+  background:linear-gradient(160deg,rgba(92,16,38,.32),rgba(20,4,9,.4));border:1px solid rgba(212,168,108,.22);
+  border-radius:14px;padding:12px 16px;}
+.giri-card .k{font-family:Arial,sans-serif;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);margin:0 0 8px;}
+.coins{display:flex;gap:7px;}.coin{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--gold);}
+.coin.full{background:radial-gradient(circle at 38% 32%,var(--gold-soft),var(--gold));}.coin.empty{opacity:.45;}
+.giri-card .right{text-align:right;font-family:Arial,sans-serif;font-size:11px;color:#b9908f;}
+
+.wheel-wrap{position:relative;width:280px;height:280px;margin:14px auto 0;}
+.pointer{position:absolute;top:-4px;left:50%;transform:translateX(-50%);z-index:6;width:0;height:0;
+  border-left:13px solid transparent;border-right:13px solid transparent;border-top:23px solid var(--gold-soft);filter:drop-shadow(0 2px 3px rgba(0,0,0,.6));}
+.wheel{position:absolute;inset:0;border-radius:50%;border:6px solid var(--gold);z-index:1;
+  box-shadow:0 0 0 4px rgba(0,0,0,.5),0 14px 40px rgba(0,0,0,.6),inset 0 0 30px rgba(0,0,0,.4);
+  transition:transform 4.2s cubic-bezier(.17,.67,.18,1);
+  background:conic-gradient(from 0deg,#6a1230 0 45deg,#3a0c1c 45deg 90deg,#6a1230 90deg 135deg,#3a0c1c 135deg 180deg,
+    #6a1230 180deg 225deg,#3a0c1c 225deg 270deg,#6a1230 270deg 315deg,#3a0c1c 315deg 360deg);}
+.wheel::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,transparent 0 44.6deg,rgba(212,168,108,.55) 44.6deg 45deg);}
+.slice-lbl{position:absolute;top:50%;left:50%;width:0;height:0;}
+.slice-lbl .in{position:absolute;transform:translate(-50%,-50%);}
+.slice-lbl .e{font-size:26px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));display:block;}
+.hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;width:48px;height:48px;border-radius:50%;
+  background:radial-gradient(circle at 38% 32%,var(--gold-soft),var(--gold) 60%,#a87a3e);border:3px solid #2a0813;
+  box-shadow:0 3px 10px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-size:18px;}
+
+.spin-zone{margin-top:16px;display:flex;flex-direction:column;align-items:center;}
+.spin-a{appearance:none;border:none;cursor:pointer;font-family:Arial,sans-serif;min-height:54px;border-radius:999px;
+  padding:0 50px;font-size:15px;letter-spacing:.12em;text-transform:uppercase;
+  background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;box-shadow:0 10px 24px rgba(0,0,0,.55);}
+.spin-a:disabled{opacity:.5;}
+.cost-line{font-family:Arial,sans-serif;font-size:11.5px;color:#b9908f;margin-top:9px;display:flex;align-items:center;gap:5px;}
+.cost .c{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#fff2d6,#caa05e);border:1px solid #8a6a30;display:inline-block;}
+
+/* ===== REVEAL overlay (dentro al phone) ===== */
+.reveal{position:absolute;inset:0;z-index:40;display:none;background:rgba(8,2,5,.72);backdrop-filter:blur(2px);}
+.reveal.show{display:block;}
+.prize-card{position:absolute;left:50%;width:250px;background:linear-gradient(180deg,#2a0813,#1c0610);
+  border:1px solid rgba(212,168,108,.4);border-radius:18px;padding:22px 18px 18px;text-align:center;
+  box-shadow:0 18px 44px rgba(0,0,0,.6);}
+.prize-card .won{font-family:Arial,sans-serif;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);}
+.prize-card .big{font-size:52px;margin:8px 0 4px;}
+.prize-card .name{font-size:20px;color:var(--gold-soft);margin:0 0 6px;}
+.prize-card .desc{font-family:Arial,sans-serif;font-size:12.5px;color:#e7c9c9;line-height:1.5;margin:0 0 14px;}
+.prize-card .act{appearance:none;border:none;cursor:pointer;font-family:Arial,sans-serif;width:100%;min-height:42px;border-radius:11px;
+  font-size:13.5px;background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;}
+.prize-card .sec{display:block;margin:9px auto 0;background:transparent;border:1px solid rgba(212,168,108,.4);color:var(--gold-soft);
+  font-family:Arial,sans-serif;font-size:12px;padding:7px 16px;border-radius:10px;cursor:pointer;}
+
+/* V1 · cresce dallo spicchio (origin alto, sopra la ruota) */
+.r1 .prize-card{top:78px;transform:translateX(-50%) translateY(-30px) scale(.12);transform-origin:center top;opacity:0;}
+.r1.show .prize-card{animation:grow1 .55s cubic-bezier(.18,1.3,.4,1) forwards;}
+@keyframes grow1{0%{transform:translateX(-50%) translateY(-30px) scale(.12);opacity:0;}
+  60%{opacity:1;}100%{transform:translateX(-50%) translateY(40px) scale(1);opacity:1;}}
+
+/* V2 · spicchio si illumina poi banner sale dal basso */
+.wedge{position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:90px;height:140px;z-index:7;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 0,rgba(233,201,143,.85),rgba(233,201,143,0) 70%);opacity:0;
+  clip-path:polygon(50% 0,100% 100%,0 100%);}
+.r2.show .wedge{animation:wedgePulse 1.4s ease forwards;}
+@keyframes wedgePulse{0%{opacity:0;}25%{opacity:1;}60%{opacity:.7;}100%{opacity:0;}}
+.r2 .prize-card{bottom:18px;transform:translateX(-50%) translateY(140%);opacity:0;}
+.r2.show .prize-card{animation:rise2 .5s ease .35s forwards;}
+@keyframes rise2{0%{transform:translateX(-50%) translateY(140%);opacity:0;}100%{transform:translateX(-50%) translateY(0);opacity:1;}}
+
+/* V3 · l'emoji vola fuori dallo spicchio e si ingrandisce, testo sotto */
+.fly{position:absolute;top:70px;left:50%;z-index:8;transform:translate(-50%,0) scale(.4);opacity:0;font-size:70px;
+  filter:drop-shadow(0 6px 14px rgba(0,0,0,.5));}
+.r3.show .fly{animation:fly3 .7s cubic-bezier(.18,1.3,.4,1) forwards;}
+@keyframes fly3{0%{transform:translate(-50%,0) scale(.4);opacity:0;}40%{opacity:1;}
+  100%{transform:translate(-50%,120px) scale(1.7);opacity:1;}}
+.r3 .prize-card{top:235px;background:transparent;border:none;box-shadow:none;transform:translateX(-50%);opacity:0;}
+.r3.show .prize-card{animation:fade3 .4s ease .55s forwards;}
+@keyframes fade3{to{opacity:1;}}
+
+.spark{position:absolute;z-index:9;pointer-events:none;}
+.spark span{position:absolute;left:0;top:0;font-size:18px;opacity:0;}
+.reveal.show .spark span{animation:sp .8s ease var(--d,.2s) forwards;}
+@keyframes sp{0%{opacity:1;transform:translate(0,0) scale(.4);}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(var(--r));}}
+</style>
+</head>
+<body>
+  <p class="intro">3 modi in cui esce il <b>pop-up premio dallo spicchio vincente</b>. Cambia scheda e <b>GIRA</b>: dopo il giro il vincitore è sempre in alto (sotto la lancetta) e il pop-up nasce da lì.</p>
+
+  <div class="tabs">
+    <button class="on" data-v="1">1 · Carta che cresce</button>
+    <button data-v="2">2 · Spicchio acceso + banner</button>
+    <button data-v="3">3 · Emoji che vola</button>
+  </div>
+  <p class="vdesc" id="vdesc">La carta-premio cresce dallo spicchio in alto (sotto la lancetta) ingrandendosi fino al centro. Sobria e diretta.</p>
+
+  <div class="phone">
+    <div class="topbar"><span class="brand">Velluto</span><span class="me-chip">❤️ Giulia · esci</span></div>
+    <div class="scr">
+      <div class="giri-card"><div><p class="k">Giri disponibili</p><div class="coins" id="coins"></div></div>
+        <div class="right">gratis tra 3g</div></div>
+      <div class="wheel-wrap"><div class="pointer"></div><div class="wheel" id="wheel"></div><div class="hub">❤</div></div>
+      <div class="spin-zone">
+        <button class="spin-a" id="spinBtn">Gira la ruota</button>
+        <span class="cost-line">costa 1 <span class="cost"><span class="c"></span></span> giro</span>
+      </div>
+    </div>
+    <div class="nav">
+      <button>🔥 Desideri</button><button>📅 Esperienze</button><button>🎟️ Buoni</button>
+      <button class="on">🎡 Ruota</button><button>🃏 Carte</button><button>🎲 Dadi</button>
+    </div>
+    <div class="reveal r1" id="reveal"></div>
+  </div>
+
+<script>
+const slices=[
+  {e:'💋',name:'Apri un segreto',desc:'Scegli quale busta sigillata aprire.',act:'Scegli quale busta →'},
+  {e:'🔥',name:'Proposta piccante',desc:'Una proposta spinta, stasera.',act:'Scopri quale'},
+  {e:'🎁',name:'Buono a sorpresa',desc:'Un coupon: lo trovi nei Buoni.',act:'Vai ai Buoni'},
+  {e:'💌',name:'Pesca un desiderio',desc:'Estratto a caso dalla vostra lista.',act:'Vai ai Desideri'},
+  {e:'🃏',name:'Carta Truth or Dare',desc:'Pesca una carta dal mazzo.',act:'Pesca la carta'},
+  {e:'⭐',name:'Jolly · scegli tu',desc:'Carta bianca: decidi tu.',act:'Perfetto'},
+  {e:'🎲',name:'Tiro di dadi',desc:'Un tiro azione + corpo.',act:'Tira i dadi'},
+  {e:'🔁',name:'Gira ancora!',desc:'Giro gratis: non ti è costato nulla.',act:'Rigira'},
+];
+function el(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+const w=document.getElementById('wheel');
+slices.forEach((s,i)=>{const a=i*45+22.5;const pos=el('div','slice-lbl');
+  pos.style.transform=`rotate(${a}deg) translateY(-92px)`;
+  const inner=el('div','in');inner.style.transform=`translate(-50%,-50%) rotate(${-a}deg)`;
+  inner.appendChild(el('span','e',s.e));pos.appendChild(inner);w.appendChild(pos);});
+const coins=document.getElementById('coins');[1,1,0].forEach(f=>coins.appendChild(el('span','coin '+(f?'full':'empty'))));
+
+let variant='1', rot=0, busy=false;
+const reveal=document.getElementById('reveal'), spinBtn=document.getElementById('spinBtn');
+
+function sparks(){
+  const s=el('div','spark');s.style.left='50%';s.style.top='150px';
+  const em=['💋','✨','❤️','🌹'];
+  for(let k=0;k<14;k++){const sp=el('span',null,em[k%4]);
+    const ang=Math.random()*6.28,dist=50+Math.random()*70;
+    sp.style.setProperty('--dx',Math.cos(ang)*dist+'px');sp.style.setProperty('--dy',Math.sin(ang)*dist+'px');
+    sp.style.setProperty('--r',(Math.random()*90-45)+'deg');sp.style.setProperty('--d',(Math.random()*.2)+'s');
+    s.appendChild(sp);}
+  return s;
+}
+function buildCard(sl){
+  const card=el('div','prize-card');
+  card.append(el('div','won','Hai vinto'),el('div','big',sl.e),el('p','name',sl.name),el('p','desc',sl.desc));
+  const act=el('button','act',sl.act),sec=el('button','sec','Chiudi');
+  card.append(act,sec);
+  const close=()=>{reveal.classList.remove('show');};
+  sec.onclick=close;act.onclick=close;
+  return card;
+}
+function showReveal(sl){
+  reveal.className='reveal r'+variant;
+  reveal.replaceChildren();
+  if(variant==='2') reveal.appendChild(el('div','wedge'));
+  if(variant==='3'){const fly=el('div','fly',sl.e);reveal.appendChild(fly);}
+  reveal.appendChild(buildCard(sl));
+  reveal.appendChild(sparks());
+  void reveal.offsetWidth;
+  reveal.classList.add('show');
+}
+spinBtn.onclick=()=>{
+  if(busy)return;busy=true;spinBtn.disabled=true;
+  const i=Math.floor(Math.random()*slices.length);
+  const finalMod=(360-(i*45+22.5))%360,delta=(finalMod-(rot%360)+360)%360;rot+=360*5+delta;
+  w.style.transform=`rotate(${rot}deg)`;
+  setTimeout(()=>{busy=false;spinBtn.disabled=false;showReveal(slices[i]);},4300);
+};
+
+const descs={
+ '1':'La carta-premio cresce dallo spicchio in alto (sotto la lancetta) ingrandendosi fino al centro. Sobria e diretta.',
+ '2':'Lo spicchio vincente si illumina d\'oro, poi un banner-premio sale dal basso. Sottolinea quale spicchio ha vinto.',
+ '3':'L\'emoji vincente vola fuori dallo spicchio ingrandendosi, con scintille, e sotto compare cosa hai vinto. La più giocosa.'};
+document.querySelectorAll('.tabs button').forEach(b=>{b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  variant=b.dataset.v;reveal.className='reveal r'+variant;reveal.classList.remove('show');
+  document.getElementById('vdesc').textContent=descs[variant];};});
+</script>
+</body>
+</html>
