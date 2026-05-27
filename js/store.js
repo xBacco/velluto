@@ -249,3 +249,14 @@ export async function deleteRuotaContenuto(client, id) {
   const res = await client.from('ruota_contenuti').delete().eq('id', id);
   return check(res);
 }
+
+// ---- STRIP POKER ----
+export async function listStripPartite(client, coupleId) {
+  const res = await client.from('strip_partite').select('*').eq('couple_id', coupleId).order('creato', { ascending: false });
+  return check(res);
+}
+
+export async function addStripPartita(client, { couple_id, vincitore_id, perdente_id, modalita }) {
+  const res = await client.from('strip_partite').insert({ couple_id, vincitore_id, perdente_id, modalita });
+  return check(res);
+}

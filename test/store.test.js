@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { listDesideri, addDesiderio, markRealizzato, deleteDesiderio } from '../js/store.js';
+import { listDesideri, addDesiderio, markRealizzato, deleteDesiderio, listStripPartite, addStripPartita } from '../js/store.js';
 
 // --- fake client supabase ---
 function fakeClient(initialRows = []) {
@@ -75,4 +75,27 @@ test('listDesideri propaga errore', async () => {
   const bad = { from: () => ({ select() { return this; }, eq() { return this; },
     order() { return this; }, then(r){ r({ data: null, error: { message: 'boom' } }); } }) };
   await assert.rejects(() => listDesideri(bad, 'cpl'), /boom/);
+});
+
+test('listStripPartite seleziona per couple_id', async () => {
+  const c = fakeClient([
+    { id: 'a', couple_id: 'cpl', vincitore_id: 'u1', perdente_id: 'u2', modalita: 'draw' },
+    { id: 'z', couple_id: 'altra', vincitore_id: 'u3', perdente_id: 'u4', modalita: 'holdem' },
+  ]);
+  const data = await listStripPartite(c, 'cpl');
+  assert.equal(data.length, 1);
+  assert.equal(data[0].id, 'a');
+  assert.equal(c._calls[0].table, 'strip_partite');
+});
+
+test('addStripPartita inserisce esito con couple_id, vincitore, perdente, modalita', async () => {
+  const c = fakeClient([]);
+  await addStripPartita(c, { couple_id: 'cpl', vincitore_id: 'u1', perdente_id: 'u2', modalita: 'holdem' });
+  const ins = c._calls.find(x => x.op === 'insert');
+  assert.ok(ins);
+  assert.equal(ins.table, 'strip_partite');
+  assert.equal(ins.payload.couple_id, 'cpl');
+  assert.equal(ins.payload.vincitore_id, 'u1');
+  assert.equal(ins.payload.perdente_id, 'u2');
+  assert.equal(ins.payload.modalita, 'holdem');
 });
