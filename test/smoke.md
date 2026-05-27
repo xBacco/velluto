@@ -73,3 +73,19 @@ Migrazione: `supabase/foto.sql` eseguita dall'utente; tabella `foto` + RLS attiv
 ## DA COMPLETARE — richiede il secondo account (Giulia)
 - [ ] Cross-account: Giulia accetta/rifiuta una richiesta inviata da Tomas; il destinatario riscatta un regalo ricevuto. (Transizioni di stato già coperte da `buoni.test.js`; manca solo la verifica browser a due account.)
 - [ ] Solo a smoke cross-account verde: `drop table if exists esperienza_foto;`
+
+# Smoke test Ruota a premi (4a)
+
+## Ruota a premi (4a)
+- [ ] Tab Giochi → selettore mostra 🎲 Dadi e 🎡 Ruota; i Dadi funzionano come prima.
+- [ ] Ruota: la card saldo mostra i pallini-gettone e "gratis tra N giorni" (o "gratis disponibile").
+- [ ] Alla prima apertura della coppia i contenuti si seminano (proposte/buoni presenti nell'editor).
+- [ ] GIRA LA RUOTA: la ruota gira (~4s), le emoji restano DRITTE durante e dopo il giro.
+- [ ] A fine giro: spotlight sullo spicchio in alto + pop-up "proiezione di luce" centrato.
+- [ ] Saldo: girare scala di 1 il saldo; a saldo 0 il bottone è disabilitato.
+- [ ] Premio differito: vincere 🎁 crea un buono nella tab Buoni; vincere 🔥 mostra una proposta.
+- [ ] Fette condizionali: 💋 spenta senza segreti in attesa; 🃏 spenta a mazzo vuoto; 🔥/🎁 spente se svuoti la categoria nell'editor.
+- [ ] Editor (＋ con Ruota selezionata): aggiungi/modifica/elimina una proposta e un buono → si riflette al giro successivo.
+- [ ] "Ultimi premi" elenca le vincite recenti.
+- [ ] Reload pagina: saldo e contenuti persistono.
+- [ ] Con pop-up aperto, lo sfondo NON scrolla (scroll-lock).
