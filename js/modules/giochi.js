@@ -3,8 +3,11 @@ import {
   DADI_ORDER, DADI_LABEL, DADI_CHIP, raggruppaFacce, facceDefaultRows, tiraDadi, componiFrase,
 } from '../lib/logic.js';
 import { listDadiFacce, seedDadiFacce, updateDadiFaccia } from '../store.js';
+import { renderRuota, openEditorRuota } from './ruota.js';
 
+let giocoCorrente = 'dadi';   // 'dadi' | 'ruota'
 let ctx = null;          // { client, me, panel }
+let dadiHost = null;     // nodo in cui montare i Dadi (sotto al selettore)
 let facce = null;        // { az:[6], co:[6], lu:[6] } dal DB
 let attivi = { az: true, co: true, lu: true };
 let wired = false;
@@ -16,7 +19,40 @@ const ORI = [[0, 0], [0, 180], [0, -90], [0, 90], [-90, 0], [90, 0]];
 
 export async function renderGiochi(context) {
   ctx = context;
-  if (!wired) { document.addEventListener('fab:giochi', openEditor); wired = true; }
+  if (!wired) {
+    document.addEventListener('fab:giochi', () => {
+      if (giocoCorrente === 'dadi') openEditor();
+      else if (giocoCorrente === 'ruota') openEditorRuota();
+    });
+    wired = true;
+  }
+  drawSelettore();
+  await montaGiocoCorrente();
+}
+
+function drawSelettore() {
+  const p = ctx.panel; clear(p);
+  const sel = mk('div', 'gioco-selettore');
+  for (const [k, lbl] of [['dadi', '🎲 Dadi'], ['ruota', '🎡 Ruota']]) {
+    const b = mk('button', 'gioco-tab' + (giocoCorrente === k ? ' on' : ''), lbl);
+    b.onclick = () => { giocoCorrente = k; renderGiochi(ctx); };
+    sel.appendChild(b);
+  }
+  p.appendChild(sel);
+  p.appendChild(mk('div', 'gioco-host'));
+}
+
+async function montaGiocoCorrente() {
+  const host = ctx.panel.querySelector('.gioco-host');
+  if (giocoCorrente === 'ruota') {
+    await renderRuota({ client: ctx.client, me: ctx.me, panel: host });
+  } else {
+    await montaDadi(host);
+  }
+}
+
+async function montaDadi(host) {
+  dadiHost = host;
   try {
     let rows = await listDadiFacce(ctx.client, ctx.me.couple_id);
     if (!rows.length) {                       // prima volta per la coppia → semina i default
@@ -29,7 +65,7 @@ export async function renderGiochi(context) {
 }
 
 function draw() {
-  const p = ctx.panel; clear(p);
+  const p = dadiHost; clear(p);
   add(p, mk('h2', 'ptitle', '🎲 Dadi'), mk('p', 'psub', 'Scegli i dadi e tira. Tocca ＋ per cambiare i contenuti.'));
 
   // picker: una chip per dado, accesa/spenta

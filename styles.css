@@ -280,6 +280,15 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
 .viewer-big{width:100%;aspect-ratio:3/4;background-size:cover;background-position:center;border-radius:14px;}
 .viewer-cap{font-family:Arial,sans-serif;font-size:13px;color:var(--cream);margin:10px 2px 0;}
 
+/* ===== Giochi · selettore Dadi/Ruota ===== */
+.gioco-selettore{display:flex;gap:9px;justify-content:center;margin:0 0 18px;}
+.gioco-tab{flex:1;max-width:160px;border:1px solid rgba(212,168,108,.28);background:rgba(0,0,0,.3);
+  border-radius:14px;padding:11px 8px;text-align:center;cursor:pointer;transition:.22s;user-select:none;
+  font-family:Arial,sans-serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(243,217,176,.55);}
+.gioco-tab.on{border-color:var(--gold);background:linear-gradient(180deg,rgba(212,168,108,.22),rgba(212,168,108,.06));
+  color:var(--gold);}
+
 /* ===== Giochi · Dadi (variante Stretch) ===== */
 body.locked{overflow:hidden;touch-action:none;}
 .dadi-picker{display:flex;gap:9px;justify-content:center;margin:0 0 18px;}
