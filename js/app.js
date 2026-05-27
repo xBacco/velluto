@@ -26,6 +26,7 @@ const viewport = () => $('viewport');
 const track = () => $('track');
 let index = 0;                 // pagina corrente
 const rendered = new Set();    // indici già renderizzati
+let pagerInit = false;         // guard: enablePager si registra una volta sola
 
 async function boot() {
   const { data: { session } } = await client.auth.getSession();
@@ -68,7 +69,7 @@ async function enterApp() {
 
 function buildNav() {
   const n = $('nav'); clear(n);
-  TABS.forEach(([k, i, l], idx) => {
+  TABS.forEach(([k, i, l]) => {
     const b = mk('button'); add(b, mk('span', null, i), mk('span', 'lab', l));
     b.dataset.k = k; b.onclick = () => go(k); n.appendChild(b);
   });
@@ -99,6 +100,7 @@ function renderNear() {
     rendered.add(i);
     renderTab(TABS[i][0]);
   });
+  // resize ogni volta che la mappa torna visibile (Leaflet perde il layout durante il transform)
   if (cur === 'mappa') setTimeout(() => document.dispatchEvent(new CustomEvent('mappa:resize')), 360);
 }
 
@@ -116,6 +118,8 @@ function renderTab(k) {
 
 // motore gesto: il track segue il dito, snap al rilascio, niente wrap, mappa = isola
 function enablePager() {
+  if (pagerInit) return;
+  pagerInit = true;
   const vp = viewport();
   let startX = 0, startY = 0, dragging = false, decided = false, horiz = false;
   vp.addEventListener('pointerdown', e => {
