@@ -6,6 +6,7 @@ import { renderCalendario, openTipiSettings } from './modules/calendario.js';
 import { renderBuoni } from './modules/buoni.js';
 import { renderGalleria } from './modules/galleria.js';
 import { renderGiochi } from './modules/giochi.js';
+import { renderMappa } from './modules/mappa.js';
 
 const TABS = [
   ['desideri', '🔥', 'Desideri'],
@@ -13,6 +14,7 @@ const TABS = [
   ['buoni', '🎟️', 'Buoni'],
   ['galleria', '🖼️', 'Galleria'],
   ['giochi', '🎲', 'Giochi'],
+  ['mappa', '🗺️', 'Mappa'],
 ];
 
 let me = null;     // profilo loggato
@@ -79,6 +81,7 @@ function render() {
   else if (cur === 'buoni') renderBuoni({ client, me, panel: $('p-buoni') }).catch(err => toast('Errore: ' + err.message, 'err'));
   else if (cur === 'galleria') renderGalleria({ client, me, panel: $('p-galleria') }).catch(err => toast('Errore: ' + err.message, 'err'));
   else if (cur === 'giochi') renderGiochi({ client, me, panel: $('p-giochi') }).catch(err => toast('Errore: ' + err.message, 'err'));
+  else if (cur === 'mappa') renderMappa({ client, me, panel: $('p-mappa') }).catch(err => toast('Errore: ' + err.message, 'err'));
 }
 
 // il FAB delega al modulo corrente tramite evento
