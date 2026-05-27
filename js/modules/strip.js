@@ -565,5 +565,141 @@ function onCta() {
   }
 }
 
-// placeholder (sostituito in 7f)
-function doStrip() {}
+// ---------------------------------------------------------------------------
+// 7f — spogliarello ibrido + game over + salvataggio esito
+// 'Lui'/'Lei' nei testi UI; persona 'lui'/'lei' per lo stato.
+// ---------------------------------------------------------------------------
+const stripEls = {}; // nodi dell'overlay spogliarello
+
+function personaDi(who) { return who === 'Lui' ? 'lui' : 'lei'; }
+function subStato(who) { return stato[personaDi(who)]; }
+
+function renderChips(box, st, live) {
+  clear(box); let any = false;
+  GUARDAROBA.forEach(c => {
+    if (c.via !== 'chip' || !st[c.k]) return; any = true;
+    const ch = mk('div', 'chip' + (live ? ' live' : ' dead')); ch.dataset.k = c.k;
+    add(ch, mk('span', 'em', GUARDAROBA_META[c.k].e), mk('span', null, c.n));
+    if (st[c.k] > 1) ch.appendChild(mk('span', 'badge', '×' + st[c.k]));
+    box.appendChild(ch);
+  });
+  if (stripEls.chipHead) stripEls.chipHead.textContent = any ? 'accessori e piedi' : '';
+  return any;
+}
+
+// costruisce (una volta) l'overlay spogliarello e ne conserva i nodi in stripEls
+function buildStripOverlay() {
+  const ov = openOv();
+  stripEls.title = mk('h3');
+  stripEls.text = mk('p');
+  const stage = mk('div', 'stripStage');
+  const figcol = mk('div', 'figcol');
+  stripEls.tap = mk('div', 'tap');
+  stripEls.fig = mk('div', 'fig');
+  add(figcol, stripEls.tap, stripEls.fig);
+  const chipcol = mk('div', 'chipcol');
+  stripEls.chipHead = mk('div', 'chiphead');
+  stripEls.chips = mk('div', 'chips');
+  add(chipcol, stripEls.chipHead, stripEls.chips);
+  add(stage, figcol, chipcol);
+  const btnrow = mk('div', 'btnrow');
+  stripEls.btn1 = mk('button', 'btn');
+  stripEls.btn2 = mk('button', 'btn ghost hid');
+  add(btnrow, stripEls.btn1, stripEls.btn2);
+  add(ov, stripEls.title, stripEls.text, stage, btnrow);
+  return ov;
+}
+
+function doStrip(loser, win) {
+  const st = subStato(loser);
+  stripBusy = true;
+  buildStripOverlay();
+  buildFig(stripEls.fig, loser === 'Lei', st);
+  renderChips(stripEls.chips, st, true);
+  setTitle(stripEls.title, ['👑 ', { b: win }, ' sceglie']);
+  stripEls.text.textContent = win + ' ha vinto: tocca il capo che ' + loser + ' deve togliersi.';
+  stripEls.tap.textContent = 'tocca un capo grande qui ↓';
+  stripEls.btn1.classList.add('hid'); stripEls.btn2.classList.add('hid');
+  armStrip(st, loser, win);
+}
+function armStrip(st, loser, win) {
+  stripEls.fig.querySelectorAll('.robe').forEach(r => {
+    r.classList.add('pick');
+    const fn = r.dataset.acc
+      ? () => pickAccItem(r.dataset.acc, loser, win)
+      : () => pickAvatar(r.dataset.zone, loser, win);
+    r.querySelectorAll('svg path').forEach(p => {
+      p.onclick = fn;
+      p.onmouseenter = () => r.classList.add('hover');
+      p.onmouseleave = () => r.classList.remove('hover');
+    });
+  });
+  stripEls.chips.querySelectorAll('.chip').forEach(ch => { ch.onclick = () => pickChip(ch.dataset.k, loser, win); });
+}
+function disarmStrip() {
+  stripEls.fig.querySelectorAll('.robe').forEach(r => {
+    r.classList.remove('pick', 'hover');
+    r.querySelectorAll('svg path').forEach(p => { p.onclick = null; p.onmouseenter = null; p.onmouseleave = null; });
+  });
+  stripEls.chips.querySelectorAll('.chip').forEach(ch => { ch.classList.remove('live'); ch.onclick = null; });
+}
+function pickAvatar(zone, loser, win) {
+  if (!stripBusy) return;
+  const k = outermost(zone, subStato(loser)); if (!k) return;
+  const w = stripEls.fig.querySelector('.robe[data-zone="' + zone + '"]'); if (w) w.classList.add('off');
+  doRemove(k, loser, win);
+}
+function pickAccItem(k, loser, win) {
+  if (!stripBusy) return;
+  const w = stripEls.fig.querySelector('.robe[data-acc="' + k + '"]'); if (w) w.classList.add('off');
+  doRemove(k, loser, win);
+}
+function pickChip(k, loser, win) {
+  if (!stripBusy) return;
+  const ch = stripEls.chips.querySelector('.chip[data-k="' + k + '"]');
+  if (ch && subStato(loser)[k] <= 1) ch.classList.add('gone');
+  doRemove(k, loser, win);
+}
+function doRemove(k, loser, win) {
+  stripBusy = false; disarmStrip();
+  stato = togliCapo(stato, personaDi(loser), k);
+  setTimeout(() => {
+    updateCounts(); stripEls.tap.textContent = '';
+    const esito = risultatoPartita(stato);
+    if (esito) { gameOver(win, loser); return; }
+    const st = subStato(loser);
+    buildFig(stripEls.fig, loser === 'Lei', st); renderChips(stripEls.chips, st, false);
+    const unit = GUARDAROBA_META[k].qty > 1 ? (GUARDAROBA_META[k].n + ' (uno)') : GUARDAROBA_META[k].n;
+    const rim = cnt(st);
+    setTitle(stripEls.title, ['👕 ', { b: loser }, ' si toglie']);
+    stripEls.text.textContent = win + ' ha scelto: ' + unit + '. ' + (rim === 1 ? 'Ne resta 1 capo.' : 'Ne restano ' + rim + ' capi.');
+    stripEls.btn1.classList.remove('hid'); stripEls.btn2.classList.remove('hid');
+    stripEls.btn1.textContent = 'Prossima mano →'; stripEls.btn2.textContent = 'Cambia modalità';
+    stripEls.btn1.onclick = stripNext; stripEls.btn2.onclick = () => { closeOv(); drawApertura(); };
+  }, 600);
+}
+async function gameOver(win, loser) {
+  const st = subStato(loser);
+  buildFig(stripEls.fig, loser === 'Lei', st); renderChips(stripEls.chips, st, false);
+  const t = mk('div', 'trophy', '🏆');
+  t.style.cssText = 'position:absolute;top:-58px;left:50%;transform:translateX(-50%);';
+  stripEls.fig.appendChild(t);
+  setTitle(stripEls.title, ['Ha vinto ', { b: win }, '!']);
+  stripEls.text.textContent = loser + ' è rimast' + (loser === 'Lei' ? 'a' : 'o') + ' senza niente. Che si fa ora? 😏';
+  stripEls.tap.textContent = '';
+  stripEls.btn1.classList.remove('hid'); stripEls.btn1.textContent = 'Nuova partita';
+  stripEls.btn1.onclick = () => { closeOv(); drawApertura(); };
+  stripEls.btn2.classList.add('hid');
+
+  const meId = ctx.me.id;
+  const partner = partnerId();
+  const vincitore_id = win === 'Lui' ? meId : partner;
+  const perdente_id = loser === 'Lui' ? meId : partner;
+  try {
+    if (vincitore_id && perdente_id) {
+      await addStripPartita(ctx.client, { couple_id: ctx.me.couple_id, vincitore_id, perdente_id, modalita: mode });
+      partite = await listStripPartite(ctx.client, ctx.me.couple_id);
+    }
+  } catch (err) { toast('Esito non salvato: ' + err.message, 'err'); }
+}
+function stripNext() { closeOv(); resetMano(); if (mode === 'holdem') dealHold(); else dealDraw(); }
