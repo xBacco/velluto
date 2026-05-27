@@ -7,6 +7,7 @@ import { renderBuoni } from './modules/buoni.js';
 import { renderGalleria } from './modules/galleria.js';
 import { renderGiochi } from './modules/giochi.js';
 import { renderMappa } from './modules/mappa.js';
+import { isLockEnabled, verifyPin, getPudica, isBioEnabled, bioSupported, unlockBio } from './lib/lock.js';
 
 const TABS = [
   ['desideri', '🔥', 'Desideri'],
@@ -48,6 +49,8 @@ async function onLogin(e) {
 async function enterApp() {
   me = await currentProfile();
   if (!me) { location.reload(); return; } // token scaduto/non valido → torna al login
+  if (isLockEnabled()) { await requireUnlock(); }
+  if (getPudica()) document.body.classList.add('pudica');
   $('login').classList.add('gone');
   $('app').style.display = '';
   $('fab').style.display = '';
@@ -65,6 +68,38 @@ async function enterApp() {
   };
   buildNav();
   go('desideri');
+}
+
+function requireUnlock() {
+  return new Promise(resolve => {
+    const gate = $('lockgate'); gate.style.display = '';
+    let pin = '';
+    const dots = $('pinDots'); const pad = $('pinPad');
+    const draw = () => { clear(dots); for (let i = 0; i < 6; i++) { const d = mk('span', i < pin.length ? 'd on' : 'd'); dots.appendChild(d); } };
+    const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
+    clear(pad);
+    keys.forEach(k => {
+      const b = mk('button', k === '' ? 'empty' : null, k);
+      if (k === '') { pad.appendChild(b); return; }
+      b.onclick = async () => {
+        if (k === '⌫') { pin = pin.slice(0, -1); draw(); return; }
+        if (pin.length >= 6) return;
+        pin += k; draw();
+        if (pin.length >= 4) {
+          if (await verifyPin(pin)) { gate.style.display = 'none'; resolve(); }
+          else if (pin.length === 6) { $('lockErr').textContent = 'Codice errato'; pin = ''; draw(); }
+        }
+      };
+      pad.appendChild(b);
+    });
+    draw();
+    const bio = $('pinBio');
+    if (isBioEnabled() && bioSupported()) {
+      bio.style.display = '';
+      bio.onclick = async () => { if (await unlockBio()) { gate.style.display = 'none'; resolve(); } };
+      bio.click();   // tenta subito la biometria all'apertura
+    } else { bio.style.display = 'none'; }
+  });
 }
 
 function buildNav() {

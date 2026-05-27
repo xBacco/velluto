@@ -81,6 +81,23 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
   -webkit-background-clip:text;background-clip:text;color:transparent;}
 .login-err{color:var(--err);font-family:Arial,sans-serif;font-size:13px;margin-top:10px;min-height:18px;}
 
+/* lockgate PIN */
+.lockgate{position:fixed;inset:0;z-index:45;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:16px;padding:32px;
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),linear-gradient(170deg,var(--bg),var(--bg2));}
+.lock-title{font-size:30px;color:var(--gold);letter-spacing:2px;}
+.lock-sub{font-family:Arial;font-size:13px;color:#9d8478;}
+.pin-dots{display:flex;gap:14px;margin:8px 0;}
+.pin-dots .d{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--gold);opacity:.5;}
+.pin-dots .d.on{background:var(--gold);opacity:1;}
+.pin-pad{display:grid;grid-template-columns:repeat(3,72px);gap:14px;}
+.pin-pad button{font-family:Arial;font-size:24px;color:var(--cream);height:72px;border-radius:50%;
+  background:rgba(122,21,51,.25);border:1px solid rgba(212,168,108,.3);cursor:pointer;}
+.pin-pad button:active{background:rgba(122,21,51,.5);}
+.pin-pad button.empty{background:transparent;border:0;cursor:default;}
+.pin-bio{font-family:Arial;font-size:14px;color:var(--gold-soft);background:transparent;
+  border:1px solid rgba(212,168,108,.35);border-radius:12px;padding:11px 16px;cursor:pointer;margin-top:6px;}
+
 /* cards */
 .card{background:linear-gradient(160deg,rgba(92,16,38,.35),rgba(20,4,9,.4));
   border:1px solid rgba(212,168,108,.22);border-radius:16px;padding:15px 16px;margin-bottom:12px;
