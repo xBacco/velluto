@@ -84,6 +84,7 @@ function requireUnlock() {
       b.onclick = async () => {
         if (k === '⌫') { pin = pin.slice(0, -1); draw(); return; }
         if (pin.length >= 6) return;
+        $('lockErr').textContent = '';
         pin += k; draw();
         if (pin.length >= 4) {
           if (await verifyPin(pin)) { gate.style.display = 'none'; resolve(); }
