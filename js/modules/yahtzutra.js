@@ -409,13 +409,13 @@ function wireDragToClose(handle, sheet, scrim) {
     }
     if (wasPeek) {
       // dal peek, drag-up sufficiente → riespande
-      if (dy < -60 || (dy < 0 && v > 0.5)) {
+      if (dy < -40 || (dy < 0 && v > 0.4)) {
         sheet.classList.remove('peek');
         scrim.classList.remove('peek');
       }
     } else {
       // espanso, drag-down sufficiente → minimizza a peek (NO close)
-      if (dy > 90 || (dy > 0 && v > 0.5)) {
+      if (dy > 50 || (dy > 0 && v > 0.4)) {
         sheet.classList.add('peek');
         scrim.classList.add('peek');
       }
