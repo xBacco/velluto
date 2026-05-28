@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup · Animazioni "Spedisci" cartolina — 3 varianti</title>
+<style>
+  :root{
+    --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+    --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a;
+    --spin:cubic-bezier(.17,.67,.18,1);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;
+    background:linear-gradient(170deg,#0a0205,#150410);padding:28px 16px 80px;}
+
+  .pagehd{text-align:center;max-width:980px;margin:0 auto 26px;}
+  .pagehd h1{margin:0 0 8px;font-size:22px;color:var(--gold-soft);font-weight:normal;letter-spacing:.5px;}
+  .pagehd p{margin:0;font-family:Arial;font-size:13px;color:#9d8478;line-height:1.6;}
+
+  .grid{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;align-items:flex-start;}
+  .item{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .vtag{font-family:Arial;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);}
+  .vtitle{font-size:18px;color:var(--gold-soft);}
+  .vsub{font-family:Arial;font-size:11.5px;color:#9d8478;max-width:320px;text-align:center;line-height:1.5;}
+  .replay{margin-top:6px;font-family:Arial;font-size:11px;letter-spacing:.5px;
+    color:var(--gold-soft);background:transparent;border:1px solid rgba(212,168,108,.35);
+    border-radius:14px;padding:5px 12px;cursor:pointer;text-transform:uppercase;}
+  .replay:hover{background:rgba(212,168,108,.1);}
+
+  .phone{width:340px;height:720px;position:relative;
+    border:9px solid #0a0205;border-radius:38px;overflow:hidden;
+    box-shadow:0 24px 56px rgba(0,0,0,.6),0 0 0 1px rgba(212,168,108,.18);
+    background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+               linear-gradient(170deg,var(--bg),var(--bg2));}
+
+  .ptop{position:absolute;top:0;left:0;right:0;height:46px;padding:10px 16px 0;
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:Arial;font-size:10.5px;color:#a87e6a;letter-spacing:.5px;z-index:5;pointer-events:none;}
+
+  .page{position:absolute;inset:46px 0 70px;padding:6px 16px 14px;overflow:auto;
+    display:flex;flex-direction:column;filter:blur(2px) brightness(.55);}
+  .ptitle{font-size:22px;color:var(--gold-soft);margin:8px 2px 4px;font-weight:normal;letter-spacing:.4px;}
+  .psub{font-family:Arial;font-size:11.5px;color:#9d8478;margin:0 2px 14px;line-height:1.5;}
+  .card-stub{background:rgba(122,21,51,.16);border:1px solid rgba(212,168,108,.18);
+    border-radius:13px;padding:11px 13px;margin-bottom:8px;font-family:Georgia;
+    font-size:14px;color:var(--cream);}
+
+  .pnav{position:absolute;bottom:0;left:0;right:0;height:54px;
+    background:linear-gradient(180deg,rgba(8,2,5,.7),rgba(8,2,5,.95));
+    border-top:1px solid rgba(212,168,108,.15);display:flex;justify-content:space-around;align-items:center;
+    font-family:Arial;font-size:10px;color:#a87e6a;z-index:6;}
+  .pnav .nb{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.7;}
+  .pnav .nb.on{color:var(--gold-soft);opacity:1;}
+  .pnav .nb .e{font-size:16px;line-height:1;}
+
+  .scrim{position:absolute;inset:0;background:rgba(8,2,5,.55);backdrop-filter:blur(3px);
+    z-index:10;}
+
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:11;padding:14px 14px 20px;
+    background:linear-gradient(180deg,#2a0813,#1c0610);
+    border-radius:22px 22px 0 0;
+    box-shadow:0 -8px 32px rgba(0,0,0,.55), 0 -1px 0 rgba(212,168,108,.18) inset;}
+  .grab{width:42px;height:4px;background:rgba(212,168,108,.4);border-radius:3px;margin:0 auto 12px;}
+  .x{position:absolute;top:14px;right:18px;font-size:18px;color:#9c7f88;cursor:pointer;}
+
+  /* Cartolina condivisa */
+  .cart-wrap{position:relative;transform-origin:50% 60%;}
+  .cart{position:relative;display:grid;grid-template-columns:1fr 80px;gap:14px;
+    background:
+      repeating-linear-gradient(45deg,rgba(212,168,108,.04) 0 14px,transparent 14px 28px),
+      radial-gradient(110% 80% at 10% 0%,#3d0e1f,#1d0710 75%);
+    border:1px solid rgba(212,168,108,.3);border-radius:10px;padding:18px 16px 16px;
+    box-shadow:0 14px 30px rgba(0,0,0,.55),inset 0 1px 0 rgba(212,168,108,.15);}
+  .cart::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;
+    background:repeating-linear-gradient(90deg,transparent 0 10px,rgba(212,168,108,.22) 10px 20px);
+    border-radius:10px 10px 0 0;opacity:.5;}
+  .cart-left{display:flex;flex-direction:column;gap:8px;}
+  .cart-meta{font-family:Arial;font-size:9.5px;color:var(--gold);letter-spacing:1.4px;
+    text-transform:uppercase;border-bottom:1px solid rgba(212,168,108,.22);
+    padding-bottom:6px;display:flex;justify-content:space-between;opacity:.85;}
+  .cart-text{font-family:Georgia;font-size:15px;color:var(--cream);line-height:1.5;
+    min-height:90px;font-style:italic;}
+  .cart-stamp{font-family:Georgia;font-size:11px;color:var(--gold);
+    border:1.5px solid var(--gold);text-align:center;padding:5px 4px;border-radius:4px;
+    line-height:1.2;letter-spacing:.5px;text-transform:uppercase;transform:rotate(4deg);
+    height:fit-content;background:radial-gradient(circle at 30% 25%,#3d0e1f,#1d0710);
+    box-shadow:0 2px 6px rgba(0,0,0,.5);}
+  .cart-stamp .emo{font-size:22px;display:block;margin-bottom:2px;
+    filter:drop-shadow(0 0 6px rgba(212,168,108,.4));}
+
+  .chips-row{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 16px;}
+  .chip{font-family:Arial;font-size:11.5px;color:var(--gold-soft);
+    background:rgba(212,168,108,.18);border:1px solid var(--gold);border-radius:6px;
+    padding:5px 11px;letter-spacing:.3px;text-transform:lowercase;}
+
+  .acts{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .btn-cancel{font-family:Arial;font-size:13px;color:#7a6155;background:none;border:0;padding:9px 12px;}
+  .btn-send{font-family:Georgia;font-style:italic;font-size:14px;color:#3a2405;
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));border:0;
+    padding:11px 22px 11px 18px;border-radius:999px;cursor:pointer;letter-spacing:.4px;font-weight:bold;
+    box-shadow:0 4px 14px rgba(212,168,108,.25);display:inline-flex;align-items:center;gap:7px;}
+  .btn-send::after{content:'→';font-style:normal;font-weight:bold;font-size:16px;}
+
+  /* ============ ANIMAZIONE α — VOLA VIA ============ */
+  @keyframes flyAway {
+    0%   {transform:translate(0,0) rotate(0) scale(1); opacity:1;}
+    25%  {transform:translate(0,-12px) rotate(-2deg) scale(1.03); opacity:1;}
+    100% {transform:translate(220px,-380px) rotate(28deg) scale(.4); opacity:0; filter:blur(2px);}
+  }
+  .anim-fly .cart-wrap{animation:flyAway 1s var(--spin) forwards;}
+
+  @keyframes sheetSlideDown {
+    to{transform:translateY(110%);}
+  }
+  .anim-fly .sheet{animation:sheetSlideDown .45s var(--spin) .65s forwards;}
+  @keyframes scrimFade { to{opacity:0;} }
+  .anim-fly .scrim{animation:scrimFade .5s ease .6s forwards;}
+
+  /* sweep gold dietro la cartolina che vola */
+  .sweep{position:absolute;top:0;right:-40px;width:120px;height:120px;
+    background:radial-gradient(circle,rgba(212,168,108,.7),transparent 70%);
+    opacity:0;pointer-events:none;}
+  .anim-fly .sweep{animation:sweepFx 1s ease forwards;}
+  @keyframes sweepFx {
+    0%{opacity:0; transform:scale(.4);}
+    40%{opacity:1; transform:scale(1);}
+    100%{opacity:0; transform:scale(1.6);}
+  }
+
+  /* ============ ANIMAZIONE β — TIMBRO CERALACCA ============ */
+  @keyframes stampDrop {
+    0%   {transform:translate(-50%,-200px) scale(2.4) rotate(-20deg); opacity:0;}
+    55%  {transform:translate(-50%,0) scale(1.5) rotate(-8deg); opacity:1;}
+    65%  {transform:translate(-50%,0) scale(1) rotate(-12deg); opacity:1;}
+    100% {transform:translate(-50%,0) scale(1) rotate(-12deg); opacity:1;}
+  }
+  .stamp-fx{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+    font-family:Georgia;font-style:italic;font-weight:bold;font-size:22px;
+    color:#fff;letter-spacing:3px;text-transform:uppercase;
+    padding:18px 28px;border-radius:8px;
+    background:radial-gradient(circle at 30% 30%,#a92242,#5c1026 70%);
+    border:3px double rgba(255,255,255,.7);
+    box-shadow:0 8px 24px rgba(122,21,51,.55),inset 0 2px 0 rgba(255,255,255,.18);
+    text-shadow:0 1px 0 rgba(0,0,0,.4);
+    opacity:0;pointer-events:none;z-index:20;}
+  .anim-stamp .stamp-fx{animation:stampDrop 1.1s cubic-bezier(.4,1.5,.45,.9) forwards;}
+
+  /* shake cartolina al momento dell'impatto */
+  @keyframes cartShake {
+    0%,100%{transform:translate(0,0);}
+    10%{transform:translate(-2px,1px);}
+    20%{transform:translate(2px,-1px);}
+    30%{transform:translate(-2px,1px);}
+    40%{transform:translate(2px,0);}
+    50%{transform:translate(-1px,0);}
+  }
+  .anim-stamp .cart-wrap{animation:cartShake .35s ease .55s;}
+  .anim-stamp .sheet{animation:sheetSlideDown .45s var(--spin) 1.45s forwards;}
+  .anim-stamp .scrim{animation:scrimFade .5s ease 1.4s forwards;}
+
+  /* ============ ANIMAZIONE γ — BUSTA & VIA ============ */
+  /* cartolina si piega a metà verticalmente */
+  .anim-env .cart-wrap{perspective:900px;transform-style:preserve-3d;}
+  .anim-env .cart{transition:none;}
+  @keyframes envFold {
+    0%   {transform:rotateX(0) translateY(0);}
+    40%  {transform:rotateX(-70deg) translateY(8px) scale(.92);}
+    100% {transform:rotateX(-90deg) translateY(20px) scale(.85); opacity:0;}
+  }
+  .anim-env .cart-wrap{animation:envFold .8s ease-in forwards;transform-origin:50% 50%;}
+
+  .envelope{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) scale(.4);
+    width:200px;height:120px;border-radius:6px;
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));
+    box-shadow:0 14px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.4);
+    opacity:0;pointer-events:none;z-index:18;}
+  .envelope::before{content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg,transparent 50%,rgba(122,80,30,.25) 50%,rgba(122,80,30,.25));
+    border-radius:6px;}
+  .envelope::after{content:'';position:absolute;left:50%;top:0;
+    width:0;height:0;
+    border-left:100px solid transparent;border-right:100px solid transparent;
+    border-top:60px solid #c69655;transform:translateX(-50%);
+    transform-origin:50% 0;}
+  .envelope-seal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(0);
+    width:30px;height:30px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#c0364f,#7a1226 70%);
+    box-shadow:0 2px 6px rgba(0,0,0,.5);opacity:0;z-index:2;
+    display:flex;align-items:center;justify-content:center;
+    font-family:Georgia;font-size:14px;color:#fff;font-style:italic;}
+  .envelope-seal::before{content:'🔥';}
+
+  @keyframes envAppear {
+    0%   {opacity:0;transform:translate(-50%,-50%) scale(.4);}
+    50%  {opacity:1;transform:translate(-50%,-50%) scale(1);}
+    100% {opacity:1;transform:translate(-50%,-50%) scale(1);}
+  }
+  @keyframes envSeal {
+    0%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(-30deg);}
+    40%{opacity:1;transform:translate(-50%,-50%) scale(1.3) rotate(0);}
+    100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0);}
+  }
+  @keyframes envFly {
+    0%   {transform:translate(-50%,-50%) scale(1) rotate(0);}
+    100% {transform:translate(160px,-400px) scale(.35) rotate(28deg);opacity:0;}
+  }
+  .anim-env .envelope{animation:envAppear .5s ease .55s forwards, envFly .7s ease-in 1.4s forwards;}
+  .anim-env .envelope-seal{animation:envSeal .35s var(--spin) 1.05s forwards;}
+  .anim-env .sheet{animation:sheetSlideDown .45s var(--spin) 1.85s forwards;}
+  .anim-env .scrim{animation:scrimFade .5s ease 1.8s forwards;}
+
+  /* toast comune di "spedita" */
+  .sent-toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);
+    background:rgba(40,12,16,.94);border:1px solid var(--gold);color:var(--gold-soft);
+    font-family:Arial;font-size:12px;padding:8px 16px;border-radius:18px;
+    opacity:0;z-index:30;box-shadow:0 6px 18px rgba(0,0,0,.5);}
+  .anim-fly .sent-toast{animation:toastIn .35s ease 1.05s forwards, toastOut .4s ease 2.2s forwards;}
+  .anim-stamp .sent-toast{animation:toastIn .35s ease 1.7s forwards, toastOut .4s ease 2.8s forwards;}
+  .anim-env .sent-toast{animation:toastIn .35s ease 2.1s forwards, toastOut .4s ease 3.2s forwards;}
+  @keyframes toastIn{ to{opacity:1;} }
+  @keyframes toastOut{ to{opacity:0;} }
+</style>
+</head>
+<body>
+
+<div class="pagehd">
+  <h1>"Spedisci →" cartolina · 3 animazioni di chiusura</h1>
+  <p>La cartolina è già piena per mostrare la transizione. Tocca <strong>Spedisci →</strong>
+    in ciascuno per vedere l'animazione, poi <strong>Riavvia</strong> per rivederla.</p>
+</div>
+
+<div class="grid">
+
+  <!-- ====== α · VOLA VIA ====== -->
+  <div class="item">
+    <div class="vtag">Variante α</div>
+    <div class="vtitle">Vola via</div>
+    <div class="vsub">Cartolina si lift up, ruota leggermente e schizza fuori in
+      alto a destra rimpicciolendosi (come "scivola fuori dallo schermo").
+      Sweep dorato al suo passaggio. Veloce, snello.</div>
+
+    <div class="phone" id="phoneA">
+      <div class="ptop"><span>9:41</span><span>●●●</span></div>
+      <div class="page">
+        <h2 class="ptitle">🔥 Fantasie</h2>
+        <p class="psub">Bacheca delle cose da provare.</p>
+        <div class="card-stub">Una cena al buio</div>
+        <div class="card-stub">Weekend in baita</div>
+      </div>
+      <div class="pnav">
+        <div class="nb on"><span class="e">🔥</span>Fantasie</div>
+        <div class="nb"><span class="e">🎲</span>Giochi</div>
+        <div class="nb"><span class="e">📅</span>Esperienze</div>
+        <div class="nb"><span class="e">🗺️</span>Mappa</div>
+        <div class="nb"><span class="e">🎟️</span>Buoni</div>
+      </div>
+
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <span class="x">✕</span>
+        <div class="sweep"></div>
+        <div class="cart-wrap">
+          <div class="cart">
+            <div class="cart-left">
+              <div class="cart-meta"><span>Dal cuore di chi scrive</span><span>oggi</span></div>
+              <div class="cart-text">Una sera con candele e mille post-it sparsi…</div>
+            </div>
+            <div class="cart-stamp"><span class="emo">🔥</span>fantasia</div>
+          </div>
+        </div>
+        <div class="chips-row"><div class="chip">sera</div></div>
+        <div class="acts">
+          <button class="btn-cancel">Annulla</button>
+          <button class="btn-send" id="sendA">Spedisci</button>
+        </div>
+        <div class="sent-toast">✓ Spedita alla bacheca</div>
+      </div>
+    </div>
+    <button class="replay" id="replayA">↻ Riavvia</button>
+  </div>
+
+  <!-- ====== β · TIMBRO CERALACCA ====== -->
+  <div class="item">
+    <div class="vtag">Variante β</div>
+    <div class="vtitle">Timbro ceralacca</div>
+    <div class="vsub">Tap "Spedisci" → un timbro vinaccia con bordo doppio bianco
+      cala dall'alto e <em>stampa</em> "SPEDITA" sopra la cartolina con leggero shake.
+      Poi la sheet si chiude. Più scenografico, scattante.</div>
+
+    <div class="phone" id="phoneB">
+      <div class="ptop"><span>9:41</span><span>●●●</span></div>
+      <div class="page">
+        <h2 class="ptitle">🔥 Fantasie</h2>
+        <p class="psub">Bacheca delle cose da provare.</p>
+        <div class="card-stub">Una cena al buio</div>
+        <div class="card-stub">Weekend in baita</div>
+      </div>
+      <div class="pnav">
+        <div class="nb on"><span class="e">🔥</span>Fantasie</div>
+        <div class="nb"><span class="e">🎲</span>Giochi</div>
+        <div class="nb"><span class="e">📅</span>Esperienze</div>
+        <div class="nb"><span class="e">🗺️</span>Mappa</div>
+        <div class="nb"><span class="e">🎟️</span>Buoni</div>
+      </div>
+
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <span class="x">✕</span>
+        <div class="cart-wrap">
+          <div class="cart">
+            <div class="cart-left">
+              <div class="cart-meta"><span>Dal cuore di chi scrive</span><span>oggi</span></div>
+              <div class="cart-text">Una sera con candele e mille post-it sparsi…</div>
+            </div>
+            <div class="cart-stamp"><span class="emo">🔥</span>fantasia</div>
+          </div>
+        </div>
+        <div class="stamp-fx">Spedita</div>
+        <div class="chips-row"><div class="chip">sera</div></div>
+        <div class="acts">
+          <button class="btn-cancel">Annulla</button>
+          <button class="btn-send" id="sendB">Spedisci</button>
+        </div>
+        <div class="sent-toast">✓ Spedita alla bacheca</div>
+      </div>
+    </div>
+    <button class="replay" id="replayB">↻ Riavvia</button>
+  </div>
+
+  <!-- ====== γ · BUSTA & VIA ====== -->
+  <div class="item">
+    <div class="vtag">Variante γ</div>
+    <div class="vtitle">Busta &amp; via</div>
+    <div class="vsub">La cartolina si <em>piega</em> in avanti (rotateX), una busta
+      dorata appare al centro, sigillo ceralacca rosso si stampa sopra, infine
+      la busta vola via in alto a dx. Più narrato, ma anche più lungo (~1.8s).</div>
+
+    <div class="phone" id="phoneC">
+      <div class="ptop"><span>9:41</span><span>●●●</span></div>
+      <div class="page">
+        <h2 class="ptitle">🔥 Fantasie</h2>
+        <p class="psub">Bacheca delle cose da provare.</p>
+        <div class="card-stub">Una cena al buio</div>
+        <div class="card-stub">Weekend in baita</div>
+      </div>
+      <div class="pnav">
+        <div class="nb on"><span class="e">🔥</span>Fantasie</div>
+        <div class="nb"><span class="e">🎲</span>Giochi</div>
+        <div class="nb"><span class="e">📅</span>Esperienze</div>
+        <div class="nb"><span class="e">🗺️</span>Mappa</div>
+        <div class="nb"><span class="e">🎟️</span>Buoni</div>
+      </div>
+
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <span class="x">✕</span>
+        <div class="cart-wrap">
+          <div class="cart">
+            <div class="cart-left">
+              <div class="cart-meta"><span>Dal cuore di chi scrive</span><span>oggi</span></div>
+              <div class="cart-text">Una sera con candele e mille post-it sparsi…</div>
+            </div>
+            <div class="cart-stamp"><span class="emo">🔥</span>fantasia</div>
+          </div>
+        </div>
+        <div class="envelope"><div class="envelope-seal"></div></div>
+        <div class="chips-row"><div class="chip">sera</div></div>
+        <div class="acts">
+          <button class="btn-cancel">Annulla</button>
+          <button class="btn-send" id="sendC">Spedisci</button>
+        </div>
+        <div class="sent-toast">✓ Spedita alla bacheca</div>
+      </div>
+    </div>
+    <button class="replay" id="replayC">↻ Riavvia</button>
+  </div>
+
+</div>
+
+<script>
+function bindAnim(phoneId, sendId, replayId, cls){
+  const phone=document.getElementById(phoneId);
+  const send=document.getElementById(sendId);
+  const replay=document.getElementById(replayId);
+  function run(){
+    phone.classList.remove(cls);
+    void phone.offsetWidth;
+    phone.classList.add(cls);
+  }
+  send.addEventListener('click',run);
+  replay.addEventListener('click',run);
+}
+bindAnim('phoneA','sendA','replayA','anim-fly');
+bindAnim('phoneB','sendB','replayB','anim-stamp');
+bindAnim('phoneC','sendC','replayC','anim-env');
+</script>
+
+</body>
+</html>
