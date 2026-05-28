@@ -12,6 +12,7 @@ import {
 } from '../lib/logic.js';
 import { listStripPartite, addStripPartita, getPartner, deleteStripPartiteForCouple } from '../store.js';
 import { openGameModal } from './giochi.js';
+import { attachSwipeBack } from '../lib/swipe-back.js';
 
 let ctx = null, host = null, partite = [];
 let partner = null;
@@ -512,6 +513,7 @@ function openOv() {
   const ov = mk('div', 'dadi-scrim strip-ov');
   document.body.appendChild(ov);
   requestAnimationFrame(() => ov.classList.add('show'));
+  attachSwipeBack(ov, () => closeOv());
   return ov;
 }
 

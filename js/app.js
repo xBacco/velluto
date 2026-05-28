@@ -253,62 +253,6 @@ function enablePager() {
   window.addEventListener('resize', () => layout(false));
 }
 
-// edge-swipe: trascinamento entro EDGE_PX dal bordo sx/dx chiude l'overlay
-// se aperto. Per ora gated solo su .strip-ov (Cronaca/Regole/Opzioni di Strip).
-// Previene anche la back-gesture iOS PWA che farebbe uscire dall'app.
-const EDGE_PX = 38;
-const EDGE_CLOSEABLE = '.strip-ov';
-function enableEdgeClose() {
-  let startX = 0, startY = 0, dragging = false, decided = false, horiz = false;
-  let ov = null, edge = null;
-  document.addEventListener('pointerdown', e => {
-    ov = document.querySelector(EDGE_CLOSEABLE);
-    if (!ov) return;
-    const x = e.clientX, w = window.innerWidth;
-    if (x > EDGE_PX && x < w - EDGE_PX) { ov = null; return; }
-    edge = x <= EDGE_PX ? 'l' : 'r';
-    startX = x; startY = e.clientY;
-    dragging = true; decided = false; horiz = false;
-    ov.style.transition = 'none';
-  }, true);
-  document.addEventListener('pointermove', e => {
-    if (!dragging || !ov) return;
-    const dx = e.clientX - startX, dy = e.clientY - startY;
-    if (!decided) {
-      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-      decided = true; horiz = Math.abs(dx) > Math.abs(dy);
-      if (!horiz) { dragging = false; return; }
-    }
-    e.preventDefault();
-    let t = dx;
-    if (edge === 'l' && t < 0) t = t * 0.25;
-    if (edge === 'r' && t > 0) t = t * 0.25;
-    ov.style.transform = 'translateX(' + t + 'px)';
-  }, { capture: true, passive: false });
-  function end(e) {
-    if (!dragging) { ov = null; return; }
-    dragging = false;
-    if (!horiz || !ov) { if (ov) { ov.style.transition = 'transform .25s cubic-bezier(.17,.67,.18,1)'; ov.style.transform = ''; } ov = null; return; }
-    const dx = (e && e.clientX != null ? e.clientX : startX) - startX;
-    const w = window.innerWidth;
-    const threshold = w * 0.18;
-    ov.style.transition = 'transform .25s cubic-bezier(.17,.67,.18,1)';
-    if (Math.abs(dx) > threshold) {
-      const target = ov;
-      target.style.transform = 'translateX(' + (Math.sign(dx) * w) + 'px)';
-      setTimeout(() => { if (target.parentNode) target.remove(); }, 240);
-    } else {
-      ov.style.transform = '';
-    }
-    ov = null; edge = null;
-  }
-  document.addEventListener('pointerup', end, true);
-  document.addEventListener('pointercancel', () => {
-    if (dragging && ov) { ov.style.transition = 'transform .25s cubic-bezier(.17,.67,.18,1)'; ov.style.transform = ''; }
-    dragging = false; ov = null;
-  }, true);
-}
-
 // privacy blur: quando l'app va in background (visibilitychange → hidden) e
 // la flag è 'on', applica un blur sul wrap. iOS Safari/PWA cattura lo
 // screenshot dell'app switcher in questo stato → il preview è già blurrato.
@@ -320,7 +264,6 @@ function refreshPrivacyBlur() {
 document.addEventListener('visibilitychange', refreshPrivacyBlur);
 window.addEventListener('pagehide', refreshPrivacyBlur);
 window.addEventListener('pageshow', refreshPrivacyBlur);
-enableEdgeClose();
 
 // il FAB delega al modulo corrente tramite evento
 $('fab').onclick = () => document.dispatchEvent(new CustomEvent('fab:' + cur));
