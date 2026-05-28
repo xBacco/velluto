@@ -5,6 +5,7 @@ import { logout } from '../auth.js';
 import { isLockEnabled, setPin, disableLock, isPinValid, getPudica, setPudica,
          bioSupported, isBioEnabled, enableBio, disableBio } from '../lib/lock.js';
 import { tipiDefaultRows } from '../lib/logic.js';
+import { getTimbri, addTimbro, removeTimbro, renameTimbro } from '../lib/timbri.js';
 import { renderSlotEditorInto } from './giochi.js';
 import { renderRuotaEditorInto } from './ruota.js';
 import { renderYahtzutraEditorInto } from './yahtzutra.js';
@@ -204,6 +205,45 @@ function renderPersonalizza() {
       add(chips, addc);
     } catch (e) { toast('Errore tag: ' + e.message, 'err'); }
   })();
+
+  // TIMBRI delle fantasie (categorie della cartolina) — sync, localStorage
+  const rTimbri = mk('div', 'set-row col');
+  const headT = mk('div', 'set-l');
+  add(headT, mk('span', 'set-em', '🔥'), mk('span', 'set-nm', 'Timbri delle fantasie'));
+  add(rTimbri, headT);
+  const chipsT = mk('div', 'set-chips');
+  add(rTimbri, chipsT);
+  add(c, rTimbri);
+
+  function renderTimbriChips() {
+    clear(chipsT);
+    getTimbri().forEach(t => {
+      const chip = mk('div', 'set-chip2');
+      chip.appendChild(document.createTextNode(t));
+      chip.onclick = (ev) => {
+        if (ev.target.classList.contains('set-del')) return;
+        const v = prompt('Rinomina timbro', t);
+        if (v == null) return;
+        const trimmed = v.trim();
+        if (!trimmed || trimmed.toLowerCase() === t.toLowerCase()) return;
+        renameTimbro(t, trimmed); renderTimbriChips();
+      };
+      const del = mk('span', 'set-del', '×');
+      del.onclick = (ev) => {
+        ev.stopPropagation();
+        removeTimbro(t); renderTimbriChips();
+      };
+      add(chip, del); add(chipsT, chip);
+    });
+    const addc = mk('div', 'set-chip2 add', '+ aggiungi');
+    addc.onclick = () => {
+      const v = prompt('Nuovo timbro (es. "viaggio", "intimità")');
+      if (!v) return;
+      addTimbro(v.trim()); renderTimbriChips();
+    };
+    add(chipsT, addc);
+  }
+  renderTimbriChips();
 
   // CONTENUTI GIOCHI → hub a tab dentro Impostazioni (non chiude il foglio)
   const rG = row('🎲', 'Contenuti dei giochi', 'Modifica Slot · Ruota · Yahtzutra');

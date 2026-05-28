@@ -1,6 +1,7 @@
 import { mk, add, clear, toast } from '../ui.js';
 import { filterDesideri } from '../lib/logic.js';
 import { listDesideri, addDesiderio, markRealizzato, deleteDesiderio } from '../store.js';
+import { getTimbri } from '../lib/timbri.js';
 
 let ctx = null;        // { client, me, panel }
 let fil = 'tutti';
@@ -65,8 +66,6 @@ function cardOf(d) {
   return c;
 }
 
-const PRESET_CAT = ['intimità', 'sera', 'weekend', 'viaggio', 'sorpresa'];
-
 function openAdd() {
   const overlay = mk('div', 'modal on');
   const sheet = mk('div', 'sheet fantasia-sheet');
@@ -90,7 +89,8 @@ function openAdd() {
   const chipsLbl = mk('div', 'fantasia-chips-lbl', 'Timbri · opzionali');
   const chips = mk('div', 'fantasia-chips');
   let selectedCat = '';
-  PRESET_CAT.forEach(p => {
+  const timbri = getTimbri();
+  timbri.forEach(p => {
     const c = mk('div', 'chip', p);
     c.onclick = () => {
       const wasOn = c.classList.contains('on');
@@ -129,7 +129,6 @@ function openAdd() {
   overlay.appendChild(sheet);
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   document.body.appendChild(overlay);
-  setTimeout(() => ta.focus(), 220);
 }
 
 function fmt(iso) { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; }
