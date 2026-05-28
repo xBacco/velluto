@@ -279,20 +279,31 @@ function renderScheda() {
     if (canClick) div.onclick = () => registra(item, pts);
     wrap.appendChild(div);
   }
-  updateLaunchBtn();
+  updateDock();
 }
 
-function updateLaunchBtn() {
-  const btn = document.querySelector('.yz-launch');
-  if (!btn) return;
-  while (btn.firstChild) btn.removeChild(btn.firstChild);
-  btn.appendChild(mk('span', 'e', '🎲'));
-  let txt;
-  if (tiriUsati === 0) txt = ' Lancia i dadi';
-  else if (tiriUsati >= 3) txt = ' Segna un risultato';
-  else txt = ' Continua tavolo (tiro ' + (tiriUsati + 1) + '/3)';
-  btn.appendChild(document.createTextNode(txt));
-  btn.disabled = (tiriUsati >= 3);
+// Dock galleggiante in basso: appare quando il tavolo è chiuso ma il turno
+// è in corso (tiriUsati>0). Mostra mini-dadi + label "tiro X/3 ▲". Click =
+// riapre il tavolo. Sparisce quando il turno viene registrato (tiriUsati→0).
+let dockEl = null;
+function updateDock() {
+  const show = !gameOver && tiriUsati > 0 && !tableScrim;
+  if (!show) {
+    if (dockEl) { dockEl.remove(); dockEl = null; }
+    return;
+  }
+  if (!dockEl) {
+    dockEl = mk('div', 'yz-dock');
+    dockEl.onclick = openTable;
+    document.body.appendChild(dockEl);
+  }
+  clear(dockEl);
+  const mini = mk('div', 'mini');
+  for (let i = 0; i < 5; i++) mini.appendChild(makeDie(dice[i], true, held[i]));
+  dockEl.appendChild(mini);
+  const lblTxt = tiriUsati >= 3 ? 'Tiri esauriti · segna' : 'Tiro ' + (tiriUsati + 1) + '/3';
+  dockEl.appendChild(mk('span', 'lbl', lblTxt));
+  dockEl.appendChild(mk('span', 'arr', '▲'));
 }
 
 // ---------------------------------------------------------------------------
@@ -314,8 +325,10 @@ function openTable() {
   handle.appendChild(mk('div', 'txt', '🎲 Tavolo · ' + players[currentPlayer].avatar + ' ' + players[currentPlayer].nome));
   const close = mk('span', 'close', '✕');
   close.onclick = closeTable;
+  close.addEventListener('pointerdown', e => e.stopPropagation());
   handle.appendChild(close);
   sheet.appendChild(handle);
+  wireDragToClose(handle, sheet, scrim);
 
   sheet.appendChild(mk('p', 'yz-tiri', 'Tiro 1 di 3'));
   const felt = mk('div', 'yz-felt');
@@ -341,6 +354,7 @@ function openTable() {
 
   renderStage(false);
   updateCtrls();
+  updateDock();
   // Auto-roll solo al primo tiro: se l'utente aveva chiuso il tavolo a metà
   // partita (es. dopo 1 tiro), riaprire NON deve consumargli un tiro.
   if (tiriUsati === 0) setTimeout(roll, 380);
@@ -348,11 +362,52 @@ function openTable() {
 
 function closeTable() {
   if (tableScrim) { tableScrim.remove(); tableScrim = null; }
-  // Refresh UI principale: il bottone "Lancia i dadi" deve riflettere
-  // lo stato corrente (es. "Continua tavolo (tiro 2/3)") e lo strip mostra
-  // i dadi attuali se il primo tiro è già stato fatto.
+  // Refresh UI principale: lo strip mostra i dadi correnti e il dock
+  // galleggiante appare con "tiro X/3 ▲" per ri-aprire il tavolo.
   renderScheda();
   renderStrip();
+}
+
+// Drag handle del tavolo: trascina giù → chiude (= si minimizza nel dock
+// galleggiante in basso). Soglia 90px o velocità > 0.5 px/ms. touch-action:
+// none in CSS sull'handle impedisce lo scroll della pagina sotto.
+function wireDragToClose(handle, sheet, scrim) {
+  let start = null;
+  let moved = false;
+  const onDown = e => {
+    if (e.button !== undefined && e.button !== 0) return;
+    start = { y: e.clientY, t: Date.now() };
+    moved = false;
+    sheet.classList.add('dragging');
+    try { handle.setPointerCapture(e.pointerId); } catch (_) { /* webkit older */ }
+  };
+  const onMove = e => {
+    if (!start) return;
+    const dy = e.clientY - start.y;
+    if (Math.abs(dy) > 6) moved = true;
+    const ty = Math.max(0, dy);
+    sheet.style.transform = 'translateY(' + ty + 'px)';
+  };
+  const onUp = e => {
+    if (!start) return;
+    const dy = e.clientY - start.y;
+    const dt = Math.max(1, Date.now() - start.t);
+    const v = dy / dt;
+    sheet.classList.remove('dragging');
+    sheet.style.transform = '';
+    const wasMoved = moved;
+    start = null;
+    if (!wasMoved) return;
+    if (dy > 90 || v > 0.5) {
+      sheet.style.transform = 'translateY(100%)';
+      scrim.style.opacity = '0';
+      setTimeout(closeTable, 300);
+    }
+  };
+  handle.addEventListener('pointerdown', onDown);
+  handle.addEventListener('pointermove', onMove);
+  handle.addEventListener('pointerup', onUp);
+  handle.addEventListener('pointercancel', onUp);
 }
 
 function renderStage(animate) {
