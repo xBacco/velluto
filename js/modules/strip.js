@@ -220,6 +220,14 @@ function buildFig(box, F, st) {
 
 export async function renderStrip(context) {
   ctx = context; host = context.panel;
+  diagStep('renderStrip start');
+  // ripulisco overlay residui (.dadi-scrim/.modal di altri moduli) che potrebbero
+  // intercettare i click anche se invisibili (opacity 0 senza .show)
+  const residui = document.querySelectorAll('.dadi-scrim, .strip-ov');
+  if (residui.length) {
+    diagStep('residui da rimuovere: ' + residui.length);
+    residui.forEach(n => n.remove());
+  }
   try {
     partite = await listStripPartite(ctx.client, ctx.me.couple_id);
     partner = await getPartner(ctx.client, ctx.me.couple_id, ctx.me.id);
@@ -248,7 +256,9 @@ function drawApertura() {
   const card = (m, titolo, sub) => {
     const c = mk('div', 'pm');
     add(c, mk('div', 'pm-t', titolo), mk('div', 'pm-s', sub));
-    c.onclick = () => chooseMode(m);
+    const handler = (ev) => { ev && ev.preventDefault && ev.preventDefault(); diagStep('tap ' + m); chooseMode(m); };
+    c.addEventListener('click', handler);
+    c.addEventListener('touchend', handler, { passive: false });
     return c;
   };
   add(pick,
@@ -256,6 +266,7 @@ function drawApertura() {
     card('draw', '♦ Draw poker', '5 carte a testa, uno scambio fino a 3, poi showdown.'));
   add(root, pick);
   host.appendChild(root);
+  diagStep('drawApertura DONE — BUILD 723a489+');
 }
 // Diagnostica temporanea Bug 1: banner verde z-index altissimo che mostra
 // gli step di drawSetup. Cosi' anche se l'overlay e' invisibile vediamo
