@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Intro · Drappeggio burlesque</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  --wine-deep:#3d0a1a; --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#000;
+  font-family:Georgia,"Times New Roman",serif;color:var(--cream);}
+
+.stage{position:fixed;inset:0;overflow:hidden;cursor:pointer;
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+             linear-gradient(170deg,var(--bg),var(--bg2));}
+
+/* spotlight dorato sul retro */
+.spot{position:absolute;left:50%;top:50%;width:520px;height:520px;
+  transform:translate(-50%,-50%) scale(.6);opacity:0;z-index:8;
+  background:radial-gradient(closest-side, rgba(212,168,108,.35), transparent 70%);
+  transition:opacity 1.2s ease .4s, transform 1.4s ease .4s;
+  pointer-events:none;}
+.stage.open .spot{opacity:1;transform:translate(-50%,-50%) scale(1);}
+
+/* reveal */
+.reveal{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;z-index:10;}
+.candle{font-size:50px;opacity:0;transform:translateY(20px);
+  filter:drop-shadow(0 0 22px rgba(212,168,108,.55));
+  transition:opacity .8s ease .9s, transform .8s ease .9s;
+  animation:flick 3s ease-in-out infinite;}
+@keyframes flick{0%,100%{filter:drop-shadow(0 0 22px rgba(212,168,108,.55))}
+  50%{filter:drop-shadow(0 0 14px rgba(212,168,108,.35))}}
+.stage.open .candle{opacity:1;transform:translateY(0);}
+.title-wrap{margin-top:10px;overflow:hidden;height:72px;display:flex;align-items:center;}
+.title{font-size:54px;font-family:"Brush Script MT","Lucida Handwriting",cursive;
+  background:linear-gradient(180deg,var(--cream),var(--gold-soft) 50%,var(--gold));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  opacity:0;transform:translateY(70px);
+  transition:opacity 1s ease 1.1s, transform 1s ease 1.1s;
+  text-shadow:0 0 24px rgba(212,168,108,.18);}
+.stage.open .title{opacity:1;transform:translateY(0);}
+.kick{letter-spacing:.5em;text-transform:uppercase;font-size:10px;color:var(--gold);
+  margin-top:14px;font-family:Arial,Helvetica,sans-serif;opacity:0;
+  transition:opacity 1s ease 1.6s;}
+.stage.open .kick{opacity:.85;}
+
+/* sash dorato in alto */
+.sash{position:absolute;top:0;left:0;right:0;height:8px;z-index:30;
+  background:linear-gradient(180deg,var(--gold-soft),var(--gold) 60%,#7a5a2b);
+  box-shadow:0 4px 10px rgba(0,0,0,.6);}
+
+/* tende drappeggiate */
+.curtain{position:absolute;top:0;bottom:0;width:55%;z-index:20;
+  transform-origin:top center;
+  animation: closed-sway 5s ease-in-out infinite;
+  background:
+    radial-gradient(80% 60% at var(--hl) 35%, rgba(255,255,255,.10), transparent 60%),
+    repeating-linear-gradient(92deg,
+      rgba(0,0,0,.50) 0 8px,
+      rgba(255,255,255,.06) 30px,
+      rgba(0,0,0,.50) 60px,
+      rgba(255,255,255,.04) 90px,
+      rgba(0,0,0,.50) 120px),
+    linear-gradient(180deg,var(--wine2) 0%, var(--wine) 45%, var(--wine-deep) 100%);
+  box-shadow: inset 0 0 90px rgba(0,0,0,.5);
+  border-radius:0 0 30% 50% / 0 0 6% 12%;
+}
+.curtain.left{left:-2%;--hl:40%;transform-origin:top right;}
+.curtain.right{right:-2%;--hl:60%;transform-origin:top left;}
+
+@keyframes closed-sway{
+  0%,100%{transform:rotateZ(0) translateX(0);}
+  50%{transform:rotateZ(.3deg) translateX(.4%);}
+}
+
+/* frangia con nappine */
+.fringe{position:absolute;left:0;right:0;bottom:-6px;height:22px;
+  background:
+    radial-gradient(circle at 6px 16px, var(--gold) 4px, transparent 5px) 0 0/14px 22px,
+    linear-gradient(180deg, var(--wine-deep), transparent);
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.6));}
+
+/* apertura con sway */
+.stage.open .curtain{animation:none;}
+.stage.open .curtain.left{
+  transform:translateX(-105%) rotateZ(-4deg);
+  transition: transform 2.4s cubic-bezier(.34,.04,.18,1);
+}
+.stage.open .curtain.right{
+  transform:translateX(105%) rotateZ(4deg);
+  transition: transform 2.4s cubic-bezier(.34,.04,.18,1);
+}
+
+/* particella oro */
+.dust{position:absolute;inset:0;z-index:15;pointer-events:none;opacity:0;
+  transition:opacity .6s ease 1.3s;}
+.stage.open .dust{opacity:1;}
+.dust span{position:absolute;width:3px;height:3px;border-radius:50%;
+  background:var(--gold-soft);box-shadow:0 0 6px var(--gold);
+  animation:float 6s linear infinite;}
+.dust span:nth-child(1){left:20%;top:80%;animation-delay:0s;}
+.dust span:nth-child(2){left:35%;top:90%;animation-delay:1.2s;width:2px;height:2px;}
+.dust span:nth-child(3){left:55%;top:85%;animation-delay:.6s;}
+.dust span:nth-child(4){left:70%;top:95%;animation-delay:2s;width:2px;height:2px;}
+.dust span:nth-child(5){left:82%;top:78%;animation-delay:.3s;}
+@keyframes float{
+  0%{transform:translateY(0);opacity:0;}
+  20%{opacity:1;}
+  100%{transform:translateY(-90vh);opacity:0;}
+}
+
+.hint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:50;
+  font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:rgba(243,217,176,.45);
+  font-family:Arial,Helvetica,sans-serif;pointer-events:none;}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="spot"></div>
+  <div class="reveal">
+    <div class="candle">🕯️</div>
+    <div class="title-wrap"><div class="title">Lussuria</div></div>
+    <div class="kick">il nostro spazio</div>
+  </div>
+  <div class="dust"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="curtain left"><div class="fringe"></div></div>
+  <div class="curtain right"><div class="fringe"></div></div>
+  <div class="sash"></div>
+  <div class="hint">tap per riavviare</div>
+</div>
+<script>
+const stage = document.getElementById('stage');
+function play(){
+  stage.classList.remove('open');
+  void stage.offsetWidth;
+  setTimeout(()=>stage.classList.add('open'), 400);
+}
+stage.addEventListener('click', play);
+window.addEventListener('load', ()=> setTimeout(play, 300));
+</script>
+</body>
+</html>

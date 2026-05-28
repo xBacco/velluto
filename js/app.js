@@ -31,10 +31,24 @@ const rendered = new Set();    // indici già renderizzati
 let pagerInit = false;         // guard: enablePager si registra una volta sola
 
 async function boot() {
+  const t0 = Date.now();
+  setTimeout(openIntroCurtains, 3000); // failsafe
   const { data: { session } } = await client.auth.getSession();
   if (session) await enterApp();
   else $('login').style.display = '';
   $('loginForm').addEventListener('submit', onLogin);
+  const wait = Math.max(0, 400 - (Date.now() - t0));
+  setTimeout(openIntroCurtains, wait);
+}
+
+let introOpened = false;
+function openIntroCurtains() {
+  if (introOpened) return;
+  introOpened = true;
+  const el = $('intro');
+  if (!el) return;
+  el.classList.add('open');
+  setTimeout(() => el.remove(), 2800);
 }
 
 async function onLogin(e) {

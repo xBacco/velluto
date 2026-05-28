@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Intro · Velo trasparente</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  --wine-deep:#3d0a1a; --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#000;
+  font-family:Georgia,"Times New Roman",serif;color:var(--cream);}
+
+.stage{position:fixed;inset:0;overflow:hidden;cursor:pointer;
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+             linear-gradient(170deg,var(--bg),var(--bg2));}
+
+/* alone dorato dietro al velo, cresce */
+.glow{position:absolute;left:50%;top:50%;width:560px;height:560px;
+  transform:translate(-50%,-50%) scale(.55);z-index:6;
+  background:radial-gradient(closest-side,
+    rgba(212,168,108,.55), rgba(212,168,108,.18) 45%, transparent 75%);
+  filter:blur(8px);
+  transition: transform 2.8s ease, opacity 1.6s ease;
+  opacity:.55;pointer-events:none;
+  animation: pulse 4s ease-in-out infinite;}
+.stage.open .glow{transform:translate(-50%,-50%) scale(1.1);opacity:1;}
+@keyframes pulse{
+  0%,100%{filter:blur(8px);}
+  50%{filter:blur(14px);}
+}
+
+/* reveal: candela visibile fin da subito (debole), poi nitida */
+.reveal{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;z-index:10;}
+.candle{font-size:60px;filter:blur(2px) drop-shadow(0 0 32px rgba(212,168,108,.6));
+  opacity:.35;transition:opacity 2s ease, filter 2s ease, transform 2.4s ease;
+  animation:flick 3s ease-in-out infinite;}
+@keyframes flick{0%,100%{opacity:1}50%{opacity:.7}}
+.stage.open .candle{opacity:1;filter:blur(0) drop-shadow(0 0 28px rgba(212,168,108,.65));
+  transform:translateY(-4px);}
+.kick{letter-spacing:.55em;text-transform:uppercase;font-size:10px;color:var(--gold);
+  margin-top:22px;font-family:Arial,Helvetica,sans-serif;
+  opacity:0;transition:opacity 1.4s ease 1.4s;letter-spacing:.55em;}
+.stage.open .kick{opacity:.9;}
+.title{font-size:42px;margin-top:4px;letter-spacing:.04em;
+  background:linear-gradient(180deg,var(--cream),var(--gold-soft));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  opacity:0;letter-spacing:.4em;
+  transition:opacity 1.6s ease 1.5s, letter-spacing 1.8s ease 1.5s;}
+.stage.open .title{opacity:1;letter-spacing:.04em;}
+
+/* veli traslucidi */
+.veil{position:absolute;top:-4%;bottom:-4%;width:60%;z-index:20;
+  transform-origin:top center;
+  transition: transform 3.2s cubic-bezier(.45,.05,.2,1);
+  will-change:transform;
+  background:
+    linear-gradient(95deg,
+      rgba(255,255,255,.10) 0%,
+      rgba(255,255,255,.04) 25%,
+      rgba(255,255,255,.10) 50%,
+      rgba(255,255,255,.04) 75%,
+      rgba(255,255,255,.10) 100%),
+    repeating-linear-gradient(91deg,
+      rgba(255,255,255,.06) 0 1px,
+      rgba(255,255,255,0) 2px 5px),
+    linear-gradient(180deg,
+      rgba(122,21,51,.55) 0%,
+      rgba(92,16,38,.6) 50%,
+      rgba(61,10,26,.65) 100%);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  box-shadow: inset 0 0 60px rgba(0,0,0,.4);
+  animation: billow 6s ease-in-out infinite;
+}
+.veil.left{left:0;border-right:1px solid rgba(212,168,108,.18);
+  animation-delay:0s;}
+.veil.right{right:0;border-left:1px solid rgba(212,168,108,.18);
+  animation-delay:1.5s;}
+@keyframes billow{
+  0%,100%{transform:translateX(0) skewX(0);}
+  50%{transform:translateX(.6%) skewX(.4deg);}
+}
+
+/* bordo dorato verticale (asta del velo) */
+.veil::before{content:"";position:absolute;top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg,var(--gold) 0%,#7a5a2b 100%);
+  box-shadow:0 0 8px rgba(212,168,108,.4);}
+.veil.left::before{right:0;}
+.veil.right::before{left:0;}
+
+/* anelli dorati in alto */
+.rings{position:absolute;top:0;left:0;right:0;height:14px;z-index:22;
+  display:flex;justify-content:space-around;align-items:center;
+  pointer-events:none;}
+.rings span{width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%, var(--gold-soft), #6f5021);
+  box-shadow:0 2px 3px rgba(0,0,0,.6);}
+
+/* apertura */
+.stage.open .veil{animation:none;}
+.stage.open .veil.left{transform:translateX(-100%) skewX(-1deg);}
+.stage.open .veil.right{transform:translateX(100%) skewX(1deg);}
+
+/* particelle dorate fluttuanti */
+.motes{position:absolute;inset:0;z-index:15;pointer-events:none;}
+.motes span{position:absolute;width:2px;height:2px;border-radius:50%;
+  background:var(--gold-soft);box-shadow:0 0 8px var(--gold);
+  animation:drift 8s linear infinite;opacity:.6;}
+.motes span:nth-child(1){left:25%;top:70%;animation-delay:0s;}
+.motes span:nth-child(2){left:42%;top:85%;animation-delay:2s;width:3px;height:3px;}
+.motes span:nth-child(3){left:58%;top:75%;animation-delay:.8s;}
+.motes span:nth-child(4){left:75%;top:88%;animation-delay:3s;}
+.motes span:nth-child(5){left:30%;top:92%;animation-delay:4s;width:3px;height:3px;}
+.motes span:nth-child(6){left:67%;top:95%;animation-delay:1.5s;}
+.motes span:nth-child(7){left:50%;top:80%;animation-delay:2.8s;}
+@keyframes drift{
+  0%{transform:translate(0,0);opacity:0;}
+  15%{opacity:.8;}
+  100%{transform:translate(20px,-95vh);opacity:0;}
+}
+
+.hint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:50;
+  font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:rgba(243,217,176,.45);
+  font-family:Arial,Helvetica,sans-serif;pointer-events:none;}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="glow"></div>
+  <div class="reveal">
+    <div class="candle">🕯️</div>
+    <div class="kick">il nostro spazio</div>
+    <div class="title">Lussuria</div>
+  </div>
+  <div class="motes">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span>
+  </div>
+  <div class="veil left"></div>
+  <div class="veil right"></div>
+  <div class="rings">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span>
+  </div>
+  <div class="hint">tap per riavviare</div>
+</div>
+<script>
+const stage = document.getElementById('stage');
+function play(){
+  stage.classList.remove('open');
+  void stage.offsetWidth;
+  setTimeout(()=>stage.classList.add('open'), 500);
+}
+stage.addEventListener('click', play);
+window.addEventListener('load', ()=> setTimeout(play, 400));
+</script>
+</body>
+</html>
