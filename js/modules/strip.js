@@ -11,6 +11,7 @@ import {
   risultatoPartita, testaATesta,
 } from '../lib/logic.js';
 import { listStripPartite, addStripPartita, getPartner } from '../store.js';
+import { enterGameFocus } from './giochi.js';
 
 let ctx = null, host = null, partite = [];
 let partner = null;
@@ -218,9 +219,17 @@ function buildFig(box, F, st) {
   });
 }
 
+let stripFocusExitWired = false;
 export async function renderStrip(context) {
   ctx = context; host = context.panel;
   diagStep('renderStrip start');
+  enterGameFocus('♠️ Strip');
+  if (!stripFocusExitWired) {
+    document.addEventListener('game-focus:exit', () => {
+      document.querySelectorAll('.strip-ov, .dadi-scrim').forEach(n => n.remove());
+    });
+    stripFocusExitWired = true;
+  }
   // ripulisco overlay residui (.dadi-scrim/.modal di altri moduli) che potrebbero
   // intercettare i click anche se invisibili (opacity 0 senza .show)
   const residui = document.querySelectorAll('.dadi-scrim, .strip-ov');

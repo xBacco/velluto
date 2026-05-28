@@ -1,5 +1,6 @@
 import { mk, add, clear, toast, openSheet } from '../ui.js';
 import { accreditaGiro, getPartner } from '../store.js';
+import { enterGameFocus } from './giochi.js';
 
 // ---------------------------------------------------------------------------
 // Yahtzutra — Yahtzee a tema spicy (13 caselle, 2 giocatori pass-the-phone)
@@ -148,6 +149,7 @@ function punteggio(key, player) {
 // ---------------------------------------------------------------------------
 // RENDER
 // ---------------------------------------------------------------------------
+let focusExitWired = false;
 export async function renderYahtzutra(context) {
   ctx = context;
   loadAzioni();
@@ -155,6 +157,16 @@ export async function renderYahtzutra(context) {
   try { partner = await getPartner(ctx.client, ctx.me.couple_id, ctx.me.id); } catch { /* tollerante */ }
   buildPlayers(partner);
   if (!filled) resetGame();
+  enterGameFocus('🎲 Yahtzutra');
+  if (!focusExitWired) {
+    // Quando l'utente preme "✕ esci" cleanup tutto lo stato visivo del gioco.
+    document.addEventListener('game-focus:exit', () => {
+      if (tableScrim) { tableScrim.remove(); tableScrim = null; }
+      if (dockEl) { dockEl.remove(); dockEl = null; }
+      document.body.classList.remove('yz-busy');
+    });
+    focusExitWired = true;
+  }
   draw();
 }
 

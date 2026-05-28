@@ -56,6 +56,37 @@ function drawSelettore() {
   p.appendChild(mk('div', 'gioco-host'));
 }
 
+// ===========================================================================
+// FOCUS MODE PAGINA INTERA
+// Yahtzutra e Strip occupano tutto lo schermo: nav inferiore e selettore
+// vengono nascosti; un header floating con "✕" permette di tornare alla
+// vista normale (selettore visibile + nav).
+// ===========================================================================
+export function enterGameFocus(title) {
+  document.body.classList.add('game-focus');
+  let header = document.getElementById('game-focus-header');
+  if (header) header.remove();
+  header = mk('div', 'game-focus-header'); header.id = 'game-focus-header';
+  header.appendChild(mk('span', 'gfh-title', title));
+  const close = mk('button', 'gfh-close', '✕');
+  close.title = 'Esci dal gioco';
+  close.onclick = exitGameFocus;
+  header.appendChild(close);
+  document.body.appendChild(header);
+}
+
+export function exitGameFocus() {
+  document.body.classList.remove('game-focus');
+  const header = document.getElementById('game-focus-header');
+  if (header) header.remove();
+  // I moduli (yahtzutra, strip) ascoltano questo evento per pulire il
+  // proprio stato (dock galleggiante, scrim aperti, body classes, ecc.)
+  document.dispatchEvent(new CustomEvent('game-focus:exit'));
+  // Torna al selettore con default Slot (gioco non-focus).
+  giocoCorrente = 'dadi';
+  if (ctx) renderGiochi(ctx);
+}
+
 async function montaGiocoCorrente() {
   const host = ctx.panel.querySelector('.gioco-host');
   if (giocoCorrente === 'ruota') {

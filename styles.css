@@ -1176,3 +1176,31 @@ body.pudica [data-spicy].revealed{filter:none;}
   padding:7px 9px;resize:vertical;min-height:34px;line-height:1.4;}
 .yz-set-btns{display:flex;gap:8px;margin-top:10px;}
 .yz-set-btns .btn{flex:1;}
+
+/* ============================================================
+   FOCUS MODE PAGINA INTERA (Yahtzutra + Strip)
+   Quando body.game-focus è attivo: nasconde nav inferiore,
+   selettore giochi e altri header per dare al gioco tutto lo
+   schermo. Un header floating con "✕" permette di uscire.
+   ============================================================ */
+body.game-focus .nav,
+body.game-focus .gioco-selettore{display:none !important;}
+body.game-focus .viewport{padding-bottom:0 !important;}
+body.game-focus .panel{padding-top:54px;}
+body.game-focus .ptitle{display:none;}
+
+.game-focus-header{position:fixed;top:0;left:0;right:0;height:46px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px 0 18px;z-index:60;
+  background:linear-gradient(180deg,rgba(12,3,6,.95),rgba(12,3,6,.7) 70%,transparent);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.game-focus-header .gfh-title{font-family:Georgia,"Times New Roman",serif;
+  font-size:15px;letter-spacing:.06em;color:var(--gold-soft,#e9c98f);
+  font-weight:600;}
+.game-focus-header .gfh-close{appearance:none;border:0;cursor:pointer;
+  background:rgba(212,168,108,.12);color:var(--gold,#d4a86c);
+  border:1px solid rgba(212,168,108,.35);border-radius:50%;
+  width:34px;height:34px;font-size:15px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,background .15s;}
+.game-focus-header .gfh-close:active{transform:scale(.92);background:rgba(212,168,108,.25);}
