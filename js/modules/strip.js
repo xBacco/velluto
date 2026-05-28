@@ -10,7 +10,7 @@ import {
   GUARDAROBA, GUARDAROBA_META, capiIniziali, togliCapo,
   risultatoPartita, testaATesta,
 } from '../lib/logic.js';
-import { listStripPartite, addStripPartita, getPartner } from '../store.js';
+import { listStripPartite, addStripPartita, getPartner, deleteStripPartiteForCouple } from '../store.js';
 import { enterGameFocus } from './giochi.js';
 
 let ctx = null, host = null, partite = [];
@@ -222,7 +222,6 @@ function buildFig(box, F, st) {
 let stripFocusExitWired = false;
 export async function renderStrip(context) {
   ctx = context; host = context.panel;
-  diagStep('renderStrip start');
   enterGameFocus('♠️ Strip');
   if (!stripFocusExitWired) {
     document.addEventListener('game-focus:exit', () => {
@@ -230,13 +229,9 @@ export async function renderStrip(context) {
     });
     stripFocusExitWired = true;
   }
-  // ripulisco overlay residui (.dadi-scrim/.modal di altri moduli) che potrebbero
-  // intercettare i click anche se invisibili (opacity 0 senza .show)
-  const residui = document.querySelectorAll('.dadi-scrim, .strip-ov');
-  if (residui.length) {
-    diagStep('residui da rimuovere: ' + residui.length);
-    residui.forEach(n => n.remove());
-  }
+  // overlay residui di altri moduli possono ancora intercettare i click anche se
+  // invisibili (opacity 0 senza .show): rimuoverli prima di disegnare
+  document.querySelectorAll('.dadi-scrim, .strip-ov').forEach(n => n.remove());
   try {
     partite = await listStripPartite(ctx.client, ctx.me.couple_id);
     partner = await getPartner(ctx.client, ctx.me.couple_id, ctx.me.id);
@@ -257,53 +252,234 @@ function partnerId() {
 
 function drawApertura() {
   clear(host);
-  const root = mk('div', 'strip-root');
-  add(root, mk('h2', 'ptitle', '♠️ Strip Poker'), mk('p', 'psub', 'Mano più bassa = si toglie un capo.'));
+  const root = mk('div', 'strip-root cabaret');
+
+  // 1. MARQUEE
+  root.appendChild(buildMarquee());
+
+  // 2. SCORE — TICKETS SOLD
   const tt = testaATesta(partite, ctx.me.id, partnerId());
-  add(root, mk('div', 'strip-score', `🐻 Tu ${tt.mie} — ${tt.sue} Lei 🧁`));
-  const pick = mk('div', 'pick-modes');
-  const card = (m, titolo, sub) => {
-    const c = mk('div', 'pm');
-    add(c, mk('div', 'pm-t', titolo), mk('div', 'pm-s', sub));
-    const handler = (ev) => { ev && ev.preventDefault && ev.preventDefault(); diagStep('tap ' + m); chooseMode(m); };
-    c.addEventListener('click', handler);
-    c.addEventListener('touchend', handler, { passive: false });
-    return c;
-  };
-  add(pick,
-    card('holdem', '♣ Texas Hold\'em', '2 carte coperte a testa + 5 comuni sul tavolo.'),
-    card('draw', '♦ Draw poker', '5 carte a testa, uno scambio fino a 3, poi showdown.'));
-  add(root, pick);
+  const score = mk('div', 'score');
+  const sl = mk('div', 'score-label');
+  add(sl, mk('span', 'ln-l'), mk('span', 'lb', 'TICKETS SOLD'), mk('span', 'ln-r'));
+  add(score, sl, mk('div', 'score-val', `🐻 ${pad3(tt.mie)} · ${pad3(tt.sue)} 🧁`));
+  root.appendChild(score);
+
+  // 3. TICKETS modalità
+  const tickets = mk('div', 'tickets');
+  add(tickets,
+    ticketEl('holdem', 'I', "HOLD'EM", 'LA DANZA LUNGA'),
+    ticketEl('draw', 'II', 'DRAW', 'IL CAN-CAN'));
+  root.appendChild(tickets);
+
+  // 4. BACKSTAGE
+  const bs = mk('div', 'backstage');
+  const bsl = mk('div', 'bs-label');
+  add(bsl, mk('span', 'ln'), mk('span', 'lb', '— BACKSTAGE —'), mk('span', 'ln'));
+  const bsp = mk('div', 'bs-pills');
+  add(bsp,
+    bsPill('storia', '📖', 'STORIA', openStoria),
+    bsPill('regole', '🃏', 'REGOLE', openRegole),
+    bsPill('opzioni', '⚙', 'OPZIONI', openOpzioni));
+  add(bs, bsl, bsp);
+  root.appendChild(bs);
+
   host.appendChild(root);
-  diagStep('drawApertura DONE — BUILD 723a489+');
 }
-// Diagnostica temporanea Bug 1: banner verde z-index altissimo che mostra
-// gli step di drawSetup. Cosi' anche se l'overlay e' invisibile vediamo
-// dove esattamente la funzione si interrompe.
-function diagStep(label) {
-  let box = document.getElementById('strip-diag');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'strip-diag';
-    box.style.cssText = 'position:fixed;top:env(safe-area-inset-top,8px);left:8px;right:8px;'
-      + 'background:#0e3a1a;color:#9fffb8;border:1px solid #2faa56;border-radius:8px;'
-      + 'padding:8px 10px;font:12px/1.3 monospace;z-index:99999;max-height:60vh;overflow:auto;'
-      + 'white-space:pre-wrap;word-break:break-word;';
-    document.body.appendChild(box);
+
+function pad3(n) { return String(n).padStart(3, '0'); }
+
+function buildMarquee() {
+  const m = mk('div', 'marquee');
+  const top = mk('div', 'bulb-row top');
+  const bot = mk('div', 'bulb-row bot');
+  for (let i = 0; i < 6; i++) {
+    const b1 = mk('span', 'bulb'); b1.style.animationDelay = (i * 0.3) + 's'; top.appendChild(b1);
+    const b2 = mk('span', 'bulb'); b2.style.animationDelay = (0.15 + i * 0.3) + 's'; bot.appendChild(b2);
   }
-  const t = new Date().toISOString().slice(11, 23);
-  box.textContent += '[' + t + '] ' + label + '\n';
+  const inner = mk('div', 'marquee-inner');
+  add(inner,
+    mk('div', 'micro', '★ TONIGHT ★'),
+    mk('div', 'neon-h flicker', 'STRIP'),
+    mk('div', 'neon-h', 'POKER'),
+    mk('div', 'micro', '— LIVE ON STAGE —'));
+  add(m, top, bot, inner);
+  return m;
 }
-function chooseMode(m) {
-  try {
-    diagStep('chooseMode ' + m);
-    mode = m;
-    drawSetup();
-    diagStep('drawSetup OK');
-  } catch (e) {
-    diagStep('ERR ' + (e && e.message ? e.message : String(e)));
-    if (e && e.stack) diagStep(String(e.stack).split('\n').slice(0, 4).join('\n'));
+
+function ticketEl(modeKey, num, title, sub) {
+  const t = mk('div', 'ticket'); t.dataset.mode = modeKey;
+  const stub = mk('div', 'ticket-stub');
+  add(stub, mk('span', 'stub-up', 'ADMIT'), mk('span', 'stub-num', num), mk('span', 'stub-dn', 'ONE'));
+  const body = mk('div', 'ticket-body');
+  add(body, mk('div', 't', title), mk('div', 's', sub));
+  add(t, stub, body, mk('div', 'ticket-arrow', '▶'));
+  const handler = (ev) => { ev && ev.preventDefault && ev.preventDefault(); chooseMode(modeKey); };
+  t.addEventListener('click', handler);
+  t.addEventListener('touchend', handler, { passive: false });
+  return t;
+}
+
+function bsPill(id, emoji, label, onTap) {
+  const p = mk('div', 'bs-pill'); p.dataset.pill = id;
+  add(p, mk('div', 'bs-em', emoji), mk('div', 'bs-lb', label));
+  const handler = (ev) => { ev && ev.preventDefault && ev.preventDefault(); onTap(); };
+  p.addEventListener('click', handler);
+  p.addEventListener('touchend', handler, { passive: false });
+  return p;
+}
+
+function chooseMode(m) { mode = m; drawSetup(); }
+
+// --- BACKSTAGE: STORIA ---
+function openStoria() {
+  const ov = openOv();
+  ov.classList.add('storia');
+  ov.appendChild(mk('div', 'ov-em', '📖'));
+  ov.appendChild(mk('h3', null, 'CRONACA DELLA NOTTE'));
+  ov.appendChild(mk('p', 'ov-sub', 'tutte le serate, tutti gli atti'));
+  const wrap = mk('div', 'cronaca');
+  const serate = raggruppaPartite(partite);
+  if (!serate.length) {
+    wrap.appendChild(mk('p', 'cronaca-empty', '"La prima serata non è ancora cominciata."'));
+  } else {
+    serate.forEach(s => {
+      wrap.appendChild(mk('div', 'serata-head', '— SERATA N° ' + roman(s.n) + ' —'));
+      s.partite.forEach(p => {
+        const winLui = p.vincitore_id === ctx.me.id;
+        const md = (p.modalita || '').toUpperCase();
+        const text = winLui
+          ? `🐻 Lui ha tenuto l'ultimo velo, vincitore del ${md}.`
+          : `🧁 Lei è rimasta vestita di sola luce; ha vinto al ${md}.`;
+        wrap.appendChild(mk('div', 'cronaca-line', '· ' + text));
+      });
+    });
   }
+  ov.appendChild(wrap);
+  const back = mk('button', 'btn ghost', '← Torna al palco');
+  back.onclick = closeOv;
+  ov.appendChild(back);
+}
+
+function raggruppaPartite(arr) {
+  if (!arr || !arr.length) return [];
+  const byDay = {};
+  arr.forEach(p => {
+    const d = (p.creato || p.created_at || '').slice(0, 10);
+    if (!byDay[d]) byDay[d] = [];
+    byDay[d].push(p);
+  });
+  const days = Object.keys(byDay).sort();
+  return days.map((d, i) => ({ day: d, n: i + 1, partite: byDay[d] })).reverse();
+}
+
+function roman(n) {
+  const map = [[10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+  let s = '';
+  for (const [v, r] of map) while (n >= v) { s += r; n -= v; }
+  return s;
+}
+
+// --- BACKSTAGE: REGOLE ---
+function openRegole() {
+  const ov = openOv();
+  ov.classList.add('regole');
+  const wrap = mk('div', 'depliant');
+  const ante = [
+    { n: 'I', t: 'COME SI GIOCA', d: "Hold'em: due carte coperte a testa, cinque sul tavolo. Draw: cinque a testa, un solo scambio." },
+    { n: 'II', t: 'CHI PERDE LA MANO', d: 'Mano più bassa, perde un capo. Parità: nessuno si spoglia, le carte restano in vista.' },
+    { n: 'III', t: 'CHI VINCE LA NOTTE', d: "Chi resta senza più nulla da togliere ha perso la notte. L'altro si gode il trofeo. ♥" },
+  ];
+  ante.forEach((a, i) => {
+    const f = mk('div', 'fold a' + (i + 1));
+    f.style.setProperty('--fold-delay', (i * 0.7) + 's');
+    add(f,
+      mk('div', 'fold-bg', a.n),
+      mk('div', 'fold-t', a.t),
+      mk('div', 'fold-sep', '✦ · ✦'),
+      mk('div', 'fold-d', a.d));
+    wrap.appendChild(f);
+  });
+  ov.appendChild(wrap);
+  ov.appendChild(mk('div', 'libretto-sig', '— Il Croupier, 1899 —'));
+  const back = mk('button', 'btn ghost', '← Torna al palco');
+  back.onclick = closeOv;
+  ov.appendChild(back);
+}
+
+// --- BACKSTAGE: OPZIONI ---
+const OPT_KEYS = { suoni: 'strip-poker:suoni', vibra: 'strip-poker:vibra', privacy: 'strip-poker:privacy-blur' };
+const OPT_DEFAULTS = { suoni: 'on', vibra: 'on', privacy: 'off' };
+function getOpt(k) { try { return localStorage.getItem(OPT_KEYS[k]) || OPT_DEFAULTS[k]; } catch (_) { return OPT_DEFAULTS[k]; } }
+function setOpt(k, v) { try { localStorage.setItem(OPT_KEYS[k], v); } catch (_) {} }
+
+function openOpzioni() {
+  const ov = openOv();
+  ov.classList.add('opzioni');
+  const drappo = mk('div', 'drappo');
+  const head = mk('div', 'drappo-head');
+  add(head, mk('span', 'tape l'), mk('span', 'tape r'), mk('div', 'tag', '✦ CAMERINO · CABARET ✦'));
+  drappo.appendChild(head);
+  drappo.appendChild(mk('span', 'monogram', 'M.'));
+  drappo.appendChild(mk('span', 'swatch'));
+  const grid = mk('div', 'pol-grid');
+  ['suoni', 'vibra', 'privacy'].forEach(k => grid.appendChild(togglePolaroid(k)));
+  grid.appendChild(resetPolaroid());
+  drappo.appendChild(grid);
+  ov.appendChild(drappo);
+  const back = mk('button', 'btn ghost', '← Torna al palco');
+  back.onclick = closeOv;
+  ov.appendChild(back);
+}
+
+const POL_META = {
+  suoni: { ico: '🔊', label: 'SUONI' },
+  vibra: { ico: '📳', label: 'VIBRA' },
+  privacy: { ico: '🌫️', label: 'PRIVACY' },
+};
+function togglePolaroid(k) {
+  const m = POL_META[k];
+  const p = mk('div', 'polaroid p-' + k);
+  const v = getOpt(k);
+  p.classList.add(v === 'on' ? 'on' : 'off');
+  const st = mk('div', 'pol-st', v.toUpperCase());
+  add(p, mk('div', 'pol-img', m.ico), mk('div', 'pol-lab', m.label), st);
+  p.onclick = () => {
+    const nv = getOpt(k) === 'on' ? 'off' : 'on';
+    setOpt(k, nv);
+    p.classList.toggle('on'); p.classList.toggle('off');
+    st.textContent = nv.toUpperCase();
+  };
+  return p;
+}
+
+function resetPolaroid() {
+  const p = mk('div', 'polaroid p-reset danger');
+  const lab = mk('div', 'pol-lab', 'RESET');
+  const st = mk('div', 'pol-st', 'DEL');
+  add(p, mk('div', 'pol-img', '🗑️'), lab, st);
+  let armed = false, timer = null;
+  const disarm = () => { armed = false; p.classList.remove('armed'); lab.textContent = 'RESET'; st.textContent = 'DEL'; };
+  p.onclick = async () => {
+    if (!armed) {
+      armed = true; p.classList.add('armed');
+      lab.textContent = 'SICURO?'; st.textContent = 'TAP × CONFERMA';
+      clearTimeout(timer); timer = setTimeout(disarm, 3500);
+      return;
+    }
+    clearTimeout(timer); armed = false;
+    try {
+      await deleteStripPartiteForCouple(ctx.client, ctx.me.couple_id);
+      partite = [];
+      toast('Cronaca azzerata.', 'ok');
+      closeOv();
+      drawApertura();
+    } catch (err) {
+      toast('Errore reset: ' + err.message, 'err');
+      disarm();
+    }
+  };
+  return p;
 }
 
 // ---------------------------------------------------------------------------
@@ -349,17 +525,13 @@ function renderList(box, who, sel, onChange) {
 }
 
 function drawSetup() {
-  diagStep('drawSetup START');
   initSel();
-  diagStep('initSel OK');
   const ov = openOv();
-  diagStep('openOv OK, ov in DOM: ' + (document.querySelector('.strip-ov') === ov));
   const head = mk('div', 'setHead');
   const h3 = mk('h3'); h3.appendChild(document.createTextNode('Cosa avete '));
   h3.appendChild(mk('b', null, 'addosso')); h3.appendChild(document.createTextNode('?'));
   add(head, h3, mk('div', 'sub', 'Spunta quello che indossate adesso. Scarpe e calzini contano 2 e si tolgono uno alla volta.'));
   ov.appendChild(head);
-  diagStep('head appended');
 
   const cols = mk('div', 'cols');
   const cardLui = mk('div', 'who-card'); const totLui = mk('div', 'tot', '0 capi'); const listLui = mk('div', 'list');
@@ -368,7 +540,6 @@ function drawSetup() {
   add(cardLei, mk('h4', null, '🧁 Lei'), totLei, listLei);
   add(cols, cardLui, cardLei);
   ov.appendChild(cols);
-  diagStep('cols appended');
 
   const eqNote = mk('div', 'eqNote', 'Consiglio: stesso numero di capi per una partita equilibrata.');
   ov.appendChild(eqNote);
@@ -387,8 +558,6 @@ function drawSetup() {
   go.onclick = () => { closeOv(); startGame(selLui, selLei); };
   ov.appendChild(go);
   refresh();
-  diagStep('refresh OK, ov display=' + getComputedStyle(ov).display
-    + ' opacity=' + getComputedStyle(ov).opacity + ' z=' + getComputedStyle(ov).zIndex);
 }
 
 function startGame(sLui, sLei) {

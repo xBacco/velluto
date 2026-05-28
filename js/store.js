@@ -261,6 +261,10 @@ export async function addStripPartita(client, { couple_id, vincitore_id, perdent
   return check(res);
 }
 
+export async function deleteStripPartiteForCouple(client, coupleId) {
+  return check(await client.from('strip_partite').delete().eq('couple_id', coupleId));
+}
+
 export async function getPartner(client, coupleId, meId) {
   const res = await client.from('profiles').select('*').eq('couple_id', coupleId);
   const rows = check(res) || [];

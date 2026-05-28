@@ -220,29 +220,4 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 
-// Error reporter persistente per smoke test mobile: cattura JS error e promise
-// rejection uncaught e li mostra in un banner che NON sparisce da solo (il
-// toast normale dura 3.2s, troppo poco per screenshot). Da disattivare dopo
-// che lo smoke Android è verde.
-(function installErrorReporter() {
-  const box = mk('div', 'errbox'); box.style.display = 'none';
-  document.body.appendChild(box);
-  function show(label, err) {
-    clear(box); box.style.display = '';
-    const head = mk('div', 'errbox-head');
-    const t = mk('strong', null, '⚠️ ' + label);
-    const x = mk('button', 'errbox-x', '✕');
-    x.onclick = () => { box.style.display = 'none'; };
-    add(head, t, x); box.appendChild(head);
-    const msg = (err && err.message) ? err.message : String(err);
-    box.appendChild(mk('div', 'errbox-msg', msg));
-    if (err && err.stack) {
-      const lines = String(err.stack).split('\n').slice(0, 5).join('\n');
-      box.appendChild(mk('pre', 'errbox-stk', lines));
-    }
-  }
-  window.addEventListener('error', e => show('Errore JS', e.error || e.message || 'ignoto'));
-  window.addEventListener('unhandledrejection', e => show('Promise rifiutata', e.reason));
-})();
-
 boot().catch(err => toast('Errore avvio: ' + err.message, 'err'));

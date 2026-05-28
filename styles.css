@@ -349,20 +349,6 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
   font-family:Arial,Helvetica,sans-serif;letter-spacing:.2px;}
 .pending-foto-lbl:empty{margin:0;min-height:0;}
 
-/* Error banner persistente per smoke test (vedi installErrorReporter in app.js) */
-.errbox{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));
-  z-index:9999;background:#3a0a14;color:var(--cream);border:1px solid var(--err);
-  border-radius:10px;padding:10px 12px;font-family:Arial,Helvetica,sans-serif;
-  font-size:12.5px;box-shadow:0 10px 30px rgba(0,0,0,.7);max-height:50vh;overflow-y:auto;}
-.errbox-head{display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:6px;font-size:13px;color:var(--err);}
-.errbox-x{background:none;border:none;color:var(--cream);font-size:18px;
-  cursor:pointer;padding:0 4px;line-height:1;}
-.errbox-msg{margin-bottom:6px;line-height:1.4;word-break:break-word;}
-.errbox-stk{margin:0;padding:6px 8px;background:rgba(0,0,0,.4);border-radius:5px;
-  font-family:"Courier New",monospace;font-size:10.5px;overflow-x:auto;
-  white-space:pre-wrap;color:#e9c98f;}
-
 /* ===== Buoni ===== */
 .bemoji{font-size:30px;line-height:1;}
 .btitle{font-size:18px;margin:0;}
@@ -1200,6 +1186,227 @@ body.pudica [data-spicy].revealed{filter:none;}
   0%{opacity:0;transform:scale(.92);}
   20%{opacity:1;transform:scale(1.05);}
   100%{opacity:0;transform:scale(1.2);}
+}
+
+/* ============================================================
+   STRIP POKER · APERTURA CABARET (v2)
+   spec: docs/superpowers/specs/2026-05-28-strip-poker-apertura-cabaret-design.md
+   ============================================================ */
+.strip-root.cabaret{
+  --bordeaux-deep:#0a0205;--bordeaux:#1a0509;--bordeaux-warm:#2a0a18;
+  --neon-pink:#ff5577;--neon-pink-dim:#b83c5a;
+  --gold-mute:#c9a35f;--gold-bright:#ffd97a;
+  --cream-paper:#fbe9cf;
+  max-width:340px;margin:0 auto;padding:0;display:block;
+}
+
+/* --- MARQUEE --- */
+.strip-root.cabaret .marquee{position:relative;margin:14px 8px 0;background:var(--bordeaux);
+  border:3px solid var(--gold-mute);border-radius:8px;padding:20px 12px 16px;
+  box-shadow:0 0 30px rgba(232,90,120,.35),inset 0 0 24px rgba(0,0,0,.6);}
+.strip-root.cabaret .bulb-row{position:absolute;left:0;right:0;display:flex;justify-content:space-around;padding:0 8px;}
+.strip-root.cabaret .bulb-row.top{top:-7px;}
+.strip-root.cabaret .bulb-row.bot{bottom:-7px;}
+.strip-root.cabaret .bulb{width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle,#fff4c2,#e8c483);
+  box-shadow:0 0 6px #ffd97a,0 0 12px rgba(255,217,122,.7);
+  animation:bulbBlink 1.8s infinite;}
+@keyframes bulbBlink{0%,90%{opacity:1}95%{opacity:.3}}
+.strip-root.cabaret .marquee-inner{text-align:center;}
+.strip-root.cabaret .micro{font:7px Arial,sans-serif;letter-spacing:.5em;color:var(--gold-mute);text-transform:uppercase;}
+.strip-root.cabaret .marquee-inner .micro:first-child{margin-bottom:6px;}
+.strip-root.cabaret .marquee-inner .micro:last-child{margin-top:6px;}
+.strip-root.cabaret .neon-h{font-family:'Bebas Neue','Impact',sans-serif;font-weight:900;font-size:42px;
+  color:var(--neon-pink);line-height:.95;letter-spacing:.04em;margin-top:4px;
+  text-shadow:0 0 6px var(--neon-pink),0 0 14px rgba(255,85,119,.7),0 0 26px rgba(255,85,119,.4);}
+.strip-root.cabaret .neon-h.flicker{animation:neonFlicker 4s infinite;}
+@keyframes neonFlicker{0%,18%,22%,25%,53%,57%,100%{opacity:1}20%,24%,55%{opacity:.7}}
+@media (prefers-reduced-motion: reduce){
+  .strip-root.cabaret .bulb,.strip-root.cabaret .neon-h.flicker{animation:none;}
+}
+
+/* --- SCORE A2 --- */
+.strip-root.cabaret .score{margin:26px 16px 0;text-align:center;}
+.strip-root.cabaret .score-label{display:flex;align-items:center;justify-content:center;gap:6px;}
+.strip-root.cabaret .score-label .ln-l{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold-mute));}
+.strip-root.cabaret .score-label .ln-r{flex:1;height:1px;background:linear-gradient(90deg,var(--gold-mute),transparent);}
+.strip-root.cabaret .score-label .lb{font:6px Arial,sans-serif;letter-spacing:.45em;color:var(--gold-mute);white-space:nowrap;}
+.strip-root.cabaret .score-val{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold-bright);
+  letter-spacing:.06em;margin-top:4px;line-height:.95;text-shadow:0 0 10px rgba(255,217,122,.6);}
+
+/* --- TICKETS --- */
+.strip-root.cabaret .tickets{margin:24px 16px 0;display:flex;flex-direction:column;gap:10px;}
+.strip-root.cabaret .ticket{display:flex;background:linear-gradient(180deg,#fbe9cf,#e0c89a);
+  color:#3a0c1c;border-radius:3px;box-shadow:0 4px 12px rgba(0,0,0,.6);
+  overflow:hidden;min-height:58px;cursor:pointer;
+  transition:transform .18s ease,box-shadow .18s ease;-webkit-tap-highlight-color:transparent;}
+.strip-root.cabaret .ticket:active{transform:translateY(1px) scale(.99);box-shadow:0 2px 8px rgba(0,0,0,.6);}
+.strip-root.cabaret .ticket-stub{background:linear-gradient(180deg,#ff5577,#8a1838);color:#fbe9cf;
+  width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border-right:2px dashed rgba(251,233,207,.7);}
+.strip-root.cabaret .ticket-stub .stub-up,
+.strip-root.cabaret .ticket-stub .stub-dn{font:6px Arial,sans-serif;letter-spacing:.25em;opacity:.85;}
+.strip-root.cabaret .ticket-stub .stub-num{font-family:'Bebas Neue',sans-serif;font-size:26px;line-height:.85;margin-top:1px;}
+.strip-root.cabaret .ticket-body{flex:1;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;}
+.strip-root.cabaret .ticket-body .t{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:.06em;line-height:1;}
+.strip-root.cabaret .ticket-body .s{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
+  font-size:11px;color:#8a4458;letter-spacing:.05em;margin-top:3px;}
+.strip-root.cabaret .ticket-arrow{width:26px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#8a1838;border-left:1px dotted rgba(138,24,56,.4);}
+
+/* --- BACKSTAGE TRIO --- */
+.strip-root.cabaret .backstage{margin:22px 16px 18px;}
+.strip-root.cabaret .bs-label{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:9px;}
+.strip-root.cabaret .bs-label .ln{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,163,95,.4));}
+.strip-root.cabaret .bs-label .ln:last-child{background:linear-gradient(90deg,rgba(201,163,95,.4),transparent);}
+.strip-root.cabaret .bs-label .lb{font:6px Arial,sans-serif;letter-spacing:.5em;color:#8a6a4a;white-space:nowrap;}
+.strip-root.cabaret .bs-pills{display:flex;gap:8px;}
+.strip-root.cabaret .bs-pill{flex:1;background:rgba(58,12,28,.5);border:1px dashed rgba(201,163,95,.5);
+  border-radius:3px;padding:9px 4px;text-align:center;cursor:pointer;
+  transition:background .18s ease,border-color .18s ease;-webkit-tap-highlight-color:transparent;}
+.strip-root.cabaret .bs-pill:active{background:rgba(58,12,28,.85);border-color:var(--gold-mute);}
+.strip-root.cabaret .bs-pill .bs-em{font-size:18px;line-height:1;}
+.strip-root.cabaret .bs-pill .bs-lb{font:7px Arial,sans-serif;letter-spacing:.2em;color:var(--gold-mute);margin-top:4px;}
+
+/* ============================================================
+   STRIP OVERLAY · STORIA "Cronaca della Notte"
+   ============================================================ */
+.strip-ov.storia{background:radial-gradient(ellipse at 50% 25%,#2a0a18 0%,#0a0205 80%);color:var(--cream);}
+.strip-ov.storia .ov-em{font-size:36px;line-height:1;}
+.strip-ov.storia h3{font-family:'Bebas Neue','Impact',sans-serif;font-size:22px;letter-spacing:.32em;
+  color:#ffd97a;text-shadow:0 0 10px rgba(255,217,122,.4);margin:0;}
+.strip-ov.storia .ov-sub{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
+  font-size:12px;color:#c9a35f;letter-spacing:.04em;margin:0;}
+.strip-ov.storia .cronaca{max-width:340px;width:100%;display:flex;flex-direction:column;gap:6px;
+  padding:14px 16px;background:rgba(10,2,5,.4);border:1px dashed rgba(201,163,95,.25);
+  border-radius:6px;text-align:left;}
+.strip-ov.storia .serata-head{font:8px Arial,sans-serif;letter-spacing:.4em;color:#c9a35f;
+  text-align:center;margin:14px 0 4px;}
+.strip-ov.storia .serata-head:first-child{margin-top:0;}
+.strip-ov.storia .cronaca-line{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
+  font-size:13px;color:#fbe9cf;line-height:1.45;padding-left:2px;}
+.strip-ov.storia .cronaca-empty{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
+  font-size:14px;color:#b79a86;text-align:center;margin:18px 0;}
+
+/* ============================================================
+   STRIP OVERLAY · REGOLE "Depliant + fisarmonica"
+   ============================================================ */
+.strip-ov.regole{background:radial-gradient(ellipse at 50% 25%,#2a0a18 0%,#0a0205 80%);color:var(--cream);
+  justify-content:flex-start;padding-top:38px;}
+.strip-ov.regole .depliant{width:100%;max-width:300px;display:flex;flex-direction:column;
+  box-shadow:0 16px 40px rgba(0,0,0,.6);}
+.strip-ov.regole .fold{position:relative;overflow:hidden;padding:18px 18px 16px;
+  transform-origin:top;transform:scaleY(0);opacity:0;
+  animation:foldOpen .7s cubic-bezier(.4,1.4,.5,1) forwards;
+  animation-delay:var(--fold-delay,0s);
+  box-shadow:inset 0 1px 0 rgba(255,217,170,.18),inset 0 -1px 0 rgba(0,0,0,.4);}
+.strip-ov.regole .fold.a1{background:linear-gradient(180deg,#fbe9cf,#e8cfa4);color:#3a0c1c;}
+.strip-ov.regole .fold.a2{background:linear-gradient(180deg,#7a1c30,#5a1224);color:#fbe9cf;}
+.strip-ov.regole .fold.a3{background:linear-gradient(180deg,#3a0c1c,#1a0508);color:#fbe9cf;}
+@keyframes foldOpen{0%{transform:scaleY(0);opacity:0;}50%{opacity:1;}100%{transform:scaleY(1);opacity:1;}}
+.strip-ov.regole .fold-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue','Impact',sans-serif;font-size:120px;font-weight:900;opacity:.12;
+  letter-spacing:.05em;pointer-events:none;}
+.strip-ov.regole .fold.a1 .fold-bg{color:#3a0c1c;}
+.strip-ov.regole .fold.a2 .fold-bg,
+.strip-ov.regole .fold.a3 .fold-bg{color:#fbe9cf;}
+.strip-ov.regole .fold-t{position:relative;z-index:2;text-align:center;
+  font-family:'Bebas Neue','Impact',sans-serif;font-size:18px;letter-spacing:.18em;margin-bottom:4px;}
+.strip-ov.regole .fold-sep{position:relative;z-index:2;text-align:center;font-size:9px;
+  color:var(--gold-soft,#c9a35f);letter-spacing:.3em;margin-bottom:6px;}
+.strip-ov.regole .fold-d{position:relative;z-index:2;text-align:center;
+  font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:12px;
+  line-height:1.45;max-width:240px;margin:0 auto;}
+.strip-ov.regole .libretto-sig{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
+  font-size:11px;color:#8a6a4a;margin-top:10px;}
+@media (prefers-reduced-motion: reduce){
+  .strip-ov.regole .fold{animation:none;transform:scaleY(1);opacity:1;}
+}
+
+/* ============================================================
+   STRIP OVERLAY · OPZIONI "Bacheca Velluto v3"
+   ============================================================ */
+.strip-ov.opzioni{background:radial-gradient(ellipse at 50% 25%,#2a0a18 0%,#0a0205 80%);color:var(--cream);
+  justify-content:flex-start;padding-top:30px;}
+.strip-ov.opzioni .drappo{position:relative;width:100%;max-width:300px;min-height:380px;
+  padding:34px 12px 14px;
+  background:linear-gradient(90deg,#1a0508 0%,#3a0c18 4%,#5a1528 9%,#7a2138 14%,#5a1528 20%,#3a0c18 26%,
+    #2a0810 32%,#4a1220 38%,#6a1c30 44%,#4a1220 50%,#2a0810 56%,#4a1220 62%,#6a1c30 68%,
+    #4a1220 74%,#2a0810 80%,#4a1220 86%,#3a0c18 92%,#1a0508 100%),#3a0c18;
+  background-blend-mode:multiply;
+  border:1px solid #1a0508;border-top:2px solid #c9a35f;border-radius:6px 6px 0 0;
+  box-shadow:0 -8px 30px rgba(0,0,0,.7),inset 0 0 60px rgba(15,5,8,.6);overflow:hidden;}
+.strip-ov.opzioni .drappo::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(180deg,transparent 0,transparent 1.5px,rgba(255,200,180,.02) 1.5px,rgba(255,200,180,.02) 2px);}
+.strip-ov.opzioni .drappo::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 30% at 50% 8%,rgba(255,180,150,.18) 0%,transparent 70%);}
+
+.strip-ov.opzioni .drappo-head{position:absolute;top:7px;left:50%;transform:translateX(-50%) rotate(-1.5deg);z-index:5;}
+.strip-ov.opzioni .drappo-head .tag{background:#fbe9cf;color:#3a0c1c;padding:5px 16px 4px;
+  font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.3em;
+  box-shadow:0 4px 9px rgba(0,0,0,.65);position:relative;}
+.strip-ov.opzioni .drappo-head .tape{position:absolute;width:26px;height:13px;
+  background:linear-gradient(135deg,#ffb3c0,#ff5577 60%,#ffb3c0);
+  opacity:.82;box-shadow:0 1px 2px rgba(0,0,0,.45);}
+.strip-ov.opzioni .drappo-head .tape::after{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent 0,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 3px);}
+.strip-ov.opzioni .drappo-head .tape.l{top:-4px;left:-11px;transform:rotate(-22deg);}
+.strip-ov.opzioni .drappo-head .tape.r{top:-4px;right:-11px;transform:rotate(20deg);}
+
+.strip-ov.opzioni .swatch{position:absolute;z-index:2;top:46%;right:-3px;width:30px;height:22px;
+  background:linear-gradient(45deg,#c9a35f,#ffd97a 50%,#c9a35f);
+  transform:rotate(18deg);box-shadow:0 3px 5px rgba(0,0,0,.55);}
+.strip-ov.opzioni .swatch::before{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent 0,transparent 3px,rgba(0,0,0,.18) 3px,rgba(0,0,0,.18) 3.5px),
+             repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(0,0,0,.18) 3px,rgba(0,0,0,.18) 3.5px);}
+.strip-ov.opzioni .swatch::after{content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);
+  width:8px;height:8px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,#fff4c2,#8a6a14);box-shadow:0 1px 2px rgba(0,0,0,.6);}
+.strip-ov.opzioni .monogram{position:absolute;z-index:2;bottom:10px;left:10px;
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;
+  color:rgba(255,217,170,.22);font-weight:bold;transform:rotate(-8deg);}
+
+.strip-ov.opzioni .pol-grid{position:relative;z-index:3;display:grid;
+  grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px 14px;
+  margin:8px 8px;min-height:300px;}
+.strip-ov.opzioni .polaroid{--rot:0deg;position:relative;
+  background:linear-gradient(180deg,#fbf2e2 0%,#f0e2c8 100%);
+  padding:5px 5px 16px;box-shadow:0 5px 11px rgba(0,0,0,.65),inset 0 0 10px rgba(180,140,90,.1);
+  color:#3a1a0a;display:flex;flex-direction:column;text-align:center;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transform:rotate(var(--rot));transition:transform .18s ease;}
+.strip-ov.opzioni .polaroid:active{transform:rotate(var(--rot)) scale(.97);}
+.strip-ov.opzioni .polaroid.p-suoni{--rot:-2.2deg;}
+.strip-ov.opzioni .polaroid.p-vibra{--rot:1.8deg;}
+.strip-ov.opzioni .polaroid.p-privacy{--rot:1.2deg;}
+.strip-ov.opzioni .polaroid.p-reset{--rot:-1.5deg;}
+.strip-ov.opzioni .polaroid::after{content:'';position:absolute;top:-3px;left:50%;
+  transform:translateX(-50%);width:11px;height:11px;border-radius:50%;z-index:4;
+  background:radial-gradient(circle at 30% 30%,#ff8899,#7a1c30 70%);
+  box-shadow:0 2px 3px rgba(0,0,0,.7),inset -1px -1px 1px rgba(0,0,0,.3);}
+.strip-ov.opzioni .polaroid.off::after{background:radial-gradient(circle at 30% 30%,#7a7a7a,#1a1a1a 70%);}
+.strip-ov.opzioni .polaroid.danger::after{
+  background:radial-gradient(circle at 30% 30%,#ffe199,#8a6a14 70%);
+  box-shadow:0 2px 3px rgba(0,0,0,.7),0 0 6px rgba(255,217,122,.55);}
+.strip-ov.opzioni .pol-img{background:radial-gradient(ellipse at 50% 35%,#5a1528 0%,#2a0a14 80%);
+  flex:1;display:flex;align-items:center;justify-content:center;font-size:34px;
+  border:1px solid rgba(58,28,12,.4);box-shadow:inset 0 0 15px rgba(0,0,0,.6);
+  position:relative;overflow:hidden;}
+.strip-ov.opzioni .pol-img::after{content:'';position:absolute;top:18%;left:8%;right:55%;height:1px;
+  background:rgba(255,217,170,.18);transform:rotate(-8deg);}
+.strip-ov.opzioni .polaroid.danger .pol-img{
+  background:radial-gradient(ellipse at 50% 35%,#7a1c30 0%,#1a0508 80%);}
+.strip-ov.opzioni .pol-lab{font-family:'Bebas Neue',sans-serif;font-size:11px;color:#3a1a0a;
+  letter-spacing:.22em;margin-top:5px;line-height:1;}
+.strip-ov.opzioni .pol-st{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+  font:6px Arial,sans-serif;letter-spacing:.32em;color:#7a1c30;font-weight:bold;white-space:nowrap;}
+.strip-ov.opzioni .polaroid.off .pol-st{color:#5a5a5a;}
+.strip-ov.opzioni .polaroid.danger .pol-st{
+  color:#fbe9cf;background:#7a1c30;padding:1.5px 6px;letter-spacing:.3em;}
+.strip-ov.opzioni .polaroid.armed{animation:armPulse 1.2s infinite;}
+@keyframes armPulse{
+  0%,100%{box-shadow:0 5px 11px rgba(0,0,0,.65),inset 0 0 10px rgba(180,140,90,.1);}
+  50%{box-shadow:0 5px 11px rgba(0,0,0,.65),inset 0 0 10px rgba(180,140,90,.1),0 0 14px rgba(255,85,119,.6);}
 }
 
 /* confronto/impostazioni (dentro openSheet usano .sheet) */
