@@ -97,3 +97,19 @@ Migrazione: `supabase/foto.sql` eseguita dall'utente; tabella `foto` + RLS attiv
 - [ ] Modifica luogo (descrizione, voto, foto) e eliminazione.
 - [ ] Drawer statistiche: switch 📍/🔥, barre per mese, tap mese → posti del mese.
 - [ ] Scroll-lock attivo con overlay aperti.
+
+## App pronta (Lussuria) — 2026-05-27
+- [ ] PWA: "Aggiungi a Home" su iOS dà icona fiamma + apertura fullscreen; Android offre install.
+- [ ] Nessun overscroll: la pagina non rimbalza quando il contenuto ci sta; scrolla solo l'area centrale.
+- [ ] Swipe: il contenuto segue il dito, scatta alla sezione adiacente, rimbalzo ai bordi (no wrap).
+- [ ] Swipe verticale = scroll; tally/chips orizzontali scrollano per conto loro.
+- [ ] Mappa-isola: dentro la cartina si pana/zooma; si esce dalla dock.
+- [ ] Impostazioni dal chip profilo (schermo intero).
+- [ ] Profilo: cambio nome/icona si salva e il chip si aggiorna.
+- [ ] Blocco PIN: set → reload → gate → sblocco; cambio codice; disattivazione.
+- [ ] Biometrico (iPhone): toggle visibile, attiva, sblocca al riavvio (PIN in fallback).
+- [ ] Modalità pudica: foto sfocate di default, tap rivela; galleria coperta come `.thumb` (fix Task 11).
+- [ ] Tag: add/del si riflette nel calendario.
+- [ ] Contenuti giochi (da Impostazioni → Personalizza): apre tab Giochi sulla Ruota e mostra l'editor proposte/buoni.
+- [ ] Svuota dati: checklist → conferma → la sezione scelta risulta vuota (Tag torna ai default).
+- [ ] Cambia password: aggiornata, login con la nuova.
