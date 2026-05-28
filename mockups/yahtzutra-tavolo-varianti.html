@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yahtzutra · 3 varianti di tavolo + animazione</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533; --wine3:#3a0a18;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --gold-dim:#a87a3e;
+  --cream:#f3d9b0; --rose:#c2557a; --ok:#7fb069;
+  --ivory:#efe1c4;
+}
+*{box-sizing:border-box;}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;margin:0;
+  background:#0c0306;display:flex;flex-direction:column;align-items:center;gap:14px;padding:22px 14px 70px;}
+.intro{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;max-width:520px;line-height:1.55;}
+.intro b{color:var(--gold-soft);}
+
+.grid{display:grid;gap:18px;width:100%;max-width:1180px;
+  grid-template-columns:repeat(auto-fit,minmax(330px,1fr));}
+
+.variant{display:flex;flex-direction:column;border-radius:22px;overflow:hidden;
+  border:1px solid rgba(212,168,108,.18);background:linear-gradient(170deg,#1a050d,#0e0306);
+  box-shadow:0 14px 40px rgba(0,0,0,.5);}
+.v-head{padding:14px 16px 8px;text-align:center;border-bottom:1px solid rgba(212,168,108,.12);}
+.v-title{font-family:Georgia,serif;font-size:18px;color:var(--gold-soft);letter-spacing:.08em;
+  text-transform:uppercase;margin:0 0 4px;}
+.v-sub{font-family:Arial,sans-serif;font-size:11.5px;color:#b58a8a;font-style:italic;margin:0;}
+.v-body{padding:14px 14px;display:flex;flex-direction:column;gap:12px;}
+.v-desc{font-family:Arial,sans-serif;font-size:11.5px;color:#a98;line-height:1.55;text-align:center;
+  background:rgba(255,255,255,.02);border:1px solid rgba(212,168,108,.1);
+  border-radius:9px;padding:8px 10px;}
+
+/* SHARED felt + dice */
+.felt{position:relative;width:100%;height:170px;border-radius:14px;overflow:hidden;}
+.stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:7px;}
+.die{width:42px;height:42px;border-radius:9px;display:grid;grid-template-columns:repeat(3,1fr);
+  grid-template-rows:repeat(3,1fr);padding:6px;gap:1px;cursor:pointer;user-select:none;
+  transition:transform .25s,box-shadow .25s,border-color .25s;
+  border:1.5px solid transparent;}
+.die .pip{width:100%;height:100%;border-radius:50%;background:transparent;}
+
+/* CONTROLS */
+.ctrls{display:flex;gap:8px;}
+.ctrls button{flex:1;appearance:none;border:1px solid rgba(212,168,108,.3);
+  background:rgba(212,168,108,.05);color:var(--cream);font-family:Arial,sans-serif;font-size:12px;
+  padding:10px 6px;border-radius:10px;cursor:pointer;transition:all .2s;}
+.ctrls button:hover:not(:disabled){border-color:var(--gold);background:rgba(212,168,108,.13);}
+.ctrls button:disabled{opacity:.35;cursor:not-allowed;}
+.ctrls .primary{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;
+  border-color:transparent;font-weight:600;}
+
+.tiri{font-family:Arial,sans-serif;font-size:10.5px;color:var(--gold);letter-spacing:.08em;
+  text-transform:uppercase;text-align:center;margin:0;}
+
+/* --- VARIANTE A · VELLUTO BOUDOIR --- */
+.va .felt{background:radial-gradient(110% 70% at 50% 25%,#5c1026,#160409 80%);
+  border:5px solid;border-image:linear-gradient(135deg,var(--gold-dim),var(--gold-soft),var(--gold-dim)) 1;
+  box-shadow:inset 0 0 38px rgba(0,0,0,.7),0 8px 24px rgba(0,0,0,.6);}
+.va .felt::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-radial-gradient(circle at 30% 25%,rgba(212,168,108,.04) 0 2px,transparent 2px 5px);
+  mix-blend-mode:overlay;}
+.va .die{background:linear-gradient(155deg,#1a0810,#0a0306);
+  box-shadow:0 4px 10px rgba(0,0,0,.6),inset 0 -1px 0 rgba(255,255,255,.04),inset 0 1px 0 rgba(255,255,255,.07);}
+.va .die.held{border-color:var(--gold);box-shadow:0 0 0 2px rgba(212,168,108,.45),
+  0 4px 12px rgba(212,168,108,.4),inset 0 0 8px rgba(212,168,108,.1);transform:translateY(-3px);}
+.va .die .pip.on{background:radial-gradient(circle at 35% 30%,var(--gold-soft),var(--gold-dim) 75%);
+  box-shadow:0 0 4px rgba(212,168,108,.5);}
+.va .die.rolling{animation:rollA 1.4s cubic-bezier(.2,.7,.2,1) forwards;}
+@keyframes rollA{
+  0%   {transform:translate(var(--fx),-160px) rotate(var(--fr)) scale(.85);opacity:.4;}
+  35%  {opacity:1;}
+  70%  {transform:translate(calc(var(--fx) * .15),12px) rotate(calc(var(--fr) * .2)) scale(1.04);}
+  85%  {transform:translate(0,-4px) rotate(0) scale(.98);}
+  100% {transform:translate(0,0) rotate(0) scale(1);}
+}
+
+/* --- VARIANTE B · CASINÒ NOTTURNO --- */
+.vb .felt{background:radial-gradient(120% 75% at 50% 30%,#175035,#0a2014 80%);
+  border:6px solid #4a2c14;
+  box-shadow:inset 0 0 35px rgba(0,0,0,.65),
+    inset 0 0 0 2px #2e1808,
+    0 8px 22px rgba(0,0,0,.55);}
+.vb .felt::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(0,0,0,.03) 0 1deg,transparent 1deg 2deg);}
+.vb .die{background:linear-gradient(160deg,var(--ivory),#d8c89c);
+  box-shadow:0 4px 10px rgba(0,0,0,.6),inset 0 -2px 0 rgba(0,0,0,.12),inset 0 2px 0 rgba(255,255,255,.45);}
+.vb .die.held{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,108,.45),
+  0 4px 12px rgba(212,168,108,.4),inset 0 -2px 0 rgba(0,0,0,.12);transform:translateY(-3px);}
+.vb .die .pip.on{background:radial-gradient(circle at 35% 30%,#3d1820,#0a0205 80%);
+  box-shadow:inset 0 1px 1px rgba(0,0,0,.5);}
+.vb .die.rolling{animation:rollB .9s cubic-bezier(.18,.7,.25,1.1) forwards;}
+@keyframes rollB{
+  0%   {transform:translate(var(--fx),0) rotate(var(--fr)) scale(1);}
+  40%  {transform:translate(calc(var(--fx) * .4),-22px) rotate(calc(var(--fr) * .55)) scale(1.06);}
+  75%  {transform:translate(calc(var(--fx) * .12),6px) rotate(calc(var(--fr) * .15)) scale(.98);}
+  100% {transform:translate(0,0) rotate(0) scale(1);}
+}
+
+/* --- VARIANTE C · MINIMAL NOTTURNO --- */
+.vc .felt{background:radial-gradient(80% 70% at 50% 50%,rgba(212,168,108,.07),transparent 75%),
+  #050203;
+  border:1px solid var(--gold);
+  box-shadow:0 0 0 4px rgba(0,0,0,.6),0 0 30px rgba(212,168,108,.15),
+    inset 0 0 50px rgba(212,168,108,.04);}
+.vc .felt::before{content:"";position:absolute;inset:8px;border:1px dashed rgba(212,168,108,.18);
+  border-radius:9px;pointer-events:none;}
+.vc .die{background:transparent;border:1.5px solid var(--gold);
+  box-shadow:0 0 12px rgba(212,168,108,.18);}
+.vc .die.held{background:rgba(212,168,108,.1);border-color:var(--gold-soft);
+  box-shadow:0 0 18px rgba(212,168,108,.45);transform:scale(1.08);}
+.vc .die .pip.on{background:var(--gold-soft);box-shadow:0 0 4px var(--gold-soft);}
+.vc .die.rolling{animation:rollC 1.1s cubic-bezier(.25,.6,.3,1) forwards;}
+@keyframes rollC{
+  0%   {transform:translate(0,0) rotate(var(--fr)) scale(.3);opacity:0;}
+  35%  {opacity:.6;}
+  100% {transform:translate(0,0) rotate(0) scale(1);opacity:1;}
+}
+.vc .v-title{color:var(--gold);}
+
+/* misc */
+.held-hint{font-family:Arial,sans-serif;font-size:10.5px;color:#a98;text-align:center;
+  margin:0;font-style:italic;}
+
+.legend{font-family:Arial,sans-serif;font-size:12px;color:#a98;line-height:1.55;
+  text-align:center;max-width:680px;background:rgba(255,255,255,.02);
+  border:1px solid rgba(212,168,108,.12);border-radius:10px;padding:11px 14px;}
+.legend b{color:var(--gold-soft);}
+</style>
+</head>
+<body>
+
+<p class="intro">
+  <b>3 varianti di tavolo da dadi</b> a confronto. Ognuna ha un proprio look e una propria animazione di lancio.
+  Tappa <b>Lancia</b> per vedere l'animazione, tocca un dado per <b>tenerlo</b>, <b>Ri-tira</b> rilancia solo
+  i non-tenuti (max 3 lanci totali, come al Yahtzee vero). Il numero "Ri-tira (N)" è ora corretto.
+</p>
+
+<div class="grid" id="grid">
+
+  <!-- VARIANTE A · BOUDOIR -->
+  <div class="variant va" data-v="A">
+    <div class="v-head">
+      <h3 class="v-title">A · Velluto Boudoir</h3>
+      <p class="v-sub">Panno bordeaux + cornice oro · dadi neri laccati pips oro</p>
+    </div>
+    <div class="v-body">
+      <div class="v-desc">Caduta dall'alto, lenta (1.4s), rotazione asincrona, leggero settle a terra. <b>Sensuale, lenta.</b></div>
+      <div class="felt"><div class="stage"></div></div>
+      <p class="tiri">Tiro <span class="tt">0</span> di 3</p>
+      <p class="held-hint">Tap dadi per tenerli</p>
+      <div class="ctrls">
+        <button class="reroll">Ri-tira</button>
+        <button class="primary launch">Lancia</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VARIANTE B · CASINÒ -->
+  <div class="variant vb" data-v="B">
+    <div class="v-head">
+      <h3 class="v-title">B · Casinò Notturno</h3>
+      <p class="v-sub">Feltro verde + cornice legno · dadi avorio pips neri</p>
+    </div>
+    <div class="v-body">
+      <div class="v-desc">Lancio orizzontale (come scossi dalla mano), rotazione viva, ~0.9s. <b>Ludico, classico, vivace.</b></div>
+      <div class="felt"><div class="stage"></div></div>
+      <p class="tiri">Tiro <span class="tt">0</span> di 3</p>
+      <p class="held-hint">Tap dadi per tenerli</p>
+      <div class="ctrls">
+        <button class="reroll">Ri-tira</button>
+        <button class="primary launch">Lancia</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VARIANTE C · MINIMAL -->
+  <div class="variant vc" data-v="C">
+    <div class="v-head">
+      <h3 class="v-title">C · Minimal Notturno</h3>
+      <p class="v-sub">Nero puro + bordo oro hairline · dadi outline oro</p>
+    </div>
+    <div class="v-body">
+      <div class="v-desc">Comparsa per dissolvenza + scale (1.1s), zero gravità. <b>Magico, moderno, distintivo.</b></div>
+      <div class="felt"><div class="stage"></div></div>
+      <p class="tiri">Tiro <span class="tt">0</span> di 3</p>
+      <p class="held-hint">Tap dadi per tenerli</p>
+      <div class="ctrls">
+        <button class="reroll">Ri-tira</button>
+        <button class="primary launch">Lancia</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="legend">
+  <b>Cosa guardare:</b> velocità e "peso" dei dadi · come la cornice rimanda al mood di Lussuria ·
+  se l'avorio funziona col bordeaux o se i dadi vogliono essere parte del mood (neri+oro / oro su nero).
+</p>
+
+<script>
+const PIPS = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+
+function makeDie(val, held){
+  const d = document.createElement('div');
+  d.className = 'die' + (held ? ' held' : '');
+  for(let i=0;i<9;i++){
+    const p = document.createElement('div');
+    p.className = 'pip' + (PIPS[val].includes(i) ? ' on' : '');
+    d.appendChild(p);
+  }
+  return d;
+}
+function clear(el){ while(el.firstChild) el.removeChild(el.firstChild); }
+
+class Stage {
+  constructor(root){
+    this.root = root;
+    this.stage = root.querySelector('.stage');
+    this.tt = root.querySelector('.tt');
+    this.reroll = root.querySelector('.reroll');
+    this.launch = root.querySelector('.launch');
+    this.hint = root.querySelector('.held-hint');
+    this.dice = [1,2,3,4,5];
+    this.held = [false,false,false,false,false];
+    this.tiri = 0;
+    this.rolling = false;
+    this.render();
+    this.updateCtrls();
+    this.launch.onclick = ()=>this.roll();
+    this.reroll.onclick = ()=>this.roll();
+  }
+  render(animate){
+    clear(this.stage);
+    for(let i=0;i<5;i++){
+      const d = makeDie(this.dice[i], this.held[i]);
+      if(animate && !this.held[i]){
+        d.classList.add('rolling');
+        const fx = ((Math.random()*160-80)|0);
+        const fr = ((Math.random()*720-360)|0);
+        d.style.setProperty('--fx', fx+'px');
+        d.style.setProperty('--fr', fr+'deg');
+      }
+      d.onclick = ()=>{
+        if(this.rolling) return;
+        if(this.tiri===0) return;
+        if(this.tiri>=3) return;
+        this.held[i] = !this.held[i];
+        this.render(false);
+        this.updateCtrls();
+      };
+      this.stage.appendChild(d);
+    }
+  }
+  updateCtrls(){
+    this.tt.textContent = this.tiri;
+    const heldN = this.held.filter(Boolean).length;
+    const toRoll = 5 - heldN;
+    if(this.tiri === 0){
+      this.reroll.disabled = true;
+      this.reroll.textContent = 'Ri-tira';
+      this.launch.disabled = false;
+      this.launch.textContent = 'Lancia';
+      this.hint.textContent = 'Pronto al primo lancio';
+    } else if(this.tiri >= 3){
+      this.reroll.disabled = true;
+      this.reroll.textContent = 'Ri-tira';
+      this.launch.disabled = false;
+      this.launch.textContent = 'Reset · nuova partita';
+      this.hint.textContent = 'Tiri esauriti';
+    } else {
+      this.reroll.disabled = (toRoll === 0);
+      this.reroll.textContent = 'Ri-tira (' + toRoll + ')';
+      this.launch.disabled = true;
+      this.launch.textContent = 'Lancia';
+      this.hint.textContent = heldN === 0
+        ? 'Nessun dado tenuto · ' + (3-this.tiri) + ' tiri rimasti'
+        : heldN + ' dad' + (heldN===1?'o':'i') + ' tenut' + (heldN===1?'o':'i') + ' · ' + (3-this.tiri) + ' rimasti';
+    }
+  }
+  roll(){
+    if(this.rolling) return;
+    if(this.tiri >= 3){
+      // reset
+      this.dice = [1,2,3,4,5];
+      this.held = [false,false,false,false,false];
+      this.tiri = 0;
+      this.render(false);
+      this.updateCtrls();
+      return;
+    }
+    this.rolling = true;
+    for(let i=0;i<5;i++){
+      if(!this.held[i]) this.dice[i] = 1 + Math.floor(Math.random()*6);
+    }
+    this.tiri++;
+    this.render(true);
+    this.updateCtrls();
+    setTimeout(()=>{
+      this.rolling = false;
+      this.updateCtrls();
+    }, 1500);
+  }
+}
+
+document.querySelectorAll('.variant').forEach(v => new Stage(v));
+</script>
+</body>
+</html>

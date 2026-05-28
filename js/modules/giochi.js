@@ -15,7 +15,7 @@ let attivi = { az: true, co: true, lu: true };
 let wired = false;
 let busy = false;
 let pendingContenuti = false;   // editor Ruota da aprire dopo il prossimo renderGiochi
-const cubes = {};        // dado -> { wrap, cube, spins }
+const reels = {};        // dado -> { wrap, strip }
 
 // Listener globale: l'opzione "Contenuti giochi" nelle Impostazioni emette `giochi:contenuti`
 // dopo `goto giochi`. Se la tab Giochi non è ancora stata renderizzata, segnamo pendingContenuti
@@ -26,8 +26,8 @@ document.addEventListener('giochi:contenuti', async () => {
   else pendingContenuti = true;
 });
 
-// orientamenti delle 6 facce del cubo (rotX, rotY) per atterrare su una faccia
-const ORI = [[0, 0], [0, 180], [0, -90], [0, 90], [-90, 0], [90, 0]];
+// altezza in px di una singola faccia del rullo (deve coincidere con .slot-reel-face in styles.css)
+const FACE_H = 120;
 
 export async function renderGiochi(context) {
   ctx = context;
@@ -46,8 +46,9 @@ export async function renderGiochi(context) {
 function drawSelettore() {
   const p = ctx.panel; clear(p);
   const sel = mk('div', 'gioco-selettore');
-  for (const [k, lbl] of [['dadi', '🎲 Dadi'], ['ruota', '🎡 Ruota'], ['yz', '🎲 Yahtzutra'], ['strip', '♠️ Strip']]) {
-    const b = mk('button', 'gioco-tab' + (giocoCorrente === k ? ' on' : ''), lbl);
+  for (const [k, ico, lbl] of [['dadi', '🎰', 'Slot'], ['ruota', '🎡', 'Ruota'], ['yz', '🎲', 'Yahtzutra'], ['strip', '♠️', 'Strip']]) {
+    const b = mk('button', 'gioco-tab' + (giocoCorrente === k ? ' on' : ''));
+    add(b, mk('span', 'ico', ico), mk('span', 'lab', lbl));
     b.onclick = () => { giocoCorrente = k; renderGiochi(ctx); };
     sel.appendChild(b);
   }
@@ -83,9 +84,9 @@ async function montaDadi(host) {
 
 function draw() {
   const p = dadiHost; clear(p);
-  add(p, mk('h2', 'ptitle', '🎲 Dadi'), mk('p', 'psub', 'Scegli i dadi e tira. Tocca ＋ per cambiare i contenuti.'));
+  add(p, mk('h2', 'ptitle', '🎰 Slot'), mk('p', 'psub', 'Scegli i rulli e premi per tirare. Tocca ＋ per cambiare i contenuti.'));
 
-  // picker: una chip per dado, accesa/spenta
+  // picker: una chip per rullo, accesa/spenta
   const picker = mk('div', 'dadi-picker');
   for (const k of DADI_ORDER) {
     const chip = mk('div', 'dadi-chip' + (attivi[k] ? ' on' : ''));
@@ -95,49 +96,54 @@ function draw() {
   }
   p.appendChild(picker);
 
-  const pane = mk('div', 'dadi-pane');
-  const field = mk('div', 'dadi-field'); field.id = 'dadi-field';
-  const labels = mk('div', 'dadi-labels'); labels.id = 'dadi-labels';
-  const btn = mk('button', 'btn gold dadi-roll', 'Tira i dadi');
+  // cabinet della slot: 4 viti + arco con rosone + rulli + tasto Tira
+  const cabinet = mk('div', 'slot-cabinet');
+  add(cabinet,
+    mk('div', 'slot-screw tl'), mk('div', 'slot-screw tr'),
+    mk('div', 'slot-screw bl'), mk('div', 'slot-screw br'),
+    mk('div', 'slot-arch'));
+  const reelsHost = mk('div', 'slot-reels'); reelsHost.id = 'slot-reels';
+  cabinet.appendChild(reelsHost);
+  const cons = mk('div', 'slot-console');
+  const btn = mk('button', 'slot-tira', 'Tira');
   btn.onclick = roll;
-  add(pane, field, labels, btn);
-  p.appendChild(pane);
+  cons.appendChild(btn);
+  cabinet.appendChild(cons);
+  p.appendChild(cabinet);
 
   buildField();
 }
 
 function toggleDie(k) {
   const activeCount = DADI_ORDER.filter(x => attivi[x]).length;
-  if (attivi[k] && activeCount === 1) return;   // almeno un dado sempre acceso
+  if (attivi[k] && activeCount === 1) return;   // almeno un rullo sempre acceso
   attivi[k] = !attivi[k];
   draw();
 }
 
 function buildField() {
-  const field = document.getElementById('dadi-field');
-  const labels = document.getElementById('dadi-labels');
-  clear(field); clear(labels);
-  for (const k of Object.keys(cubes)) delete cubes[k];
-  DADI_ORDER.filter(k => attivi[k]).forEach((k, idx) => {
-    const wrap = makeCube(k);
-    if (idx > 0) wrap.classList.add('d' + idx);
-    field.appendChild(wrap);
-    cubes[k] = { wrap, cube: wrap._cube, spins: 0 };
-    labels.appendChild(mk('span', null, DADI_LABEL[k]));
+  const host = document.getElementById('slot-reels');
+  clear(host);
+  for (const k of Object.keys(reels)) delete reels[k];
+  DADI_ORDER.filter(k => attivi[k]).forEach((k) => {
+    const reel = makeReel(k);
+    host.appendChild(reel);
+    reels[k] = { wrap: reel, strip: reel._strip };
   });
 }
 
-function makeCube(k) {
-  const wrap = mk('div', 'dadi-cubeWrap');
-  const shadow = mk('div', 'dadi-shadow');
-  const cube = mk('div', 'dadi-cube ' + k);
+function makeReel(k) {
+  const reel = mk('div', 'slot-reel ' + k);
+  const strip = mk('div', 'slot-reel-strip');
   for (let i = 0; i < 6; i++) {
-    const f = mk('div', 'dadi-face f' + i, facce[k][i] ? facce[k][i].emoji : '');
-    cube.appendChild(f);
+    const face = mk('div', 'slot-reel-face');
+    const f = facce[k][i];
+    add(face, mk('div', 'e', f ? f.emoji : ''), mk('div', 't', f ? f.testo : ''));
+    strip.appendChild(face);
   }
-  add(wrap, shadow, cube);
-  wrap._cube = cube;
-  return wrap;
+  reel.appendChild(strip);
+  reel._strip = strip;
+  return reel;
 }
 
 function roll() {
@@ -145,18 +151,28 @@ function roll() {
   if (busy) return;
   busy = true;
   const picks = tiraDadi(attivi);
-  for (const k of Object.keys(picks)) { fling(cubes[k]); land(cubes[k], picks[k]); }
+  const keys = Object.keys(picks);
+  // start spin
+  for (const k of keys) {
+    const r = reels[k];
+    r.wrap.classList.add('spinning');
+    r.strip.style.transform = 'translateY(0)';
+  }
+  // stop scaglionati: ogni rullo si ferma 240ms dopo il precedente
+  keys.forEach((k, idx) => {
+    setTimeout(() => {
+      const r = reels[k];
+      r.wrap.classList.remove('spinning');
+      r.strip.style.transform = `translateY(${-picks[k] * FACE_H}px)`;
+    }, 500 + idx * 240);
+  });
+  // popup risultato dopo l'ultimo atterraggio + tempo di settling
+  const settleMs = 500 + (keys.length - 1) * 240 + 1300;
   setTimeout(() => {
     showPop(componiFrase(facce, picks));
     busy = false;
-  }, 1150);
+  }, settleMs);
 }
-
-function land(c, idx) {
-  c.spins++;
-  c.cube.style.transform = `rotateX(${ORI[idx][0] - 360 * c.spins}deg) rotateY(${ORI[idx][1] + 360 * c.spins}deg)`;
-}
-function fling(c) { c.wrap.classList.remove('jump'); void c.wrap.offsetWidth; c.wrap.classList.add('jump'); }
 
 // ---- popup risultato (scrim centrato + lock sfondo) ----
 function showPop({ emos, act, rest }) {

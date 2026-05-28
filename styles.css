@@ -333,55 +333,98 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
 .viewer-big{width:100%;aspect-ratio:3/4;background-size:cover;background-position:center;border-radius:14px;}
 .viewer-cap{font-family:Arial,sans-serif;font-size:13px;color:var(--cream);margin:10px 2px 0;}
 
-/* ===== Giochi · selettore Dadi/Ruota ===== */
-.gioco-selettore{display:flex;gap:9px;justify-content:center;margin:0 0 18px;}
-.gioco-tab{flex:1;max-width:160px;border:1px solid rgba(212,168,108,.28);background:rgba(0,0,0,.3);
-  border-radius:14px;padding:11px 8px;text-align:center;cursor:pointer;transition:.22s;user-select:none;
-  font-family:Arial,sans-serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;
-  color:rgba(243,217,176,.55);}
-.gioco-tab.on{border-color:var(--gold);background:linear-gradient(180deg,rgba(212,168,108,.22),rgba(212,168,108,.06));
-  color:var(--gold);}
+/* ===== Giochi · selettore (dock con attiva espansa) ===== */
+.gioco-selettore{display:flex;gap:6px;justify-content:center;margin:0 0 18px;
+  background:rgba(13,3,7,.6);border:1px solid rgba(212,168,108,.18);
+  border-radius:18px;padding:6px;}
+.gioco-tab{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:7px;
+  border:1px solid transparent;background:transparent;color:rgba(243,217,176,.55);
+  border-radius:13px;padding:11px 6px;cursor:pointer;user-select:none;min-width:0;
+  font-family:Arial,sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  transition:flex .38s cubic-bezier(.34,1.15,.4,1),background .38s,color .38s,border-color .38s,padding .38s;}
+.gioco-tab .ico{font-size:18px;flex:0 0 auto;line-height:1;}
+.gioco-tab .lab{max-width:0;overflow:hidden;white-space:nowrap;opacity:0;
+  transition:max-width .38s cubic-bezier(.34,1.15,.4,1),opacity .38s;}
+.gioco-tab.on{flex:2.4 1 0;color:var(--gold);
+  background:linear-gradient(180deg,rgba(212,168,108,.22),rgba(212,168,108,.06));
+  border-color:rgba(212,168,108,.5);padding:10px 8px;}
+.gioco-tab.on .lab{max-width:140px;opacity:1;}
 
-/* ===== Giochi · Dadi (variante Stretch) ===== */
+/* ===== Giochi · Slot (cabinet opaco "Premium Opaco") ===== */
 body.locked{overflow:hidden;touch-action:none;}
+
+/* picker dei rulli (Azione / Corpo / Dove) */
 .dadi-picker{display:flex;gap:9px;justify-content:center;margin:0 0 18px;}
-.dadi-chip{flex:1;max-width:120px;border:1px solid rgba(212,168,108,.28);background:rgba(0,0,0,.3);
+.dadi-chip{flex:1;max-width:120px;border:1px solid rgba(184,148,92,.3);background:rgba(0,0,0,.32);
   border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer;transition:.22s;user-select:none;}
 .dadi-chip .ce{font-size:22px;display:block;}
-.dadi-chip .ct{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(243,217,176,.55);margin-top:4px;
+.dadi-chip .ct{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(232,212,176,.55);margin-top:4px;
   font-family:Arial,sans-serif;}
-.dadi-chip.on{border-color:var(--gold);background:linear-gradient(180deg,rgba(212,168,108,.22),rgba(212,168,108,.06));}
+.dadi-chip.on{border-color:var(--gold);background:linear-gradient(180deg,rgba(184,148,92,.2),rgba(184,148,92,.05));}
 .dadi-chip.on .ct{color:var(--gold);}
-.dadi-pane{background:radial-gradient(120% 80% at 50% 0%,#2a0813,#130309);border:1px solid rgba(212,168,108,.22);
-  border-radius:22px;padding:16px 12px 22px;box-shadow:inset 0 1px 0 rgba(212,168,108,.12),0 18px 40px rgba(0,0,0,.5);}
-.dadi-field{position:relative;min-height:170px;display:flex;gap:18px;justify-content:center;align-items:flex-end;
-  padding-bottom:30px;perspective:820px;}
-.dadi-cubeWrap{position:relative;width:70px;height:70px;transform-origin:center bottom;}
-.dadi-shadow{position:absolute;left:50%;bottom:-16px;width:60px;height:13px;transform:translateX(-50%);
-  border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.7),rgba(0,0,0,0));opacity:.6;}
-.dadi-cube{width:70px;height:70px;position:relative;transform-style:preserve-3d;
-  transform:rotateX(-20deg) rotateY(24deg);transition:transform 1.05s cubic-bezier(.22,.92,.25,1);}
-.dadi-face{position:absolute;width:70px;height:70px;border-radius:14px;display:flex;align-items:center;
-  justify-content:center;font-size:34px;box-shadow:inset 0 0 0 1px rgba(212,168,108,.5);backface-visibility:hidden;}
-.dadi-cube.az .dadi-face{background:linear-gradient(150deg,#6e1330,#2a0813);}
-.dadi-cube.co .dadi-face{background:linear-gradient(150deg,#3a2410,#1d0f06);}
-.dadi-cube.lu .dadi-face{background:linear-gradient(150deg,#2c3a14,#101806);}
-.dadi-face.f0{transform:rotateY(0) translateZ(35px);}    .dadi-face.f1{transform:rotateY(180deg) translateZ(35px);}
-.dadi-face.f2{transform:rotateY(90deg) translateZ(35px);} .dadi-face.f3{transform:rotateY(-90deg) translateZ(35px);}
-.dadi-face.f4{transform:rotateX(90deg) translateZ(35px);} .dadi-face.f5{transform:rotateX(-90deg) translateZ(35px);}
-.dadi-labels{display:flex;gap:18px;justify-content:center;margin-top:-4px;}
-.dadi-labels span{width:70px;text-align:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-  color:rgba(212,168,108,.6);font-family:Arial,sans-serif;}
-.dadi-roll{display:block;margin:18px auto 0;border-radius:99px;letter-spacing:.06em;}
-.jump{animation:jump 1.05s cubic-bezier(.3,.7,.3,1);}
-@keyframes jump{
-  0%{transform:translateY(0) scale(1,1)} 10%{transform:translateY(-8px) scale(.84,1.18)}
-  26%{transform:translateY(-82px) scale(1,1)} 49%{transform:translateY(0) scale(1.24,.78)}
-  57%{transform:translateY(0) scale(.94,1.06)} 70%{transform:translateY(-16px) scale(1,1)}
-  82%{transform:translateY(0) scale(1.12,.9)} 90%{transform:translateY(0) scale(.97,1.03)} 100%{transform:translateY(0) scale(1,1)} }
-.dadi-cubeWrap.d1{animation-delay:.06s;} .dadi-cubeWrap.d2{animation-delay:.12s;}
+
+/* slot palette opaca (oro brunito, rubino terra) */
+.slot-cabinet{
+  position:relative;padding:22px 18px 18px;border-radius:18px 18px 12px 12px;
+  background:
+    repeating-linear-gradient(35deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px),
+    linear-gradient(170deg,#3a0d18 0%,#240810 100%);
+  box-shadow:0 6px 20px rgba(0,0,0,.55);}
+.slot-cabinet::before{content:"";position:absolute;inset:0;border-radius:18px 18px 12px 12px;
+  padding:3px;
+  background:linear-gradient(160deg,#a08458 0%,#8a6a3e 60%,#5a4226 100%);
+  -webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
+.slot-cabinet::after{content:"";position:absolute;inset:8px;border-radius:13px 13px 8px 8px;
+  border:1px solid rgba(184,148,92,.32);pointer-events:none;}
+
+/* viti brunite ai 4 angoli */
+.slot-screw{position:absolute;width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#a08458 0%,#5a4226 75%);
+  box-shadow:inset 0 0 2px rgba(0,0,0,.5);z-index:3;}
+.slot-screw::after{content:"";position:absolute;inset:3px;border-top:1.5px solid rgba(0,0,0,.55);transform:rotate(45deg);}
+.slot-screw.tl{top:14px;left:14px;}  .slot-screw.tr{top:14px;right:14px;}
+.slot-screw.bl{bottom:14px;left:14px;} .slot-screw.br{bottom:14px;right:14px;}
+
+/* arco superiore con rosone opaco */
+.slot-arch{height:18px;margin:0 8px 10px;position:relative;}
+.slot-arch::before{content:"❖";position:absolute;left:50%;top:50%;transform:translate(-50%,-55%);
+  color:#a08458;font-size:14px;opacity:.85;}
+
+/* rulli verticali — translateY anima la striscia con le 6 facce */
+.slot-reels{display:flex;gap:6px;justify-content:center;position:relative;z-index:2;}
+.slot-reel{flex:1;height:120px;background:linear-gradient(180deg,#0a0205,#140409);
+  border-radius:6px;overflow:hidden;position:relative;
+  box-shadow:inset 0 4px 10px rgba(0,0,0,.7);
+  border:2px solid #8a6a3e;}
+.slot-reel::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,transparent 25%,transparent 75%,rgba(0,0,0,.35) 100%);}
+.slot-reel-strip{display:flex;flex-direction:column;align-items:center;
+  transition:transform 1.25s cubic-bezier(.17,.67,.18,1);will-change:transform;}
+.slot-reel-face{height:120px;width:100%;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;flex-shrink:0;gap:3px;}
+.slot-reel-face .e{font-size:32px;line-height:1;}
+.slot-reel-face .t{font-size:9.5px;color:var(--gold-soft);text-transform:uppercase;
+  letter-spacing:.08em;font-family:Arial,sans-serif;}
+.slot-reel.spinning .slot-reel-strip{transition:none;animation:slotSpin .09s linear infinite;}
+@keyframes slotSpin{from{transform:translateY(0);}to{transform:translateY(-120px);}}
+
+/* console: tasto Tira rubino opaco */
+.slot-console{margin-top:18px;display:flex;justify-content:center;align-items:center;position:relative;z-index:2;}
+.slot-tira{appearance:none;border:2.5px solid #a08458;cursor:pointer;
+  background:linear-gradient(180deg,#a8253a 0%,#8a1828 40%,#6a1220 100%);
+  color:var(--cream);font-family:Georgia,serif;font-size:13px;
+  letter-spacing:.36em;text-transform:uppercase;font-weight:700;
+  padding:13px 38px;border-radius:28px;
+  box-shadow:0 5px 0 #3a0a14,0 8px 14px rgba(0,0,0,.5),inset 0 -3px 6px rgba(0,0,0,.35);
+  text-shadow:0 1px 2px rgba(0,0,0,.65);transition:.1s;}
+.slot-tira:active{transform:translateY(4px);
+  box-shadow:0 1px 0 #3a0a14,0 3px 8px rgba(0,0,0,.4),inset 0 -2px 4px rgba(0,0,0,.4);}
+.slot-tira:disabled{opacity:.55;cursor:not-allowed;}
+
 @media (prefers-reduced-motion:reduce){
-  .dadi-cube{transition:none;} .jump{animation:none;}
+  .slot-reel-strip{transition:none;}
+  .slot-reel.spinning .slot-reel-strip{animation:none;}
 }
 .dadi-scrim{position:fixed;inset:0;background:rgba(8,2,4,.72);backdrop-filter:blur(3px);display:flex;
   align-items:center;justify-content:center;opacity:0;transition:.3s;z-index:70;padding:24px;}

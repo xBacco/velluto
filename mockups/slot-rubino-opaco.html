@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Slot · Premium Opaco</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  /* palette OPACA: oro più desaturato, niente highlight bianchi */
+  --gold:#b8945c; --gold-soft:#c9a778; --gold-dim:#8a6a3e; --gold-deep:#5a4226;
+  --gold-mute:#a08458;
+  --cream:#e8d4b0; --rose:#c2557a;
+  /* rubino opaco: rosso terra, niente riflessi rosa */
+  --rubin:#8a1828; --rubin-light:#a8253a; --rubin-deep:#3a0a14; --rubin-mid:#6a1220;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{margin:0;padding:22px 12px 80px;min-height:100vh;
+  font-family:Georgia,"Times New Roman",serif;color:var(--cream);
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+             linear-gradient(170deg,var(--bg),var(--bg2));background-attachment:fixed;
+  display:flex;flex-direction:column;align-items:center;gap:20px;}
+.intro{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;
+  max-width:560px;line-height:1.55;}
+.intro b{color:var(--gold-soft);}
+
+.stage{display:flex;justify-content:center;width:100%;}
+.variant{display:flex;flex-direction:column;border-radius:22px;overflow:hidden;
+  border:1px solid rgba(212,168,108,.16);background:linear-gradient(170deg,#1a050d,#0e0306);
+  box-shadow:0 14px 40px rgba(0,0,0,.5);max-width:460px;width:100%;}
+.v-head{padding:14px 16px 10px;text-align:center;border-bottom:1px solid rgba(212,168,108,.12);}
+.v-title{font-family:Georgia,serif;font-size:18px;color:var(--gold-soft);letter-spacing:.08em;
+  text-transform:uppercase;margin:0 0 4px;}
+.v-sub{font-family:Arial,sans-serif;font-size:11.5px;color:#b58a8a;font-style:italic;margin:0;}
+.v-body{padding:16px 14px 20px;display:flex;flex-direction:column;gap:14px;}
+.v-desc{font-family:Arial,sans-serif;font-size:11.5px;color:#a98;line-height:1.55;text-align:center;
+  background:rgba(255,255,255,.02);border:1px solid rgba(212,168,108,.1);
+  border-radius:9px;padding:8px 10px;}
+
+.phone{background:linear-gradient(170deg,#180510,#0a0306);
+  border:1px solid rgba(212,168,108,.12);border-radius:16px;padding:14px 14px 18px;}
+.ptitle{font-size:24px;margin:0 0 2px;text-align:center;}
+.psub{font-family:Arial,sans-serif;font-size:12px;color:#b89aa2;margin:0 0 12px;text-align:center;}
+
+/* picker chip — opaco */
+.picker{display:flex;gap:7px;justify-content:center;margin:0 0 14px;}
+.chip{flex:1;max-width:110px;border:1px solid rgba(184,148,92,.3);background:rgba(0,0,0,.32);
+  border-radius:12px;padding:8px 4px;text-align:center;cursor:pointer;transition:.22s;user-select:none;
+  font-family:Arial,sans-serif;color:rgba(232,212,176,.55);display:flex;flex-direction:column;
+  align-items:center;gap:2px;}
+.chip .ce{font-size:16px;}
+.chip .ct{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;}
+.chip.on{border-color:var(--gold-soft);
+  background:linear-gradient(180deg,rgba(184,148,92,.18),rgba(184,148,92,.05));
+  color:var(--gold-soft);}
+
+/* result */
+.result{font-family:Georgia,serif;text-align:center;margin-top:14px;min-height:42px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  opacity:0;transition:opacity .35s;}
+.result.show{opacity:1;}
+.result .emos{font-size:22px;letter-spacing:5px;}
+.result .frase{font-size:13.5px;color:var(--cream);font-style:italic;}
+
+/* === reels === */
+.reels{display:flex;gap:6px;justify-content:center;position:relative;z-index:2;}
+.reel{flex:1;height:120px;background:linear-gradient(180deg,#0a0205,#140409);
+  border-radius:6px;overflow:hidden;position:relative;
+  /* niente highlight, solo ombra interna piatta */
+  box-shadow:inset 0 4px 10px rgba(0,0,0,.7);
+  border:2px solid var(--gold-dim);}
+/* tolto il riflesso lucido sopra/sotto */
+.reel::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,transparent 25%,transparent 75%,rgba(0,0,0,.35) 100%);}
+.reel-strip{display:flex;flex-direction:column;align-items:center;
+  transition:transform 1.25s cubic-bezier(.17,.67,.18,1);}
+.reel-face{height:120px;width:100%;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;flex-shrink:0;gap:3px;}
+.reel-face .e{font-size:32px;line-height:1;}
+.reel-face .t{font-size:9.5px;color:var(--gold-soft);text-transform:uppercase;
+  letter-spacing:.08em;font-family:Arial,sans-serif;}
+.reel.spinning .reel-strip{transition:none;animation:spinReel .09s linear infinite;}
+@keyframes spinReel{from{transform:translateY(0);}to{transform:translateY(-120px);}}
+
+/* === CABINET OPACO === */
+.cabinet{
+  background:
+    /* sottile granulosità per togliere ogni traccia di lucido */
+    repeating-linear-gradient(35deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px),
+    linear-gradient(170deg,#3a0d18 0%,#240810 100%);
+  border-radius:18px 18px 12px 12px;padding:22px 18px 18px;position:relative;
+  /* niente bagliori — solo ombra esterna morbida */
+  box-shadow:0 6px 20px rgba(0,0,0,.55);
+}
+/* doppio bordo oro OPACO — niente gradient brillante, oro spento uniforme */
+.cabinet::before{content:"";position:absolute;inset:0;border-radius:18px 18px 12px 12px;
+  padding:3px;
+  background:linear-gradient(160deg,var(--gold-mute) 0%,var(--gold-dim) 60%,var(--gold-deep) 100%);
+  -webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
+.cabinet::after{content:"";position:absolute;inset:8px;border-radius:13px 13px 8px 8px;
+  border:1px solid rgba(184,148,92,.32);pointer-events:none;}
+
+/* viti OPACHE — bronzo brunito, senza highlight bianco */
+.screw{position:absolute;width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,var(--gold-mute) 0%,var(--gold-deep) 75%);
+  box-shadow:inset 0 0 2px rgba(0,0,0,.5);z-index:3;}
+.screw::after{content:"";position:absolute;inset:3px;border-top:1.5px solid rgba(0,0,0,.55);transform:rotate(45deg);}
+.screw.tl{top:14px;left:14px;} .screw.tr{top:14px;right:14px;}
+.screw.bl{bottom:14px;left:14px;} .screw.br{bottom:14px;right:14px;}
+
+/* arco con rosone OPACO — niente glow, simbolo asciutto */
+.arch{height:18px;margin:0 8px 10px;position:relative;}
+.arch::before{content:"❖";position:absolute;left:50%;top:50%;transform:translate(-50%,-55%);
+  color:var(--gold-mute);font-size:14px;opacity:.85;}
+
+.console{margin-top:18px;display:flex;justify-content:center;align-items:center;position:relative;z-index:2;}
+
+/* === TASTO RUBINO OPACO === */
+.pull-btn{appearance:none;border:none;cursor:pointer;position:relative;
+  /* rubino opaco: niente highlight rosa né riflessi bianchi, gradiente piatto */
+  background:linear-gradient(180deg,var(--rubin-light) 0%,var(--rubin) 40%,var(--rubin-mid) 100%);
+  border:2.5px solid var(--gold-mute);
+  color:var(--cream);font-family:Georgia,serif;font-size:13px;
+  letter-spacing:.36em;text-transform:uppercase;font-weight:700;
+  padding:13px 38px;border-radius:28px;
+  /* "altezza" del tasto: ombra scura sotto = effetto rilievo opaco */
+  box-shadow:
+    0 5px 0 var(--rubin-deep),
+    0 8px 14px rgba(0,0,0,.5),
+    /* NIENTE inset bianco — solo ombra interna scura per dare volume opaco */
+    inset 0 -3px 6px rgba(0,0,0,.35);
+  text-shadow:0 1px 2px rgba(0,0,0,.65);transition:.1s;}
+.pull-btn:active{transform:translateY(4px);
+  box-shadow:0 1px 0 var(--rubin-deep),0 3px 8px rgba(0,0,0,.4),
+    inset 0 -2px 4px rgba(0,0,0,.4);}
+.pull-btn:disabled{opacity:.55;cursor:not-allowed;}
+
+/* note di confronto */
+.note{font-family:Arial,sans-serif;font-size:11px;color:#876;text-align:center;font-style:italic;
+  max-width:540px;line-height:1.55;}
+.note b{color:var(--gold-soft);font-style:normal;}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  Stessa struttura della <b>Premium Lucida</b>, ma finitura <b>opaca</b>:
+  oro brunito (niente highlight bianchi), rubino terra (niente riflesso rosa),
+  cabinet matt con micro-grana, ombre scure invece di bagliori chiari.
+</div>
+
+<div class="stage">
+  <article class="variant">
+    <div class="v-head">
+      <h2 class="v-title">Premium · Opaco</h2>
+      <p class="v-sub">oro brunito · rubino terra · finitura matt</p>
+    </div>
+    <div class="v-body">
+      <div class="phone" id="phone"></div>
+      <p class="v-desc">
+        Tolti tutti gli <i>inset bianchi</i> dei riflessi, sostituite le luci con ombre scure interne,
+        oro virato verso il bronzo, rubino spostato verso il terra. Stessa geometria
+        (doppio bordo, 4 viti, rosone, tasto a pillola), ma materiali opachi.
+      </p>
+    </div>
+  </article>
+</div>
+
+<div class="note">
+  Confronta con <b>slot-rubino-stili.html</b> (Variante A, lucida) per vedere il cambio.<br>
+  Premi <b>Tira</b> per testare l'animazione.
+</div>
+
+<script>
+const FACCE = {
+  az: [{e:'💋',t:'Bacia'},{e:'👅',t:'Lecca'},{e:'🫦',t:'Mordi'},{e:'💆',t:'Massaggia'},{e:'✋',t:'Sfiora'},{e:'💨',t:'Soffia su'}],
+  co: [{e:'👄',t:'il collo'},{e:'👂',t:"l'orecchio"},{e:'🦵',t:"l'interno coscia"},{e:'🍑',t:'il lato B'},{e:'🫀',t:'il petto'},{e:'🤚',t:'la schiena'}],
+  lu: [{e:'🛋️',t:'sul divano'},{e:'🚿',t:'sotto la doccia'},{e:'🍳',t:'in cucina'},{e:'🚗',t:'in macchina'},{e:'🛏️',t:'a letto'},{e:'🌃',t:'sul balcone'}],
+};
+const ORDER = ['az','co','lu'];
+const CHIP = { az:'💋', co:'🫦', lu:'📍' };
+const LABEL = { az:'Azione', co:'Corpo', lu:'Dove' };
+const FACE_H = 120;
+
+function el(tag, cls, txt){
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (txt != null) n.textContent = txt;
+  return n;
+}
+
+function buildPicker(state, onChange){
+  const wrap = el('div', 'picker');
+  for (const k of ORDER){
+    const c = el('div', 'chip' + (state[k] ? ' on' : ''));
+    c.appendChild(el('span', 'ce', CHIP[k]));
+    c.appendChild(el('span', 'ct', LABEL[k]));
+    c.onclick = () => {
+      const active = ORDER.filter(x => state[x]).length;
+      if (state[k] && active === 1) return;
+      state[k] = !state[k];
+      onChange();
+    };
+    wrap.appendChild(c);
+  }
+  return wrap;
+}
+
+function buildReel(faces){
+  const reel = el('div', 'reel');
+  const strip = el('div', 'reel-strip');
+  for (const f of faces){
+    const cell = el('div', 'reel-face');
+    cell.appendChild(el('div', 'e', f.e));
+    cell.appendChild(el('div', 't', f.t));
+    strip.appendChild(cell);
+  }
+  reel.appendChild(strip);
+  reel._strip = strip;
+  return reel;
+}
+
+const phone = document.getElementById('phone');
+phone.appendChild(el('h2', 'ptitle', '🎰 Slot'));
+phone.appendChild(el('p', 'psub', 'Scegli i rulli e premi per tirare.'));
+
+const state = { az:true, co:true, lu:true };
+
+const cabinet = el('div', 'cabinet');
+cabinet.appendChild(el('div', 'screw tl'));
+cabinet.appendChild(el('div', 'screw tr'));
+cabinet.appendChild(el('div', 'screw bl'));
+cabinet.appendChild(el('div', 'screw br'));
+cabinet.appendChild(el('div', 'arch'));
+
+const reelsWrap = el('div', 'reels');
+cabinet.appendChild(reelsWrap);
+
+const console_ = el('div', 'console');
+const btn = el('button', 'pull-btn', 'Tira');
+console_.appendChild(btn);
+cabinet.appendChild(console_);
+
+const result = el('div', 'result');
+const emos = el('div', 'emos');
+const frase = el('div', 'frase');
+result.appendChild(emos);
+result.appendChild(frase);
+
+const reels = {};
+function rebuildReels(){
+  reelsWrap.replaceChildren();
+  for (const k of ORDER){
+    if (!state[k]) continue;
+    const r = buildReel(FACCE[k]);
+    reelsWrap.appendChild(r);
+    reels[k] = r;
+  }
+}
+
+const picker = buildPicker(state, rebuildReels);
+phone.appendChild(picker);
+phone.appendChild(cabinet);
+rebuildReels();
+phone.appendChild(result);
+
+let busy = false;
+btn.addEventListener('click', () => {
+  if (busy) return;
+  busy = true;
+  btn.disabled = true;
+  result.classList.remove('show');
+
+  const picks = {};
+  const activeKeys = ORDER.filter(k => state[k]);
+  for (const k of activeKeys){
+    picks[k] = Math.floor(Math.random()*6);
+    const r = reels[k];
+    r.classList.add('spinning');
+    r._strip.style.transform = 'translateY(0)';
+  }
+  activeKeys.forEach((k, idx) => {
+    setTimeout(() => {
+      const r = reels[k];
+      r.classList.remove('spinning');
+      r._strip.style.transform = 'translateY(' + (-picks[k] * FACE_H) + 'px)';
+    }, 500 + idx*240);
+  });
+  setTimeout(() => {
+    const eList = [], rest = [];
+    let act = '';
+    for (const k of ORDER){
+      if (picks[k] == null) continue;
+      const f = FACCE[k][picks[k]];
+      eList.push(f.e);
+      if (k === 'az') act = f.t; else rest.push(f.t);
+    }
+    if (!act) act = rest.shift() || '';
+    emos.textContent = eList.join(' ');
+    frase.textContent = act + (rest.length ? ' ' + rest.join(' ') : '');
+    result.classList.add('show');
+    busy = false;
+    btn.disabled = false;
+  }, 500 + (activeKeys.length-1)*240 + 1300);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yahtzutra · V1 Pesante (dadi centrati)</title>
+<style>
+:root{
+  --bg:#0c0306; --wine:#5c1026; --wine2:#7a1533; --wine3:#3a0a18;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --ivory:#efe1c4;
+}
+*{box-sizing:border-box;}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--ivory);margin:0;
+  background:var(--bg);min-height:100vh;padding:30px 16px 80px;
+  display:flex;flex-direction:column;align-items:center;gap:24px;}
+.intro{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;max-width:480px;line-height:1.55;}
+.intro b{color:var(--gold-soft);}
+
+.va{background:linear-gradient(170deg,#2a0813,#160409);border:1px solid rgba(212,168,108,.3);
+  border-radius:22px;padding:18px 16px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5);
+  width:100%;max-width:430px;}
+.va h2{margin:0 0 4px;font-size:18px;letter-spacing:.04em;color:var(--gold-soft);}
+.va .desc{font-family:Arial,sans-serif;font-size:11.5px;color:#b58a8a;
+  font-style:italic;margin:0 0 12px;line-height:1.45;}
+.va .ctrl{display:flex;justify-content:center;margin-top:14px;gap:8px;}
+.va button.tira{appearance:none;border:0;cursor:pointer;font-family:Arial,sans-serif;
+  background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;
+  font-size:13px;letter-spacing:.08em;padding:11px 28px;border-radius:999px;
+  text-transform:uppercase;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,.5);}
+.va button.tira:active{transform:scale(.97);}
+
+/* felt */
+.felt{position:relative;width:100%;height:230px;border-radius:18px;
+  background:radial-gradient(125% 80% at 50% 28%,#5c1226,#1a050d 82%);
+  border:7px solid #4a2c14;
+  box-shadow:inset 0 0 38px rgba(0,0,0,.7),inset 0 0 0 2px #2e1808,inset 0 0 0 3px rgba(212,168,108,.08);
+  overflow:hidden;}
+.felt::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-radial-gradient(circle at 30% 30%,rgba(255,255,255,.015) 0 1.5px,transparent 1.5px 4px);}
+.rim{position:absolute;inset:6px;border-radius:13px;border:1px dashed rgba(212,168,108,.14);pointer-events:none;}
+
+/* DADI CENTRATI nel felt (non più ancorati in basso) */
+.stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;}
+
+/* wrapper per ombra indipendente */
+.die-wrap{position:relative;width:50px;height:50px;}
+
+.die-shadow{position:absolute;left:50%;bottom:-12px;width:50px;height:14px;
+  transform:translateX(-50%) scale(1);
+  background:radial-gradient(50% 100% at 50% 50%,rgba(0,0,0,.55),transparent 75%);
+  opacity:.55;pointer-events:none;}
+
+.die{position:absolute;inset:0;border-radius:10px;
+  background:linear-gradient(160deg,#efe1c4,#d8c89c);
+  box-shadow:0 4px 10px rgba(0,0,0,.55),inset 0 -2px 0 rgba(0,0,0,.12),inset 0 2px 0 rgba(255,255,255,.45);
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+  padding:6px;gap:2px;transform-origin:50% 100%;}
+.die .pip{width:100%;height:100%;border-radius:50%;background:transparent;}
+.die .pip.on{background:radial-gradient(circle at 35% 30%,#3d1820,#160409 80%);
+  box-shadow:inset 0 1px 1px rgba(0,0,0,.5);}
+
+/* ============================================ */
+/* V1 · PESANTE — 3 rimbalzi, squash all'impatto */
+/* ============================================ */
+.die.rolling{
+  animation:dieV1 1.25s linear forwards;
+  --h:180px; --r:540deg; --x:0px;
+}
+@keyframes dieV1{
+  0%   {transform:translate(var(--x),calc(var(--h) * -1)) rotate(var(--r)) scale(1,1);}
+  26%  {transform:translate(calc(var(--x) * .35),0) rotate(calc(var(--r) * .55)) scale(1.18,.78);}
+  29%  {transform:translate(calc(var(--x) * .32),0) rotate(calc(var(--r) * .55)) scale(1.18,.78);}
+  48%  {transform:translate(calc(var(--x) * .18),-78px) rotate(calc(var(--r) * .25)) scale(.95,1.06);}
+  64%  {transform:translate(calc(var(--x) * .08),0) rotate(calc(var(--r) * .12)) scale(1.12,.85);}
+  78%  {transform:translate(calc(var(--x) * .04),-32px) rotate(calc(var(--r) * .06)) scale(.98,1.03);}
+  88%  {transform:translate(0,0) rotate(calc(var(--r) * .02)) scale(1.06,.93);}
+  95%  {transform:translate(0,-9px) rotate(0) scale(1,1.01);}
+  100% {transform:translate(0,0) rotate(0) scale(1,1);}
+}
+.die.rolling ~ .die-shadow{animation:shadowV1 1.25s linear forwards;}
+@keyframes shadowV1{
+  0%   {transform:translateX(-50%) scale(.42,.4);opacity:.18;}
+  26%  {transform:translateX(-50%) scale(1.25,1);opacity:.7;}
+  48%  {transform:translateX(-50%) scale(.68,.55);opacity:.32;}
+  64%  {transform:translateX(-50%) scale(1.15,.95);opacity:.65;}
+  78%  {transform:translateX(-50%) scale(.85,.75);opacity:.42;}
+  88%  {transform:translateX(-50%) scale(1.08,.92);opacity:.6;}
+  100% {transform:translateX(-50%) scale(1,1);opacity:.55;}
+}
+
+.hint{font-family:Arial,sans-serif;font-size:11px;color:#9a7e80;text-align:center;
+  margin:8px 0 0;letter-spacing:.06em;font-style:italic;}
+
+.legend{font-family:Arial,sans-serif;font-size:11.5px;color:#caa;text-align:center;max-width:480px;
+  background:rgba(212,168,108,.06);border:1px solid rgba(212,168,108,.18);border-radius:11px;
+  padding:11px 14px;line-height:1.55;}
+.legend b{color:var(--gold-soft);}
+
+.bbadge{display:inline-block;font-family:Arial,sans-serif;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--gold-soft);
+  background:rgba(212,168,108,.1);border:1px solid rgba(212,168,108,.3);
+  padding:3px 9px;border-radius:999px;margin-left:8px;vertical-align:middle;}
+</style>
+</head>
+<body>
+
+<p class="intro">
+  <b>V1 · Pesante</b> — dadi centrati verticalmente nel panno. Cadono dall'alto, 3 rimbalzi che decrescono, squash all'impatto, ombra dinamica. Tocca <b>Tira</b>.
+</p>
+
+<div class="va">
+  <h2>V1 · Pesante<span class="bbadge">centrati</span></h2>
+  <p class="desc">Dadi al centro del felt. Caduta + 3 rimbalzi (45% → 20% → 8%), squash forte 1.18/0.78 ad ogni impatto, ombra che pulsa con la posizione. Drift X minimo per restare ordinati.</p>
+  <div class="felt"><div class="rim"></div><div class="stage" id="stage-1"></div></div>
+  <p class="hint">~1.25s · linear · damping ~0.45 · 5 dadi con delay scalato</p>
+  <div class="ctrl"><button class="tira" onclick="tira()">Tira</button></div>
+</div>
+
+<p class="legend">
+  Se il centraggio è ok dimmi <b>"vai"</b> e porto V1 in <b>yahtzutra.js</b> + <b>styles.css</b> dell'app vera.
+  Se vuoi aggiustare qualcosa (altezza caduta, numero rimbalzi, drift X, timing) dimmelo.
+</p>
+
+<script>
+const PIPS = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+
+function makeWrap(val){
+  const w = document.createElement('div'); w.className = 'die-wrap';
+  const d = document.createElement('div'); d.className = 'die';
+  for(let i=0;i<9;i++){
+    const p = document.createElement('div');
+    p.className = 'pip' + (PIPS[val].includes(i) ? ' on' : '');
+    d.appendChild(p);
+  }
+  const sh = document.createElement('div'); sh.className = 'die-shadow';
+  w.appendChild(d); w.appendChild(sh);
+  return {wrap:w, die:d};
+}
+
+function build(){
+  const s = document.getElementById('stage-1');
+  while(s.firstChild) s.removeChild(s.firstChild);
+  for(let i=0;i<5;i++){
+    s.appendChild(makeWrap(1 + Math.floor(Math.random()*6)).wrap);
+  }
+}
+
+function tira(){
+  const stage = document.getElementById('stage-1');
+  while(stage.firstChild) stage.removeChild(stage.firstChild);
+  for(let i=0;i<5;i++){
+    const {wrap, die} = makeWrap(1 + Math.floor(Math.random()*6));
+    die.classList.add('rolling');
+    const delay = (Math.random()*180)|0;
+    die.style.animationDelay = delay + 'ms';
+    wrap.querySelector('.die-shadow').style.animationDelay = delay + 'ms';
+    die.style.setProperty('--h', (160 + (Math.random()*60|0)) + 'px');
+    die.style.setProperty('--r', ((Math.random()*720-360)|0) + 'deg');
+    die.style.setProperty('--x', ((Math.random()*20-10)|0) + 'px');
+    stage.appendChild(wrap);
+  }
+}
+
+build();
+</script>
+</body>
+</html>

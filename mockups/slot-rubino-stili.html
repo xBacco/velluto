@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Slot · Rubino & Oro — 3 evoluzioni grafiche</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533; --wine3:#3a0a18;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --gold-dim:#a87a3e; --gold-deep:#7d5a2a;
+  --gold-bright:#f5dca5;
+  --cream:#f3d9b0; --rose:#c2557a;
+  --rubin:#c41e3a; --rubin-light:#ff5070; --rubin-deep:#5c0818;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{margin:0;padding:22px 12px 80px;min-height:100vh;
+  font-family:Georgia,"Times New Roman",serif;color:var(--cream);
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+             linear-gradient(170deg,var(--bg),var(--bg2));background-attachment:fixed;
+  display:flex;flex-direction:column;align-items:center;gap:20px;}
+.intro{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;
+  max-width:560px;line-height:1.55;}
+.intro b{color:var(--gold-soft);}
+
+.grid{display:grid;gap:22px;width:100%;max-width:1400px;
+  grid-template-columns:repeat(auto-fit,minmax(380px,1fr));}
+
+.variant{display:flex;flex-direction:column;border-radius:22px;overflow:hidden;
+  border:1px solid rgba(212,168,108,.18);background:linear-gradient(170deg,#1a050d,#0e0306);
+  box-shadow:0 14px 40px rgba(0,0,0,.5);}
+.v-head{padding:14px 16px 10px;text-align:center;border-bottom:1px solid rgba(212,168,108,.12);}
+.v-title{font-family:Georgia,serif;font-size:18px;color:var(--gold-soft);letter-spacing:.08em;
+  text-transform:uppercase;margin:0 0 4px;}
+.v-sub{font-family:Arial,sans-serif;font-size:11.5px;color:#b58a8a;font-style:italic;margin:0;}
+.v-body{padding:16px 14px 20px;display:flex;flex-direction:column;gap:14px;}
+.v-desc{font-family:Arial,sans-serif;font-size:11.5px;color:#a98;line-height:1.55;text-align:center;
+  background:rgba(255,255,255,.02);border:1px solid rgba(212,168,108,.1);
+  border-radius:9px;padding:8px 10px;}
+
+.phone{background:linear-gradient(170deg,#180510,#0a0306);
+  border:1px solid rgba(212,168,108,.12);border-radius:16px;padding:14px 14px 18px;}
+.ptitle{font-size:24px;margin:0 0 2px;text-align:center;}
+.psub{font-family:Arial,sans-serif;font-size:12px;color:#b89aa2;margin:0 0 12px;text-align:center;}
+
+/* picker chip */
+.picker{display:flex;gap:7px;justify-content:center;margin:0 0 14px;}
+.chip{flex:1;max-width:110px;border:1px solid rgba(212,168,108,.28);background:rgba(0,0,0,.3);
+  border-radius:12px;padding:8px 4px;text-align:center;cursor:pointer;transition:.22s;user-select:none;
+  font-family:Arial,sans-serif;color:rgba(243,217,176,.55);display:flex;flex-direction:column;
+  align-items:center;gap:2px;}
+.chip .ce{font-size:16px;}
+.chip .ct{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;}
+.chip.on{border-color:var(--gold);
+  background:linear-gradient(180deg,rgba(212,168,108,.22),rgba(212,168,108,.06));
+  color:var(--gold);}
+
+/* result */
+.result{font-family:Georgia,serif;text-align:center;margin-top:14px;min-height:42px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  opacity:0;transition:opacity .35s;}
+.result.show{opacity:1;}
+.result .emos{font-size:22px;letter-spacing:5px;}
+.result .frase{font-size:13.5px;color:var(--cream);font-style:italic;}
+
+/* === reels condivisi === */
+.reels{display:flex;gap:6px;justify-content:center;position:relative;z-index:2;}
+.reel{flex:1;height:120px;background:linear-gradient(180deg,#0a0205,#1a0610);
+  border-radius:8px;overflow:hidden;position:relative;
+  box-shadow:inset 0 8px 18px rgba(0,0,0,.8),inset 0 -8px 18px rgba(0,0,0,.7);}
+.reel::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.5) 0%,transparent 22%,transparent 78%,rgba(0,0,0,.5) 100%);}
+.reel-strip{display:flex;flex-direction:column;align-items:center;
+  transition:transform 1.25s cubic-bezier(.17,.67,.18,1);}
+.reel-face{height:120px;width:100%;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;flex-shrink:0;gap:3px;}
+.reel-face .e{font-size:32px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));}
+.reel-face .t{font-size:9.5px;color:var(--gold-soft);text-transform:uppercase;
+  letter-spacing:.08em;font-family:Arial,sans-serif;}
+.reel.spinning .reel-strip{transition:none;animation:spinReel .09s linear infinite;}
+@keyframes spinReel{from{transform:translateY(0);}to{transform:translateY(-120px);}}
+
+/* ========================================================================
+   VARIANTE A · CABINET PREMIUM con arco sopra, viti, pilastri
+   ======================================================================== */
+.va .cabinet{
+  background:
+    linear-gradient(170deg,#4a0f1c 0%,#2a0810 100%);
+  border-radius:22px 22px 14px 14px;padding:22px 18px 18px;position:relative;
+  box-shadow:
+    0 8px 28px rgba(0,0,0,.6),
+    inset 0 0 35px rgba(0,0,0,.55);
+}
+/* cornice oro spessa con doppio bordo */
+.va .cabinet::before{content:"";position:absolute;inset:0;border-radius:22px 22px 14px 14px;
+  padding:4px;
+  background:linear-gradient(140deg,var(--gold-bright),var(--gold-dim) 40%,var(--gold-soft) 70%,var(--gold-dim));
+  -webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
+.va .cabinet::after{content:"";position:absolute;inset:8px;border-radius:16px 16px 10px 10px;
+  border:1px solid rgba(212,168,108,.4);pointer-events:none;}
+/* viti agli angoli */
+.va .screw{position:absolute;width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,var(--gold-bright),var(--gold-dim) 65%,#2a1a08);
+  box-shadow:inset 0 0 2px rgba(0,0,0,.5),0 1px 2px rgba(0,0,0,.5);z-index:3;}
+.va .screw::after{content:"";position:absolute;inset:3px;border-top:1.5px solid rgba(0,0,0,.6);transform:rotate(45deg);}
+.va .screw.tl{top:14px;left:14px;} .va .screw.tr{top:14px;right:14px;}
+.va .screw.bl{bottom:14px;left:14px;} .va .screw.br{bottom:14px;right:14px;}
+/* arco superiore decorato */
+.va .arch{height:18px;margin:0 8px 10px;position:relative;
+  background:radial-gradient(ellipse at 50% 100%,rgba(212,168,108,.5) 0%,transparent 70%);}
+.va .arch::before{content:"❖";position:absolute;left:50%;top:50%;transform:translate(-50%,-55%);
+  color:var(--gold-soft);font-size:14px;text-shadow:0 0 8px rgba(212,168,108,.6);}
+.va .reel{border:2px solid var(--gold-dim);box-shadow:inset 0 8px 18px rgba(0,0,0,.8),
+  0 0 0 1px rgba(212,168,108,.25),0 4px 12px rgba(0,0,0,.5);}
+.va .console{margin-top:18px;display:flex;justify-content:center;align-items:center;position:relative;z-index:2;}
+.va .pull-btn{appearance:none;border:none;cursor:pointer;position:relative;
+  background:radial-gradient(circle at 40% 30%,var(--rubin-light) 0%,var(--rubin) 45%,var(--rubin-deep) 100%);
+  border:3px solid var(--gold-soft);color:#fff;font-family:Georgia,serif;font-size:13px;
+  letter-spacing:.36em;text-transform:uppercase;font-weight:700;
+  padding:13px 38px;border-radius:30px;
+  box-shadow:
+    0 6px 0 var(--rubin-deep),
+    0 10px 20px rgba(0,0,0,.55),
+    inset 0 3px 6px rgba(255,255,255,.5),
+    inset 0 -4px 8px rgba(0,0,0,.45),
+    0 0 0 5px rgba(212,168,108,.18);
+  text-shadow:0 1px 2px rgba(0,0,0,.7);transition:.1s;}
+.va .pull-btn:active{transform:translateY(5px);
+  box-shadow:0 1px 0 var(--rubin-deep),0 4px 10px rgba(0,0,0,.4),
+    inset 0 2px 4px rgba(255,255,255,.3),inset 0 -2px 4px rgba(0,0,0,.5),
+    0 0 0 5px rgba(212,168,108,.13);}
+.va .pull-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ========================================================================
+   VARIANTE B · BOUDOIR con velluto, riccioli oro, tasto cuore
+   ======================================================================== */
+.vb .cabinet{position:relative;padding:24px 18px 18px;border-radius:18px;
+  background:
+    repeating-linear-gradient(125deg,rgba(255,255,255,.025) 0 2px,transparent 2px 6px),
+    radial-gradient(120% 90% at 50% 25%,#5c1026 0%,#2a0810 65%,#160409 100%);
+  box-shadow:0 10px 28px rgba(0,0,0,.55),inset 0 0 40px rgba(0,0,0,.55);}
+.vb .cabinet::before{content:"";position:absolute;inset:0;border-radius:18px;padding:2px;
+  background:linear-gradient(135deg,var(--gold-bright),var(--gold-dim) 50%,var(--gold-bright));
+  -webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
+.vb .cabinet::after{content:"";position:absolute;inset:8px;border-radius:12px;
+  border:1px dashed rgba(212,168,108,.3);pointer-events:none;}
+/* riccioli rococò ai 4 angoli interni */
+.vb .ric{position:absolute;font-size:13px;color:var(--gold-soft);opacity:.7;z-index:3;
+  text-shadow:0 0 6px rgba(212,168,108,.4);}
+.vb .ric.tl{top:10px;left:14px;transform:rotate(-12deg);}
+.vb .ric.tr{top:10px;right:14px;transform:scaleX(-1) rotate(-12deg);}
+.vb .ric.bl{bottom:10px;left:14px;transform:scaleY(-1) rotate(-12deg);}
+.vb .ric.br{bottom:10px;right:14px;transform:scale(-1) rotate(-12deg);}
+.vb .reel{border:1.5px solid var(--gold);border-radius:10px;
+  box-shadow:inset 0 8px 18px rgba(0,0,0,.8),0 0 12px rgba(212,168,108,.18);}
+.vb .console{margin-top:18px;display:flex;justify-content:center;position:relative;z-index:2;}
+.vb .pull-btn{appearance:none;border:none;cursor:pointer;position:relative;
+  background:radial-gradient(ellipse at 38% 28%,var(--rubin-light) 0%,var(--rubin) 50%,var(--rubin-deep) 100%);
+  border:2.5px solid var(--gold-bright);color:transparent;
+  width:100px;height:54px;border-radius:50%;font-size:0;
+  box-shadow:0 6px 0 var(--rubin-deep),0 12px 22px rgba(0,0,0,.6),
+    inset 0 3px 8px rgba(255,255,255,.45),inset 0 -5px 10px rgba(0,0,0,.4);
+  transition:.1s;}
+.vb .pull-btn::before{content:"♥";color:var(--gold-bright);font-size:22px;
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-58%);
+  text-shadow:0 1px 2px rgba(0,0,0,.6);filter:drop-shadow(0 0 4px rgba(212,168,108,.5));}
+.vb .pull-btn::after{content:"TIRA";color:var(--gold-bright);font-family:Georgia,serif;font-size:8.5px;
+  letter-spacing:.25em;font-weight:700;
+  position:absolute;left:50%;bottom:8px;transform:translateX(-50%);
+  text-shadow:0 1px 2px rgba(0,0,0,.6);}
+.vb .pull-btn:active{transform:translateY(5px);
+  box-shadow:0 1px 0 var(--rubin-deep),0 5px 14px rgba(0,0,0,.45),
+    inset 0 2px 6px rgba(255,255,255,.35),inset 0 -3px 8px rgba(0,0,0,.4);}
+.vb .pull-btn:disabled{opacity:.55;cursor:not-allowed;}
+
+/* ========================================================================
+   VARIANTE C · ART DÉCO con raggiera oro sopra e arco geometrico
+   ======================================================================== */
+.vc .cabinet{position:relative;padding:8px 16px 18px;border-radius:6px 6px 14px 14px;
+  background:linear-gradient(170deg,#4a0f1c 0%,#2a0810 100%);
+  box-shadow:0 8px 28px rgba(0,0,0,.6),inset 0 0 30px rgba(0,0,0,.5);}
+.vc .cabinet::before{content:"";position:absolute;inset:0;border-radius:6px 6px 14px 14px;padding:3px;
+  background:linear-gradient(180deg,var(--gold-bright),var(--gold-dim) 40%,var(--gold-bright));
+  -webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
+/* raggiera Art Déco sopra i rulli */
+.vc .sunburst{height:32px;margin:6px -4px 8px;position:relative;display:flex;
+  align-items:flex-end;justify-content:center;}
+.vc .sunburst::before{content:"";position:absolute;left:50%;bottom:0;width:75%;height:32px;
+  transform:translateX(-50%);
+  background:
+    conic-gradient(from 270deg at 50% 100%,
+      transparent 0deg, transparent 75deg,
+      var(--gold-dim) 80deg, var(--gold-soft) 90deg, var(--gold-dim) 100deg,
+      transparent 105deg, transparent 115deg,
+      var(--gold-dim) 120deg, var(--gold-bright) 135deg, var(--gold-dim) 150deg,
+      transparent 155deg, transparent 165deg,
+      var(--gold-dim) 170deg, var(--gold-soft) 180deg, var(--gold-dim) 190deg,
+      transparent 195deg, transparent 205deg,
+      var(--gold-dim) 210deg, var(--gold-bright) 225deg, var(--gold-dim) 240deg,
+      transparent 245deg, transparent 255deg,
+      var(--gold-dim) 260deg, var(--gold-soft) 270deg, var(--gold-dim) 280deg,
+      transparent 285deg, transparent 360deg);
+  opacity:.85;mask:linear-gradient(180deg,transparent,#000 30%,#000 100%);}
+.vc .sunburst::after{content:"";position:absolute;left:50%;bottom:-4px;width:18px;height:18px;border-radius:50%;
+  transform:translateX(-50%);
+  background:radial-gradient(circle at 35% 30%,var(--gold-bright),var(--gold-dim) 70%);
+  box-shadow:0 0 8px rgba(212,168,108,.5),inset 0 0 4px rgba(0,0,0,.4);}
+.vc .reel{border:2px solid var(--gold);border-radius:2px;
+  box-shadow:inset 0 8px 18px rgba(0,0,0,.8),0 0 0 1px var(--gold-deep);}
+.vc .reel-face .t{font-family:Georgia,serif;font-style:italic;letter-spacing:.06em;
+  text-transform:none;}
+/* archetti geometrici sotto ogni rullo */
+.vc .frieze{display:flex;gap:6px;margin:6px 0 0;}
+.vc .frieze span{flex:1;height:8px;
+  background:
+    linear-gradient(90deg,transparent 0,var(--gold-dim) 20%,var(--gold-soft) 50%,var(--gold-dim) 80%,transparent 100%);
+  clip-path:polygon(0 100%,15% 30%,30% 100%,45% 30%,60% 100%,75% 30%,90% 100%,100% 100%);
+  opacity:.8;}
+.vc .console{margin-top:18px;display:flex;justify-content:center;}
+.vc .pull-btn{appearance:none;border:none;cursor:pointer;position:relative;
+  background:linear-gradient(180deg,var(--rubin-light) 0%,var(--rubin) 40%,var(--rubin-deep) 100%);
+  border:2.5px solid var(--gold-bright);color:var(--gold-bright);
+  font-family:Georgia,serif;font-size:13px;letter-spacing:.45em;text-transform:uppercase;font-weight:700;
+  padding:13px 36px;
+  clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,10px 100%,0 50%);
+  box-shadow:0 6px 0 var(--rubin-deep),0 10px 20px rgba(0,0,0,.55),
+    inset 0 3px 6px rgba(255,255,255,.45),inset 0 -3px 6px rgba(0,0,0,.4);
+  text-shadow:0 1px 2px rgba(0,0,0,.6);transition:.1s;}
+.vc .pull-btn:active{transform:translateY(5px);
+  box-shadow:0 1px 0 var(--rubin-deep),0 4px 10px rgba(0,0,0,.4),
+    inset 0 2px 4px rgba(255,255,255,.3),inset 0 -2px 4px rgba(0,0,0,.5);}
+.vc .pull-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* footer scelta */
+.pickbar{display:flex;justify-content:center;}
+.btn-pick{appearance:none;border:1px solid rgba(212,168,108,.4);
+  background:rgba(212,168,108,.08);color:var(--cream);font-family:Arial,sans-serif;font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase;padding:9px 14px;border-radius:10px;cursor:pointer;
+  transition:.2s;}
+.btn-pick:hover{background:rgba(212,168,108,.18);border-color:var(--gold);color:var(--gold);}
+.btn-pick.selected{background:var(--gold);color:#3a2405;border-color:var(--gold);}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  Tre evoluzioni della direzione <b>Rubino &amp; Oro</b>. Più cura tipografica,
+  cornici lavorate (doppio bordo oro, viti, raggiere), tasti più scenografici.
+  Premi <b>Tira</b> in ciascuna per vederla animata.
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const FACCE = {
+  az: [{e:'💋',t:'Bacia'},{e:'👅',t:'Lecca'},{e:'🫦',t:'Mordi'},{e:'💆',t:'Massaggia'},{e:'✋',t:'Sfiora'},{e:'💨',t:'Soffia su'}],
+  co: [{e:'👄',t:'il collo'},{e:'👂',t:"l'orecchio"},{e:'🦵',t:"l'interno coscia"},{e:'🍑',t:'il lato B'},{e:'🫀',t:'il petto'},{e:'🤚',t:'la schiena'}],
+  lu: [{e:'🛋️',t:'sul divano'},{e:'🚿',t:'sotto la doccia'},{e:'🍳',t:'in cucina'},{e:'🚗',t:'in macchina'},{e:'🛏️',t:'a letto'},{e:'🌃',t:'sul balcone'}],
+};
+const ORDER = ['az','co','lu'];
+const CHIP = { az:'💋', co:'🫦', lu:'📍' };
+const LABEL = { az:'Azione', co:'Corpo', lu:'Dove' };
+const FACE_H = 120;
+
+const VARIANTS = [
+  { id:'va', name:'A · Premium Lucido',
+    sub:'doppio bordo oro, viti agli angoli, arco con rosone',
+    desc:'Cornice oro a doppio bordo, viti dorate ai 4 angoli, rosone ❖ sopra i rulli. Tasto rubino con alone luminoso e crusta dorata.' },
+  { id:'vb', name:'B · Boudoir Velluto',
+    sub:'texture velluto vino, riccioli oro, tasto cuore',
+    desc:'Pannello con texture velluto, riccioli rococò agli angoli, tasto ovale rubino con ♥ oro e scritta TIRA. Più sensuale.' },
+  { id:'vc', name:'C · Art Déco',
+    sub:'raggiera oro sopra i rulli, geometrie anni \'20',
+    desc:'Raggiera dorata sopra i rulli, fregio geometrico sotto, tasto rubino esagonale. Anni \'20, da grande hotel.' },
+];
+
+function el(tag, cls, txt){
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (txt != null) n.textContent = txt;
+  return n;
+}
+
+function buildPicker(state, onChange){
+  const wrap = el('div', 'picker');
+  for (const k of ORDER){
+    const c = el('div', 'chip' + (state[k] ? ' on' : ''));
+    c.appendChild(el('span', 'ce', CHIP[k]));
+    c.appendChild(el('span', 'ct', LABEL[k]));
+    c.onclick = () => {
+      const active = ORDER.filter(x => state[x]).length;
+      if (state[k] && active === 1) return;
+      state[k] = !state[k];
+      onChange();
+    };
+    wrap.appendChild(c);
+  }
+  return wrap;
+}
+
+function buildReel(faces){
+  const reel = el('div', 'reel');
+  const strip = el('div', 'reel-strip');
+  for (const f of faces){
+    const cell = el('div', 'reel-face');
+    cell.appendChild(el('div', 'e', f.e));
+    cell.appendChild(el('div', 't', f.t));
+    strip.appendChild(cell);
+  }
+  reel.appendChild(strip);
+  reel._strip = strip;
+  return reel;
+}
+
+function buildCabinetDeco(V, cabinet){
+  if (V.id === 'va'){
+    cabinet.appendChild(el('div', 'screw tl'));
+    cabinet.appendChild(el('div', 'screw tr'));
+    cabinet.appendChild(el('div', 'screw bl'));
+    cabinet.appendChild(el('div', 'screw br'));
+    cabinet.appendChild(el('div', 'arch'));
+  } else if (V.id === 'vb'){
+    cabinet.appendChild(el('div', 'ric tl', '❦'));
+    cabinet.appendChild(el('div', 'ric tr', '❦'));
+    cabinet.appendChild(el('div', 'ric bl', '❦'));
+    cabinet.appendChild(el('div', 'ric br', '❦'));
+  } else if (V.id === 'vc'){
+    cabinet.appendChild(el('div', 'sunburst'));
+  }
+}
+
+function buildMockup(V){
+  const card = el('article', 'variant ' + V.id);
+
+  const head = el('div', 'v-head');
+  head.appendChild(el('h2', 'v-title', V.name));
+  head.appendChild(el('p', 'v-sub', V.sub));
+  card.appendChild(head);
+
+  const body = el('div', 'v-body');
+  const phone = el('div', 'phone');
+  phone.appendChild(el('h2', 'ptitle', '🎰 Slot'));
+  phone.appendChild(el('p', 'psub', 'Scegli i rulli e premi per tirare.'));
+
+  const state = { az:true, co:true, lu:true };
+
+  const cabinet = el('div', 'cabinet');
+  buildCabinetDeco(V, cabinet);
+  const reelsWrap = el('div', 'reels');
+  cabinet.appendChild(reelsWrap);
+
+  if (V.id === 'vc'){
+    const fr = el('div', 'frieze');
+    fr.appendChild(el('span'));
+    fr.appendChild(el('span'));
+    fr.appendChild(el('span'));
+    cabinet.appendChild(fr);
+  }
+
+  const console_ = el('div', 'console');
+  const btn = el('button', 'pull-btn');
+  if (V.id === 'va') btn.textContent = 'Tira';
+  else if (V.id === 'vc') btn.textContent = 'Tira';
+  // vb: il testo è in ::after
+  console_.appendChild(btn);
+  cabinet.appendChild(console_);
+
+  const result = el('div', 'result');
+  const emos = el('div', 'emos');
+  const frase = el('div', 'frase');
+  result.appendChild(emos);
+  result.appendChild(frase);
+
+  const reels = {};
+  function rebuildReels(){
+    reelsWrap.replaceChildren();
+    for (const k of ORDER){
+      if (!state[k]) continue;
+      const r = buildReel(FACCE[k]);
+      reelsWrap.appendChild(r);
+      reels[k] = r;
+    }
+  }
+
+  const picker = buildPicker(state, rebuildReels);
+  phone.appendChild(picker);
+  phone.appendChild(cabinet);
+  rebuildReels();
+  phone.appendChild(result);
+
+  let busy = false;
+  btn.addEventListener('click', () => {
+    if (busy) return;
+    busy = true;
+    btn.disabled = true;
+    result.classList.remove('show');
+
+    const picks = {};
+    const activeKeys = ORDER.filter(k => state[k]);
+    for (const k of activeKeys){
+      picks[k] = Math.floor(Math.random()*6);
+      const r = reels[k];
+      r.classList.add('spinning');
+      r._strip.style.transform = 'translateY(0)';
+    }
+    activeKeys.forEach((k, idx) => {
+      setTimeout(() => {
+        const r = reels[k];
+        r.classList.remove('spinning');
+        r._strip.style.transform = 'translateY(' + (-picks[k] * FACE_H) + 'px)';
+      }, 500 + idx*240);
+    });
+    setTimeout(() => {
+      const eList = [], rest = [];
+      let act = '';
+      for (const k of ORDER){
+        if (picks[k] == null) continue;
+        const f = FACCE[k][picks[k]];
+        eList.push(f.e);
+        if (k === 'az') act = f.t; else rest.push(f.t);
+      }
+      if (!act) act = rest.shift() || '';
+      emos.textContent = eList.join(' ');
+      frase.textContent = act + (rest.length ? ' ' + rest.join(' ') : '');
+      result.classList.add('show');
+      busy = false;
+      btn.disabled = false;
+    }, 500 + (activeKeys.length-1)*240 + 1300);
+  });
+
+  body.appendChild(phone);
+  body.appendChild(el('p', 'v-desc', V.desc));
+
+  const pickbar = el('div', 'pickbar');
+  const pickBtn = el('button', 'btn-pick', 'Scegli ' + V.name.split('·')[0].trim());
+  pickBtn.onclick = () => {
+    document.querySelectorAll('.btn-pick').forEach(b => b.classList.remove('selected'));
+    pickBtn.classList.add('selected');
+  };
+  pickbar.appendChild(pickBtn);
+  body.appendChild(pickbar);
+
+  card.appendChild(body);
+  return card;
+}
+
+const grid = document.getElementById('grid');
+VARIANTS.forEach(V => grid.appendChild(buildMockup(V)));
+</script>
+
+</body>
+</html>

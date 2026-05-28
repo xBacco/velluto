@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Slot Vintage v2 · 3 varianti centrate</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533; --wine3:#3a0a18;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --gold-dim:#a87a3e; --gold-deep:#7d5a2a;
+  --cream:#f3d9b0; --rose:#c2557a; --rubin:#c41e3a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{margin:0;padding:22px 12px 80px;min-height:100vh;
+  font-family:Georgia,"Times New Roman",serif;color:var(--cream);
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+             linear-gradient(170deg,var(--bg),var(--bg2));background-attachment:fixed;
+  display:flex;flex-direction:column;align-items:center;gap:20px;}
+.intro{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;
+  max-width:560px;line-height:1.55;}
+.intro b{color:var(--gold-soft);}
+
+.grid{display:grid;gap:22px;width:100%;max-width:1400px;
+  grid-template-columns:repeat(auto-fit,minmax(360px,1fr));}
+
+.variant{display:flex;flex-direction:column;border-radius:22px;overflow:hidden;
+  border:1px solid rgba(212,168,108,.18);background:linear-gradient(170deg,#1a050d,#0e0306);
+  box-shadow:0 14px 40px rgba(0,0,0,.5);}
+.v-head{padding:14px 16px 10px;text-align:center;border-bottom:1px solid rgba(212,168,108,.12);}
+.v-title{font-family:Georgia,serif;font-size:18px;color:var(--gold-soft);letter-spacing:.08em;
+  text-transform:uppercase;margin:0 0 4px;}
+.v-sub{font-family:Arial,sans-serif;font-size:11.5px;color:#b58a8a;font-style:italic;margin:0;}
+.v-body{padding:16px 14px 20px;display:flex;flex-direction:column;gap:14px;}
+.v-desc{font-family:Arial,sans-serif;font-size:11.5px;color:#a98;line-height:1.55;text-align:center;
+  background:rgba(255,255,255,.02);border:1px solid rgba(212,168,108,.1);
+  border-radius:9px;padding:8px 10px;}
+
+.phone{background:linear-gradient(170deg,#180510,#0a0306);
+  border:1px solid rgba(212,168,108,.12);border-radius:16px;padding:14px 14px 18px;}
+.ptitle{font-size:24px;margin:0 0 2px;text-align:center;}
+.psub{font-family:Arial,sans-serif;font-size:12px;color:#b89aa2;margin:0 0 12px;text-align:center;}
+
+/* picker chip */
+.picker{display:flex;gap:7px;justify-content:center;margin:0 0 14px;}
+.chip{flex:1;max-width:110px;border:1px solid rgba(212,168,108,.28);background:rgba(0,0,0,.3);
+  border-radius:12px;padding:8px 4px;text-align:center;cursor:pointer;transition:.22s;user-select:none;
+  font-family:Arial,sans-serif;color:rgba(243,217,176,.55);display:flex;flex-direction:column;
+  align-items:center;gap:2px;}
+.chip .ce{font-size:16px;}
+.chip .ct{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;}
+.chip.on{border-color:var(--gold);
+  background:linear-gradient(180deg,rgba(212,168,108,.22),rgba(212,168,108,.06));
+  color:var(--gold);}
+
+/* result */
+.result{font-family:Georgia,serif;text-align:center;margin-top:14px;min-height:42px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  opacity:0;transition:opacity .35s;}
+.result.show{opacity:1;}
+.result .emos{font-size:22px;letter-spacing:5px;}
+.result .frase{font-size:13.5px;color:var(--cream);font-style:italic;}
+
+/* === reels condivisi === */
+.reels{display:flex;gap:6px;justify-content:center;}
+.reel{flex:1;height:120px;background:linear-gradient(180deg,#0a0205,#1a0610);
+  border-radius:8px;overflow:hidden;position:relative;
+  box-shadow:inset 0 8px 18px rgba(0,0,0,.75);}
+.reel-strip{display:flex;flex-direction:column;align-items:center;
+  transition:transform 1.25s cubic-bezier(.17,.67,.18,1);}
+.reel-face{height:120px;width:100%;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;flex-shrink:0;gap:3px;}
+.reel-face .e{font-size:32px;line-height:1;}
+.reel-face .t{font-size:9.5px;color:var(--gold-soft);text-transform:uppercase;
+  letter-spacing:.08em;font-family:Arial,sans-serif;}
+.reel.spinning .reel-strip{transition:none;animation:spinReel .1s linear infinite;}
+@keyframes spinReel{from{transform:translateY(0);}to{transform:translateY(-120px);}}
+
+/* ===========================================================
+   VARIANTE A · CABINET RUBINO · pulsante a pillola
+   =========================================================== */
+.va .cabinet{background:linear-gradient(170deg,#4a0f1c 0%,#2a0810 100%);
+  border:3px solid;border-image:linear-gradient(140deg,var(--gold-soft),var(--gold-dim),var(--gold-soft)) 1;
+  border-radius:14px;padding:18px 14px;position:relative;
+  box-shadow:inset 0 0 30px rgba(0,0,0,.6),0 6px 22px rgba(0,0,0,.5);}
+.va .cabinet::before{content:"";position:absolute;inset:5px;
+  border:1px solid rgba(212,168,108,.3);border-radius:9px;pointer-events:none;}
+.va .reel{border:2px solid var(--gold-dim);}
+.va .console{margin-top:14px;display:flex;justify-content:center;align-items:center;}
+.va .pull-btn{appearance:none;border:none;cursor:pointer;
+  background:linear-gradient(180deg,#ff5070 0%,var(--rubin) 50%,#7a0f20 100%);
+  border:2px solid var(--gold-soft);color:#fff;font-family:Georgia,serif;font-size:13px;
+  letter-spacing:.32em;text-transform:uppercase;font-weight:700;
+  padding:12px 36px;border-radius:24px;
+  box-shadow:0 6px 0 #5c0818,0 12px 18px rgba(0,0,0,.55),
+             inset 0 2px 4px rgba(255,255,255,.4),inset 0 -3px 6px rgba(0,0,0,.4);
+  text-shadow:0 1px 2px rgba(0,0,0,.6);transition:.1s;}
+.va .pull-btn:active{transform:translateY(5px);
+  box-shadow:0 1px 0 #5c0818,0 4px 10px rgba(0,0,0,.4),
+             inset 0 2px 4px rgba(255,255,255,.3),inset 0 -2px 4px rgba(0,0,0,.5);}
+.va .pull-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ===========================================================
+   VARIANTE B · CABINET NERO+ORO · tre LED + tasto centrale moneta
+   =========================================================== */
+.vb .cabinet{background:radial-gradient(120% 90% at 50% 30%,#1a0508 0%,#050102 100%);
+  border:2px solid var(--gold);border-radius:18px;padding:18px 14px;position:relative;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.75),0 8px 24px rgba(0,0,0,.55);}
+.vb .cabinet::before{content:"";position:absolute;inset:4px;border-radius:14px;
+  border:1px dashed rgba(212,168,108,.35);pointer-events:none;}
+.vb .reel{border:1.5px solid var(--gold);border-radius:6px;}
+.vb .console{margin-top:14px;display:flex;align-items:center;justify-content:center;gap:16px;}
+.vb .leds{display:flex;gap:8px;}
+.vb .led{width:9px;height:9px;border-radius:50%;background:#3a0a14;
+  border:1px solid var(--gold-deep);box-shadow:inset 0 1px 2px rgba(0,0,0,.6);transition:.3s;}
+.vb .led.on{background:radial-gradient(circle at 35% 30%,#ff8090,var(--rubin) 70%);
+  border-color:var(--gold-soft);box-shadow:0 0 8px rgba(196,30,58,.7),inset 0 1px 2px rgba(255,255,255,.4);}
+.vb .pull-btn{appearance:none;cursor:pointer;width:62px;height:62px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,var(--gold-soft) 0%,var(--gold) 45%,var(--gold-deep) 100%);
+  border:3px solid #2a1a08;color:#3a2405;font-family:Georgia,serif;font-size:11px;font-weight:700;
+  letter-spacing:.15em;text-transform:uppercase;
+  box-shadow:0 6px 0 #2a1a08,0 10px 16px rgba(0,0,0,.55),
+             inset 0 2px 4px rgba(255,255,255,.5),inset 0 -3px 6px rgba(0,0,0,.35);
+  transition:.1s;display:flex;align-items:center;justify-content:center;line-height:1;}
+.vb .pull-btn::before{content:"❦";font-size:22px;}
+.vb .pull-btn:active{transform:translateY(5px);
+  box-shadow:0 1px 0 #2a1a08,0 4px 8px rgba(0,0,0,.45),
+             inset 0 2px 4px rgba(255,255,255,.4),inset 0 -2px 4px rgba(0,0,0,.4);}
+.vb .pull-btn:disabled{opacity:.55;cursor:not-allowed;}
+
+/* ===========================================================
+   VARIANTE C · CABINET ORO INTERO · tasto a piastra rettangolare
+   =========================================================== */
+.vc .cabinet{background:linear-gradient(170deg,#5a3a18,#3a2510 50%,#5a3a18);
+  border:1px solid var(--gold-deep);border-radius:10px;padding:18px 14px;position:relative;
+  box-shadow:0 6px 20px rgba(0,0,0,.55),inset 0 0 0 2px rgba(212,168,108,.4),
+             inset 0 0 25px rgba(0,0,0,.4);}
+.vc .cabinet::before{content:"";position:absolute;inset:6px;border-radius:6px;
+  background:linear-gradient(180deg,#0e0306,#000);
+  box-shadow:inset 0 0 18px rgba(0,0,0,.85);z-index:0;}
+.vc .cabinet .reels{position:relative;z-index:1;padding:6px;}
+.vc .reel{border:1px solid var(--gold-dim);border-radius:4px;background:linear-gradient(180deg,#080104,#140409);}
+.vc .console{margin-top:14px;display:flex;justify-content:center;}
+.vc .pull-btn{appearance:none;border:none;cursor:pointer;
+  background:linear-gradient(180deg,#1a1208,#3a2a14 50%,#1a1208);
+  border:1.5px solid var(--gold);color:var(--gold-soft);font-family:Georgia,serif;font-size:14px;
+  letter-spacing:.4em;text-transform:uppercase;font-weight:600;
+  padding:14px 40px;border-radius:6px;width:100%;max-width:240px;
+  box-shadow:0 4px 0 #0a0604,0 8px 14px rgba(0,0,0,.55),
+             inset 0 1px 0 rgba(212,168,108,.4),inset 0 -1px 0 rgba(0,0,0,.4);
+  transition:.1s;}
+.vc .pull-btn:active{transform:translateY(4px);color:var(--gold);
+  box-shadow:0 0 0 #0a0604,0 3px 8px rgba(0,0,0,.45),
+             inset 0 1px 0 rgba(212,168,108,.3),inset 0 -1px 0 rgba(0,0,0,.4),
+             inset 0 0 8px rgba(212,168,108,.15);}
+.vc .pull-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* footer scelta */
+.pickbar{display:flex;justify-content:center;}
+.btn-pick{appearance:none;border:1px solid rgba(212,168,108,.4);
+  background:rgba(212,168,108,.08);color:var(--cream);font-family:Arial,sans-serif;font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase;padding:9px 14px;border-radius:10px;cursor:pointer;
+  transition:.2s;}
+.btn-pick:hover{background:rgba(212,168,108,.18);border-color:var(--gold);color:var(--gold);}
+.btn-pick.selected{background:var(--gold);color:#3a2405;border-color:var(--gold);}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  Tre cabinet <b>Casinò Vintage</b> centrati: niente leva laterale, niente scritta.
+  Il pulsante è incorporato sotto i rulli, premuto si abbassa con effetto meccanico.
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const FACCE = {
+  az: [{e:'💋',t:'Bacia'},{e:'👅',t:'Lecca'},{e:'🫦',t:'Mordi'},{e:'💆',t:'Massaggia'},{e:'✋',t:'Sfiora'},{e:'💨',t:'Soffia su'}],
+  co: [{e:'👄',t:'il collo'},{e:'👂',t:"l'orecchio"},{e:'🦵',t:"l'interno coscia"},{e:'🍑',t:'il lato B'},{e:'🫀',t:'il petto'},{e:'🤚',t:'la schiena'}],
+  lu: [{e:'🛋️',t:'sul divano'},{e:'🚿',t:'sotto la doccia'},{e:'🍳',t:'in cucina'},{e:'🚗',t:'in macchina'},{e:'🛏️',t:'a letto'},{e:'🌃',t:'sul balcone'}],
+};
+const ORDER = ['az','co','lu'];
+const CHIP = { az:'💋', co:'🫦', lu:'📍' };
+const LABEL = { az:'Azione', co:'Corpo', lu:'Dove' };
+const FACE_H = 120;
+
+const VARIANTS = [
+  { id:'va', name:'A · Rubino & Oro', sub:'cabinet rosso vino, tasto a pillola rubino',
+    desc:'Cornice oro lucida, cabinet rosso vino, tasto rubino bombato che affonda quando lo premi.' },
+  { id:'vb', name:'B · Nero Notte', sub:'cabinet nero, tre LED rossi, moneta oro al centro',
+    desc:'Cabinet nero con bordo oro, tre LED si accendono quando i rulli girano, tasto a moneta oro cesellato.' },
+  { id:'vc', name:'C · Cornice Oro Spessa', sub:'oro brunito tutto attorno, tasto piastra targhetta',
+    desc:'Cornice oro brunito spessa attorno a un quadro nero, tasto a piastra rettangolare in basso.' },
+];
+
+function el(tag, cls, txt){
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (txt != null) n.textContent = txt;
+  return n;
+}
+
+function buildPicker(state, onChange){
+  const wrap = el('div', 'picker');
+  for (const k of ORDER){
+    const c = el('div', 'chip' + (state[k] ? ' on' : ''));
+    c.appendChild(el('span', 'ce', CHIP[k]));
+    c.appendChild(el('span', 'ct', LABEL[k]));
+    c.onclick = () => {
+      const active = ORDER.filter(x => state[x]).length;
+      if (state[k] && active === 1) return;
+      state[k] = !state[k];
+      onChange();
+    };
+    wrap.appendChild(c);
+  }
+  return wrap;
+}
+
+function buildReel(faces){
+  const reel = el('div', 'reel');
+  const strip = el('div', 'reel-strip');
+  for (const f of faces){
+    const cell = el('div', 'reel-face');
+    cell.appendChild(el('div', 'e', f.e));
+    cell.appendChild(el('div', 't', f.t));
+    strip.appendChild(cell);
+  }
+  reel.appendChild(strip);
+  reel._strip = strip;
+  return reel;
+}
+
+function buildMockup(V){
+  const card = el('article', 'variant ' + V.id);
+
+  const head = el('div', 'v-head');
+  head.appendChild(el('h2', 'v-title', V.name));
+  head.appendChild(el('p', 'v-sub', V.sub));
+  card.appendChild(head);
+
+  const body = el('div', 'v-body');
+  const phone = el('div', 'phone');
+  phone.appendChild(el('h2', 'ptitle', '🎰 Slot'));
+  phone.appendChild(el('p', 'psub', 'Scegli i rulli e premi per tirare.'));
+
+  const state = { az:true, co:true, lu:true };
+
+  const cabinet = el('div', 'cabinet');
+  const reelsWrap = el('div', 'reels');
+  cabinet.appendChild(reelsWrap);
+
+  // console del cabinet (tasto + eventuali LED)
+  const console_ = el('div', 'console');
+  let leds = null;
+  if (V.id === 'vb'){
+    leds = el('div', 'leds');
+    for (let i=0;i<3;i++) leds.appendChild(el('div', 'led'));
+    console_.appendChild(leds);
+  }
+  const btn = el('button', 'pull-btn');
+  if (V.id === 'va') btn.textContent = 'Tira';
+  else if (V.id === 'vc') btn.textContent = 'Tira';
+  console_.appendChild(btn);
+  if (V.id === 'vb'){
+    const leds2 = el('div', 'leds');
+    for (let i=0;i<3;i++) leds2.appendChild(el('div', 'led'));
+    console_.appendChild(leds2);
+  }
+  cabinet.appendChild(console_);
+
+  const result = el('div', 'result');
+  const emos = el('div', 'emos');
+  const frase = el('div', 'frase');
+  result.appendChild(emos);
+  result.appendChild(frase);
+
+  const reels = {};
+  function rebuildReels(){
+    reelsWrap.replaceChildren();
+    for (const k of ORDER){
+      if (!state[k]) continue;
+      const r = buildReel(FACCE[k]);
+      reelsWrap.appendChild(r);
+      reels[k] = r;
+    }
+  }
+
+  const picker = buildPicker(state, rebuildReels);
+  phone.insertBefore(picker, undefined);
+  phone.appendChild(picker);
+  phone.appendChild(cabinet);
+  rebuildReels();
+  phone.appendChild(result);
+
+  let busy = false;
+  btn.addEventListener('click', () => {
+    if (busy) return;
+    busy = true;
+    btn.disabled = true;
+    result.classList.remove('show');
+
+    const allLeds = cabinet.querySelectorAll('.led');
+    allLeds.forEach(l => l.classList.add('on'));
+
+    const picks = {};
+    const activeKeys = ORDER.filter(k => state[k]);
+    for (const k of activeKeys){
+      picks[k] = Math.floor(Math.random()*6);
+      const r = reels[k];
+      r.classList.add('spinning');
+      r._strip.style.transform = 'translateY(0)';
+    }
+    activeKeys.forEach((k, idx) => {
+      setTimeout(() => {
+        const r = reels[k];
+        r.classList.remove('spinning');
+        r._strip.style.transform = 'translateY(' + (-picks[k] * FACE_H) + 'px)';
+      }, 500 + idx*240);
+    });
+    setTimeout(() => {
+      const eList = [], rest = [];
+      let act = '';
+      for (const k of ORDER){
+        if (picks[k] == null) continue;
+        const f = FACCE[k][picks[k]];
+        eList.push(f.e);
+        if (k === 'az') act = f.t; else rest.push(f.t);
+      }
+      if (!act) act = rest.shift() || '';
+      emos.textContent = eList.join(' ');
+      frase.textContent = act + (rest.length ? ' ' + rest.join(' ') : '');
+      result.classList.add('show');
+      allLeds.forEach(l => l.classList.remove('on'));
+      busy = false;
+      btn.disabled = false;
+    }, 500 + (activeKeys.length-1)*240 + 1300);
+  });
+
+  body.appendChild(phone);
+  body.appendChild(el('p', 'v-desc', V.desc));
+
+  const pickbar = el('div', 'pickbar');
+  const pickBtn = el('button', 'btn-pick', 'Scegli ' + V.name.split('·')[0].trim());
+  pickBtn.onclick = () => {
+    document.querySelectorAll('.btn-pick').forEach(b => b.classList.remove('selected'));
+    pickBtn.classList.add('selected');
+  };
+  pickbar.appendChild(pickBtn);
+  body.appendChild(pickbar);
+
+  card.appendChild(body);
+  return card;
+}
+
+const grid = document.getElementById('grid');
+VARIANTS.forEach(V => grid.appendChild(buildMockup(V)));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yahtzutra · 3 strutture di scheda</title>
+<style>
+:root{
+  --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+  --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a; --ok:#7fb069;
+}
+*{box-sizing:border-box;}
+body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;margin:0;
+  background:#0c0306;display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 14px 70px;}
+.intro{font-family:Arial,sans-serif;font-size:13px;color:#caa;text-align:center;max-width:440px;line-height:1.5;}
+.intro b{color:var(--gold-soft);}
+.tabs{display:flex;gap:8px;margin:6px 0;flex-wrap:wrap;justify-content:center;}
+.tabs button{font-family:Arial,sans-serif;font-size:13px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(212,168,108,.3);color:var(--gold-soft);padding:9px 18px;border-radius:999px;cursor:pointer;}
+.tabs button.on{background:var(--wine);color:#fff;border-color:var(--wine2);}
+.vdesc{font-family:Arial,sans-serif;font-size:12px;color:#b9908f;text-align:center;max-width:390px;
+  line-height:1.5;margin:0;min-height:34px;}
+
+.phone{width:100%;max-width:390px;border-radius:30px;overflow:hidden;border:1px solid rgba(212,168,108,.25);
+  background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),linear-gradient(170deg,var(--bg),var(--bg2));
+  box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;min-height:780px;display:flex;flex-direction:column;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:15px 18px 8px;}
+.brand{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);}
+.me-chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(212,168,108,.3);border-radius:999px;padding:5px 11px;color:var(--cream);
+  font-family:Arial,sans-serif;font-size:12px;}
+.scr{flex:1;overflow-y:auto;padding:4px 18px 14px;}
+.nav{display:flex;gap:4px;justify-content:space-between;padding:8px 8px 12px;
+  background:linear-gradient(0deg,#1c0610,transparent);overflow-x:auto;}
+.nav button{flex:0 0 auto;font-family:Arial,sans-serif;font-size:11px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(212,168,108,.18);color:var(--gold-soft);padding:7px 9px;border-radius:10px;
+  cursor:pointer;white-space:nowrap;}
+.nav button.on{color:#fff;border-color:var(--wine2);
+  background:linear-gradient(180deg,rgba(122,21,51,.6),rgba(92,16,38,.3));}
+
+.h2{font-size:26px;margin:8px 0 2px;text-align:center;letter-spacing:.04em;}
+.sub{font-family:Arial,sans-serif;font-size:12px;color:#c79;margin:0;text-align:center;font-style:italic;}
+
+/* dice */
+.dice-row{display:flex;justify-content:center;gap:9px;margin:18px 0 8px;}
+.dado{width:54px;height:54px;border-radius:12px;background:linear-gradient(160deg,#4a0e1f,#1f0610);
+  border:1.5px solid rgba(212,168,108,.35);display:flex;align-items:center;justify-content:center;
+  color:var(--gold-soft);font-size:26px;font-family:Georgia,serif;cursor:pointer;
+  box-shadow:0 4px 10px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);
+  transition:transform .25s,border-color .2s,box-shadow .2s;position:relative;user-select:none;}
+.dado.held{border-color:var(--gold);box-shadow:0 0 0 2px rgba(212,168,108,.45),
+  0 6px 14px rgba(212,168,108,.25),inset 0 0 12px rgba(212,168,108,.18);color:var(--cream);}
+.dado.roll{animation:roll .35s ease-out;}
+@keyframes roll{0%{transform:rotate(-15deg) scale(.85);}50%{transform:rotate(20deg) scale(1.15);}100%{transform:none;}}
+
+.tira-row{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0 16px;}
+.tira-btn{appearance:none;border:none;cursor:pointer;font-family:Arial,sans-serif;
+  min-height:44px;border-radius:12px;padding:0 26px;font-size:14px;letter-spacing:.04em;
+  background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2405;
+  box-shadow:0 6px 14px rgba(0,0,0,.5);}
+.tira-btn:disabled{opacity:.4;cursor:not-allowed;}
+.tira-count{font-family:Arial,sans-serif;font-size:12px;color:var(--gold);letter-spacing:.06em;}
+
+/* scoreboard */
+.score{display:flex;justify-content:space-between;align-items:center;
+  background:rgba(212,168,108,.06);border:1px solid rgba(212,168,108,.22);border-radius:11px;
+  padding:8px 14px;margin-bottom:14px;}
+.score .who{font-family:Arial,sans-serif;font-size:13px;color:var(--cream);}
+.score .pts{font-family:Georgia,serif;font-size:22px;color:var(--gold-soft);}
+
+/* casella */
+.scheda{display:flex;flex-direction:column;gap:7px;}
+.casella{background:linear-gradient(160deg,rgba(92,16,38,.32),rgba(20,4,9,.4));
+  border:1px solid rgba(212,168,108,.22);border-radius:13px;padding:10px 12px;
+  display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .2s;}
+.casella:hover{border-color:rgba(212,168,108,.45);background:linear-gradient(160deg,rgba(122,21,51,.45),rgba(20,4,9,.5));}
+.casella.filled{opacity:.55;cursor:default;border-color:var(--ok);background:linear-gradient(160deg,rgba(127,176,105,.15),rgba(20,4,9,.5));}
+.casella .nome{font-family:Georgia,serif;font-size:14.5px;color:var(--cream);flex-shrink:0;min-width:128px;}
+.casella .azione{font-family:Arial,sans-serif;font-size:11.5px;color:#b58a8a;font-style:italic;flex:1;line-height:1.35;}
+.casella .pts{font-family:Georgia,serif;font-size:18px;color:var(--gold-soft);margin-left:auto;min-width:34px;text-align:right;}
+.casella.filled .pts{color:var(--ok);}
+.casella.poss .pts{color:var(--gold);text-shadow:0 0 8px rgba(212,168,108,.35);}
+
+.divider{font-family:Arial,sans-serif;font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--gold);text-align:center;padding:8px 0 2px;opacity:.7;}
+
+.choose-row{display:flex;justify-content:center;padding:12px 0 6px;}
+.choose{appearance:none;border:1px solid var(--gold);background:transparent;color:var(--gold-soft);
+  font-family:Arial,sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  padding:10px 22px;border-radius:999px;cursor:pointer;}
+.choose:hover{background:rgba(212,168,108,.08);}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--wine);border:1px solid var(--gold);color:var(--cream);font-family:Arial,sans-serif;
+  font-size:13px;padding:11px 18px;border-radius:10px;opacity:0;transition:all .3s;
+  box-shadow:0 6px 18px rgba(0,0,0,.5);pointer-events:none;z-index:99;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<p class="intro">
+  <b>Yahtzutra</b> — 3 strutture a confronto. Tappa <b>A</b>, <b>B</b>, <b>C</b> sopra per cambiare scheda.
+  I dadi e le caselle sono cliccabili: tappa i dadi per <i>tenerli</i>, "Tira" per ri-lanciare i non-tenuti,
+  poi tappa una casella per registrarci il tiro corrente (la casella mostra il punteggio possibile in oro).
+</p>
+
+<div class="tabs">
+  <button data-opt="A" class="on">A · 13 caselle</button>
+  <button data-opt="B">B · 7 caselle</button>
+  <button data-opt="C">C · 10 caselle</button>
+</div>
+
+<p class="vdesc" id="vdesc"></p>
+
+<div class="phone">
+  <div class="topbar">
+    <div class="brand">Lussuria</div>
+    <div class="me-chip">🐻 Tomas</div>
+  </div>
+  <div class="scr">
+    <div class="h2">Yahtzutra</div>
+    <p class="sub" id="optsub">Yahtzee completo</p>
+
+    <div class="dice-row" id="diceRow"></div>
+    <div class="tira-row">
+      <button class="tira-btn" id="tiraBtn">Tira</button>
+      <span class="tira-count" id="tiraCount">Tiri · 3/3</span>
+    </div>
+
+    <div class="score">
+      <span class="who">🐻 Tomas · turno</span>
+      <span class="pts" id="totPts">0</span>
+    </div>
+
+    <div class="scheda" id="scheda"></div>
+
+    <div class="choose-row">
+      <button class="choose" id="chooseBtn">Scegli questa struttura</button>
+    </div>
+  </div>
+  <div class="nav">
+    <button>🔥 Desideri</button>
+    <button>📅 Calendario</button>
+    <button>🎟️ Buoni</button>
+    <button class="on">🎲 Giochi</button>
+    <button>🗺️ Mappa</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SCH = {
+  num: [
+    {key:'n1', nome:'Solo 1', az:'sfioro lieve col dito'},
+    {key:'n2', nome:'Solo 2', az:'bacio leggero'},
+    {key:'n3', nome:'Solo 3', az:'bacio profondo'},
+    {key:'n4', nome:'Solo 4', az:'morso leggero'},
+    {key:'n5', nome:'Solo 5', az:'succhiotto'},
+    {key:'n6', nome:'Solo 6', az:'morso intenso'},
+  ],
+  intens: [
+    {key:'low', nome:'Numeri Bassi', az:'azione soft a scelta', match:[1,2,3]},
+    {key:'mid', nome:'Numeri Medi', az:'azione media a scelta', match:[4,5]},
+    {key:'hi',  nome:'Numeri Alti', az:'azione hot a scelta', match:[6]},
+  ],
+  combo: [
+    {key:'tris',  nome:'Tris',          az:'30s massaggio dove vuoi'},
+    {key:'poker', nome:'Poker',         az:'1 min mani libere'},
+    {key:'full',  nome:'Full',          az:'carta a sorpresa'},
+    {key:'scap',  nome:'Scala piccola', az:'spogli un capo a scelta'},
+    {key:'scag',  nome:'Scala grande',  az:'scegli la posizione'},
+    {key:'yz',    nome:'Yahtzutra',     az:'JACKPOT · 1 giro Ruota'},
+    {key:'ch',    nome:'Chance',        az:'azione libera'},
+  ]
+};
+
+const OPTS = {
+  A: { sub:'Yahtzee completo · 13 caselle', list:[...SCH.num, '--', ...SCH.combo] },
+  B: { sub:'Solo combinazioni · 7 caselle',  list:[...SCH.combo] },
+  C: { sub:'Ibrida · 10 caselle',            list:[...SCH.intens, '--', ...SCH.combo] },
+};
+const VDESC = {
+  A: 'Partita ~20-25 min · gameplay Yahtzee fedele · 13 azioni da scrivere (alcune "filler" sui numeri).',
+  B: 'Partita ~10-12 min · ogni casella esplosiva · catalogo gestibile (~7 azioni) · perde la strategia "scarico numeri".',
+  C: 'Partita ~15 min · numeri raggruppati per intensità (Bassi/Medi/Alti) · niente filler · equilibrio.',
+};
+
+let opt = 'A';
+let dice = [1,2,3,4,5];
+let held = [false,false,false,false,false];
+let tiriLeft = 3;
+let filled = {}; // key -> punteggio
+let totale = 0;
+
+function $(id){ return document.getElementById(id); }
+function clear(el){ while(el.firstChild) el.removeChild(el.firstChild); }
+
+function roll(){
+  if(tiriLeft<=0) return;
+  for(let i=0;i<5;i++){
+    if(!held[i]){
+      dice[i] = 1 + Math.floor(Math.random()*6);
+    }
+  }
+  tiriLeft--;
+  renderDice(true);
+  renderTira();
+  renderScheda();
+}
+
+function renderDice(animate){
+  const row = $('diceRow');
+  clear(row);
+  for(let i=0;i<5;i++){
+    const d = document.createElement('div');
+    d.className = 'dado' + (held[i] ? ' held' : '') + (animate && !held[i] ? ' roll' : '');
+    d.textContent = dice[i];
+    d.onclick = ()=>{
+      if(tiriLeft===3) return; // non si "tiene" prima del primo tiro
+      held[i] = !held[i];
+      renderDice(false);
+    };
+    row.appendChild(d);
+  }
+}
+
+function renderTira(){
+  $('tiraBtn').disabled = (tiriLeft<=0);
+  $('tiraCount').textContent = 'Tiri · ' + tiriLeft + '/3';
+}
+
+function punteggio(key){
+  const v = dice;
+  const counts = [0,0,0,0,0,0,0]; v.forEach(x=>counts[x]++);
+  const max = Math.max(...counts.slice(1));
+  const sum = v.reduce((a,b)=>a+b,0);
+  switch(key){
+    case 'n1': return counts[1]*1;
+    case 'n2': return counts[2]*2;
+    case 'n3': return counts[3]*3;
+    case 'n4': return counts[4]*4;
+    case 'n5': return counts[5]*5;
+    case 'n6': return counts[6]*6;
+    case 'low': return v.filter(x=>x<=3).reduce((a,b)=>a+b,0);
+    case 'mid': return v.filter(x=>x===4||x===5).reduce((a,b)=>a+b,0);
+    case 'hi':  return v.filter(x=>x===6).reduce((a,b)=>a+b,0);
+    case 'tris': return max>=3 ? sum : 0;
+    case 'poker': return max>=4 ? sum : 0;
+    case 'full': {
+      const has3 = counts.includes(3), has2 = counts.includes(2);
+      return (has3 && has2) ? 25 : 0;
+    }
+    case 'scap': {
+      const set = new Set(v);
+      const sequences = [[1,2,3,4],[2,3,4,5],[3,4,5,6]];
+      return sequences.some(s => s.every(n => set.has(n))) ? 30 : 0;
+    }
+    case 'scag': {
+      const set = new Set(v);
+      const sequences = [[1,2,3,4,5],[2,3,4,5,6]];
+      return sequences.some(s => s.every(n => set.has(n))) ? 40 : 0;
+    }
+    case 'yz': return max>=5 ? 50 : 0;
+    case 'ch': return sum;
+  }
+  return 0;
+}
+
+function renderScheda(){
+  const wrap = $('scheda');
+  clear(wrap);
+  const list = OPTS[opt].list;
+  for(const item of list){
+    if(item === '--'){
+      const div = document.createElement('div');
+      div.className = 'divider';
+      div.textContent = '— combinazioni —';
+      wrap.appendChild(div);
+      continue;
+    }
+    const div = document.createElement('div');
+    const isFilled = filled[item.key] !== undefined;
+    const pts = isFilled ? filled[item.key] : punteggio(item.key);
+    const showPoss = !isFilled && tiriLeft < 3 && pts > 0;
+    div.className = 'casella' + (isFilled ? ' filled' : '') + (showPoss ? ' poss' : '');
+    const n = document.createElement('div'); n.className='nome'; n.textContent = item.nome;
+    const a = document.createElement('div'); a.className='azione'; a.textContent = '→ ' + item.az;
+    const p = document.createElement('div'); p.className='pts'; p.textContent = (isFilled || showPoss) ? pts : '—';
+    div.appendChild(n); div.appendChild(a); div.appendChild(p);
+    if(!isFilled && tiriLeft < 3){
+      div.onclick = ()=>{
+        filled[item.key] = pts;
+        totale += pts;
+        $('totPts').textContent = totale;
+        held = [false,false,false,false,false];
+        tiriLeft = 3;
+        toast('Casella registrata: ' + item.nome + ' (' + pts + ' pts) · ' + item.az);
+        renderDice(false);
+        renderTira();
+        renderScheda();
+      };
+    }
+    wrap.appendChild(div);
+  }
+}
+
+function toast(msg){
+  const t = $('toast'); t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function setOpt(o){
+  opt = o;
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.opt===o));
+  $('optsub').textContent = OPTS[o].sub;
+  $('vdesc').textContent = VDESC[o];
+  filled = {}; totale = 0; $('totPts').textContent = '0';
+  held = [false,false,false,false,false]; tiriLeft = 3;
+  renderDice(false); renderTira(); renderScheda();
+}
+
+document.querySelectorAll('.tabs button').forEach(b=>{
+  b.onclick = ()=> setOpt(b.dataset.opt);
+});
+$('tiraBtn').onclick = roll;
+$('chooseBtn').onclick = ()=> toast('Hai scelto la struttura ' + opt + ' — fammi sapere e proseguiamo.');
+
+setOpt('A');
+</script>
+</body>
+</html>
