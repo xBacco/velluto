@@ -47,6 +47,12 @@ body{position:fixed;inset:0;font-family:Georgia,"Times New Roman",serif;color:va
   box-shadow:0 5px 18px rgba(122,21,51,.55);transform:translateY(-3px);}
 .nav button .lab{font-size:12.5px;max-width:0;overflow:hidden;white-space:nowrap;opacity:0;transition:.38s;}
 .nav button.on .lab{max-width:120px;opacity:1;}
+/* swipe-follow: durante il drag tra tab la nav segue il dito → no transition */
+.nav.dragging button,.nav.dragging button .lab{transition:none !important;}
+
+/* privacy blur: quando l'app va in background con flag on, il wrap viene
+   blurrato → iOS PWA cattura lo screenshot dell'app switcher già offuscato */
+body.privacy-blurred .wrap{filter:blur(24px) saturate(.6);transition:filter .15s ease-out;}
 
 /* .panel removed — pages are always-visible flex cells in .track (Task 3) */
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -102,6 +108,10 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
 }
 .intro-curtains.open .intro-curtain.left{ animation: introBlowL 2.6s cubic-bezier(.3,0,.2,1) forwards; }
 .intro-curtains.open .intro-curtain.right{ animation: introBlowR 2.6s cubic-bezier(.3,0,.2,1) forwards; }
+.intro-curtains.fast .intro-curtain.left,
+.intro-curtains.fast .intro-curtain.right{ animation-duration: .55s; animation-timing-function: cubic-bezier(.4,0,.2,1); }
+.intro-curtains.fast .intro-wind{ transition-delay: 0s; }
+.intro-curtains.fast .intro-wind span{ animation-duration: .6s; animation-delay: 0s !important; }
 .intro-wind{position:absolute;inset:0;opacity:0;transition:opacity .3s ease .6s;}
 .intro-curtains.open .intro-wind{opacity:1;}
 .intro-wind span{position:absolute;width:4px;height:4px;border-radius:50%;

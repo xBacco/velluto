@@ -33,6 +33,7 @@ let pagerInit = false;         // guard: enablePager si registra una volta sola
 async function boot() {
   const t0 = Date.now();
   setTimeout(openIntroCurtains, 3000); // failsafe
+  document.addEventListener('pointerdown', skipIntroCurtains, { once: true });
   const { data: { session } } = await client.auth.getSession();
   if (session) await enterApp();
   else $('login').style.display = '';
@@ -42,13 +43,27 @@ async function boot() {
 }
 
 let introOpened = false;
+let introDone = false;
+let introRemoveTimer = null;
 function openIntroCurtains() {
-  if (introOpened) return;
+  if (introOpened || introDone) return;
   introOpened = true;
   const el = $('intro');
   if (!el) return;
   el.classList.add('open');
-  setTimeout(() => el.remove(), 2800);
+  introRemoveTimer = setTimeout(() => { el.remove(); introDone = true; }, 2800);
+}
+function skipIntroCurtains() {
+  if (introDone) return;
+  const el = $('intro');
+  if (!el) return;
+  if (!introOpened) {
+    introOpened = true;
+    el.classList.add('open');
+  }
+  el.classList.add('fast');
+  if (introRemoveTimer) clearTimeout(introRemoveTimer);
+  introRemoveTimer = setTimeout(() => { el.remove(); introDone = true; }, 650);
 }
 
 async function onLogin(e) {
@@ -137,7 +152,27 @@ function layout(animate) {
   const W = viewport().clientWidth;
   track().style.transition = animate ? 'transform .34s cubic-bezier(.17,.67,.18,1)' : 'none';
   track().style.transform = 'translateX(' + (-index * W) + 'px)';
-  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.k === cur));
+  document.querySelectorAll('.nav button').forEach(b => {
+    b.classList.toggle('on', b.dataset.k === cur);
+    // pulisci inline styles applicati durante lo swipe (snap → CSS class .on)
+    b.style.flexGrow = '';
+    const lab = b.querySelector('.lab');
+    if (lab) { lab.style.maxWidth = ''; lab.style.opacity = ''; }
+  });
+}
+
+// interpola .nav durante lo swipe: tab corrente si restringe, prossima cresce
+function applyNavInterp(progress, dir) {
+  const target = index + dir;
+  document.querySelectorAll('.nav button').forEach((b, i) => {
+    const lab = b.querySelector('.lab');
+    let flex = 1, mw = 0, op = 0, on = false;
+    if (i === index)       { flex = 2.5 - 1.5 * progress; mw = 120 * (1 - progress); op = 1 - progress; on = progress < 0.5; }
+    else if (i === target) { flex = 1 + 1.5 * progress;   mw = 120 * progress;       op = progress;     on = progress >= 0.5; }
+    b.style.flexGrow = flex;
+    if (lab) { lab.style.maxWidth = mw + 'px'; lab.style.opacity = op; }
+    b.classList.toggle('on', on);
+  });
 }
 
 // renderizza la pagina corrente e le adiacenti (lazy, una volta)
@@ -186,6 +221,7 @@ function enablePager() {
       if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
       decided = true; horiz = Math.abs(dx) > Math.abs(dy);
       if (!horiz) { dragging = false; return; }     // verticale → scroll nativo della pagina
+      $('nav').classList.add('dragging');           // disabilita transition: la nav segue il dito
     }
     e.preventDefault();
     const W = vp.clientWidth;
@@ -194,10 +230,16 @@ function enablePager() {
     if (t > max) t = max + (t - max) * 0.35;          // rubber-band ai bordi
     if (t < min) t = min + (t - min) * 0.35;
     track().style.transform = 'translateX(' + t + 'px)';
+    // nav swipe-follow: tab attiva si restringe, target si allarga
+    const dir = dx < 0 ? +1 : -1;
+    const blocked = (dir > 0 && index >= TABS.length - 1) || (dir < 0 && index <= 0);
+    const progress = blocked ? 0 : Math.min(1, Math.abs(dx) / W);
+    applyNavInterp(progress, dir);
   }, { passive: false });
   function end(e) {
     if (!dragging) return;
     dragging = false;
+    $('nav').classList.remove('dragging');
     if (!horiz) return;
     const W = vp.clientWidth;
     const dx = (e.clientX != null ? e.clientX : startX) - startX;
@@ -207,9 +249,78 @@ function enablePager() {
     else layout(true);
   }
   vp.addEventListener('pointerup', end);
-  vp.addEventListener('pointercancel', () => { dragging = false; layout(true); });
+  vp.addEventListener('pointercancel', () => { dragging = false; $('nav').classList.remove('dragging'); layout(true); });
   window.addEventListener('resize', () => layout(false));
 }
+
+// edge-swipe: trascinamento entro EDGE_PX dal bordo sx/dx chiude l'overlay
+// se aperto. Per ora gated solo su .strip-ov (Cronaca/Regole/Opzioni di Strip).
+// Previene anche la back-gesture iOS PWA che farebbe uscire dall'app.
+const EDGE_PX = 38;
+const EDGE_CLOSEABLE = '.strip-ov';
+function enableEdgeClose() {
+  let startX = 0, startY = 0, dragging = false, decided = false, horiz = false;
+  let ov = null, edge = null;
+  document.addEventListener('pointerdown', e => {
+    ov = document.querySelector(EDGE_CLOSEABLE);
+    if (!ov) return;
+    const x = e.clientX, w = window.innerWidth;
+    if (x > EDGE_PX && x < w - EDGE_PX) { ov = null; return; }
+    edge = x <= EDGE_PX ? 'l' : 'r';
+    startX = x; startY = e.clientY;
+    dragging = true; decided = false; horiz = false;
+    ov.style.transition = 'none';
+  }, true);
+  document.addEventListener('pointermove', e => {
+    if (!dragging || !ov) return;
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    if (!decided) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      decided = true; horiz = Math.abs(dx) > Math.abs(dy);
+      if (!horiz) { dragging = false; return; }
+    }
+    e.preventDefault();
+    let t = dx;
+    if (edge === 'l' && t < 0) t = t * 0.25;
+    if (edge === 'r' && t > 0) t = t * 0.25;
+    ov.style.transform = 'translateX(' + t + 'px)';
+  }, { capture: true, passive: false });
+  function end(e) {
+    if (!dragging) { ov = null; return; }
+    dragging = false;
+    if (!horiz || !ov) { if (ov) { ov.style.transition = 'transform .25s cubic-bezier(.17,.67,.18,1)'; ov.style.transform = ''; } ov = null; return; }
+    const dx = (e && e.clientX != null ? e.clientX : startX) - startX;
+    const w = window.innerWidth;
+    const threshold = w * 0.18;
+    ov.style.transition = 'transform .25s cubic-bezier(.17,.67,.18,1)';
+    if (Math.abs(dx) > threshold) {
+      const target = ov;
+      target.style.transform = 'translateX(' + (Math.sign(dx) * w) + 'px)';
+      setTimeout(() => { if (target.parentNode) target.remove(); }, 240);
+    } else {
+      ov.style.transform = '';
+    }
+    ov = null; edge = null;
+  }
+  document.addEventListener('pointerup', end, true);
+  document.addEventListener('pointercancel', () => {
+    if (dragging && ov) { ov.style.transition = 'transform .25s cubic-bezier(.17,.67,.18,1)'; ov.style.transform = ''; }
+    dragging = false; ov = null;
+  }, true);
+}
+
+// privacy blur: quando l'app va in background (visibilitychange → hidden) e
+// la flag è 'on', applica un blur sul wrap. iOS Safari/PWA cattura lo
+// screenshot dell'app switcher in questo stato → il preview è già blurrato.
+function refreshPrivacyBlur() {
+  let on = false;
+  try { on = localStorage.getItem('strip-poker:privacy-blur') === 'on'; } catch (_) {}
+  document.body.classList.toggle('privacy-blurred', on && document.hidden);
+}
+document.addEventListener('visibilitychange', refreshPrivacyBlur);
+window.addEventListener('pagehide', refreshPrivacyBlur);
+window.addEventListener('pageshow', refreshPrivacyBlur);
+enableEdgeClose();
 
 // il FAB delega al modulo corrente tramite evento
 $('fab').onclick = () => document.dispatchEvent(new CustomEvent('fab:' + cur));
