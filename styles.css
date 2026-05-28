@@ -1679,6 +1679,27 @@ body.game-modal-open .strip-ov{top:calc(env(safe-area-inset-top,0px) + 66px);}
 .fantasia-send:active{transform:scale(.97);}
 .fantasia-send:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
 
+/* "Spedisci" → la cartolina plana al suo posto in lista */
+.modal.fantasia-closing{background:transparent;backdrop-filter:none;
+  transition:background .3s ease,backdrop-filter .3s ease;}
+.modal.fantasia-closing .fantasia-sheet{transform:translateY(110%);opacity:0;
+  transition:transform .55s cubic-bezier(.17,.67,.18,1) .15s,opacity .5s ease .15s;}
+.fantasia-flying-card{animation:fantasia-plana 1.05s cubic-bezier(.32,.08,.24,1) forwards;
+  will-change:transform;}
+@keyframes fantasia-plana{
+  0%  {transform:translate(0,0) rotate(0) scale(1);
+       box-shadow:0 14px 30px rgba(0,0,0,.55),inset 0 1px 0 rgba(212,168,108,.15);}
+  18% {transform:translate(0,-14px) rotate(-2deg) scale(1.02);
+       box-shadow:0 28px 50px rgba(0,0,0,.65),inset 0 1px 0 rgba(212,168,108,.25);}
+  100%{transform:translate(var(--plana-dx,0),var(--plana-dy,-340px)) rotate(0) scale(var(--plana-scale,.42));
+       box-shadow:0 10px 22px rgba(0,0,0,.5),0 0 28px rgba(212,168,108,.25),inset 0 1px 0 rgba(212,168,108,.15);}
+}
+.card.card-just-landed{animation:card-just-landed .7s ease;}
+@keyframes card-just-landed{
+  0%  {box-shadow:0 8px 24px rgba(0,0,0,.5),0 0 0 10px rgba(212,168,108,.55);}
+  100%{box-shadow:0 6px 18px var(--shadow),0 0 0 0 rgba(212,168,108,0);}
+}
+
 /* ===== Editor Yahtzutra (riga per casella) ===== */
 .yz-row{
   background:rgba(8,2,5,.32);

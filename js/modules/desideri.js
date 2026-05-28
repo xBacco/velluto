@@ -116,8 +116,8 @@ function openAdd() {
         couple_id: ctx.me.couple_id, autore_id: ctx.me.id,
         testo: ta.value.trim(), categoria: selectedCat,
       });
-      overlay.remove();
-      await renderDesideri(ctx);
+      fil = 'tutti';
+      await playPlana(overlay, card);
     } catch (e) {
       toast('Errore salvataggio: ' + e.message, 'err');
       send.disabled = false;
@@ -133,3 +133,42 @@ function openAdd() {
 
 function fmt(iso) { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; }
 function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+async function playPlana(overlay, sourceCard) {
+  const sRect = sourceCard.getBoundingClientRect();
+  await renderDesideri(ctx);
+  const target = ctx.panel.querySelector('.card');
+  if (!target) { overlay.remove(); return; }
+
+  target.style.transition = 'opacity .35s ease';
+  target.style.opacity = '0';
+  const tRect = target.getBoundingClientRect();
+
+  const dx = (tRect.left + tRect.width / 2) - (sRect.left + sRect.width / 2);
+  const dy = (tRect.top + tRect.height / 2) - (sRect.top + sRect.height / 2);
+  const scale = Math.max(0.4, Math.min(1, tRect.height / sRect.height));
+
+  sourceCard.style.cssText =
+    `position:fixed;left:${sRect.left}px;top:${sRect.top}px;width:${sRect.width}px;` +
+    `margin:0;z-index:80;transform-origin:50% 50%;transition:opacity .35s ease;`;
+  sourceCard.style.setProperty('--plana-dx', dx + 'px');
+  sourceCard.style.setProperty('--plana-dy', dy + 'px');
+  sourceCard.style.setProperty('--plana-scale', String(scale));
+  sourceCard.classList.add('fantasia-flying-card');
+  document.body.appendChild(sourceCard);
+  overlay.classList.add('fantasia-closing');
+
+  setTimeout(() => {
+    target.style.opacity = '1';
+    sourceCard.style.opacity = '0';
+  }, 850);
+
+  setTimeout(() => {
+    sourceCard.remove();
+    overlay.remove();
+    target.style.transition = '';
+    target.style.opacity = '';
+    target.classList.add('card-just-landed');
+    setTimeout(() => target.classList.remove('card-just-landed'), 800);
+  }, 1200);
+}
