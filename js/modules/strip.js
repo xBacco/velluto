@@ -401,15 +401,15 @@ function openRegole() {
   ov.classList.add('regole');
   const wrap = mk('div', 'depliant');
   const ante = [
-    { n: 'I', t: 'COME SI GIOCA', d: "Hold'em: due carte coperte a testa, cinque sul tavolo. Draw: cinque a testa, un solo scambio." },
-    { n: 'II', t: 'CHI PERDE LA MANO', d: 'Mano più bassa, perde un capo. Parità: nessuno si spoglia, le carte restano in vista.' },
-    { n: 'III', t: 'CHI VINCE LA NOTTE', d: "Chi resta senza più nulla da togliere ha perso la notte. L'altro si gode il trofeo. ♥" },
+    { n: 'I', s: '♠', t: 'COME SI GIOCA', d: "Hold'em: due carte coperte a testa, cinque sul tavolo. Draw: cinque a testa, un solo scambio." },
+    { n: 'II', s: '♥', t: 'CHI PERDE LA MANO', d: 'Mano più bassa, perde un capo. Parità: nessuno si spoglia, le carte restano in vista.' },
+    { n: 'III', s: '♦', t: 'CHI VINCE LA NOTTE', d: "Chi resta senza più nulla da togliere ha perso la notte. L'altro si gode il trofeo. ♥" },
   ];
   ante.forEach((a, i) => {
     const f = mk('div', 'fold a' + (i + 1));
     f.style.setProperty('--fold-delay', (i * 0.7) + 's');
     add(f,
-      mk('div', 'fold-bg', a.n),
+      mk('div', 'fold-bg', a.s),
       mk('div', 'fold-t', a.t),
       mk('div', 'fold-sep', '✦ · ✦'),
       mk('div', 'fold-d', a.d));
@@ -501,9 +501,14 @@ function resetPolaroid() {
 // overlay helper: nodo appeso a document.body con classe "dadi-scrim strip-ov"
 // (ui.js blocca lo scroll finché esiste). Ritorna il nodo radice.
 // ---------------------------------------------------------------------------
-function closeOv() { const o = document.querySelector('.strip-ov'); if (o) o.remove(); }
+function closeOv() {
+  const o = document.querySelector('.strip-ov');
+  if (!o) return;
+  o.classList.remove('show');                                   // fade-out (.dadi-scrim transition .3s)
+  setTimeout(() => { if (o.parentNode) o.remove(); }, 300);
+}
 function openOv() {
-  closeOv();
+  document.querySelectorAll('.strip-ov').forEach(n => n.remove()); // rimozione immediata: niente doppio overlay
   const ov = mk('div', 'dadi-scrim strip-ov');
   document.body.appendChild(ov);
   requestAnimationFrame(() => ov.classList.add('show'));

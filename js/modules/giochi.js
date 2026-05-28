@@ -97,7 +97,19 @@ export function openGameModal(title, mount, onClose) {
   arrow.appendChild(svg);
   arrow.title = 'Esci dal gioco';
   arrow.setAttribute('aria-label', 'Esci dal gioco');
-  arrow.onclick = e => { e.stopPropagation(); closeGameModal(); };
+  arrow.onclick = e => {
+    e.stopPropagation();
+    // Back gerarchico: se c'è un overlay Strip aperto (Regole/Opzioni/Storia),
+    // la freccia torna al palco (chiude l'overlay con fade) invece di uscire
+    // di colpo dal gioco. Solo dal palco l'arrow chiude davvero il modal.
+    const ov = document.querySelector('.strip-ov');
+    if (ov) {
+      ov.classList.remove('show');
+      setTimeout(() => { if (ov.parentNode) ov.remove(); }, 300);
+      return;
+    }
+    closeGameModal();
+  };
   arrow.addEventListener('pointerdown', e => e.stopPropagation());
   topbar.appendChild(arrow);
   topbar.appendChild(mk('div', 'gmt-title', title));
@@ -122,9 +134,13 @@ export function closeGameModal(opts) {
   const h = modalCloseHandler;
   modalEl = null;
   modalCloseHandler = null;
+  // Chiusura morbida: lo sheet SCIVOLA giù restando opaco (.closing tiene
+  // opacity:1 e dissolve solo lo scrim/blur), mentre #app torna in primo piano.
+  // Rimozione del nodo solo a slide completato (560ms > .55s del transform).
+  m.classList.add('closing');
   m.classList.remove('show');
   document.body.classList.remove('game-modal-open');
-  setTimeout(() => { if (m.parentNode) m.remove(); }, 460);
+  setTimeout(() => { if (m.parentNode) m.remove(); }, 560);
   if (!silent && typeof h === 'function') h();
   document.dispatchEvent(new CustomEvent('giochi:tabs-refresh'));
 }

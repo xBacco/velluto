@@ -1374,10 +1374,11 @@ body.pudica [data-spicy].revealed{filter:none;}
 .strip-ov.regole .fold.a2{background:linear-gradient(180deg,#7a1c30,#5a1224);color:#fbe9cf;}
 .strip-ov.regole .fold.a3{background:linear-gradient(180deg,#3a0c1c,#1a0508);color:#fbe9cf;}
 @keyframes foldOpen{0%{transform:scaleY(0);opacity:0;}50%{opacity:1;}100%{transform:scaleY(1);opacity:1;}}
+/* watermark: glifo del seme grande e sfumato, centrato → riempie la fascia,
+   simmetrico, a tema poker; non crea "barre" sopra al testo come i romani 120px */
 .strip-ov.regole .fold-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'Bebas Neue','Impact',sans-serif;font-size:120px;font-weight:900;opacity:.12;
-  letter-spacing:.05em;pointer-events:none;}
-.strip-ov.regole .fold.a1 .fold-bg{color:#3a0c1c;}
+  font-size:155px;line-height:1;opacity:.08;pointer-events:none;}
+.strip-ov.regole .fold.a1 .fold-bg{color:#3a0c1c;opacity:.11;}
 .strip-ov.regole .fold.a2 .fold-bg,
 .strip-ov.regole .fold.a3 .fold-bg{color:#fbe9cf;}
 .strip-ov.regole .fold-t{position:relative;z-index:2;text-align:center;
@@ -1459,7 +1460,7 @@ body.pudica [data-spicy].revealed{filter:none;}
   background:radial-gradient(circle at 30% 30%,#ffe199,#8a6a14 70%);
   box-shadow:0 2px 3px rgba(0,0,0,.7),0 0 6px rgba(255,217,122,.55);}
 .strip-ov.opzioni .pol-img{background:radial-gradient(ellipse at 50% 35%,#5a1528 0%,#2a0a14 80%);
-  flex:1;display:flex;align-items:center;justify-content:center;font-size:34px;
+  flex:1;display:flex;align-items:center;justify-content:center;font-size:52px;line-height:1;
   border:1px solid rgba(58,28,12,.4);box-shadow:inset 0 0 15px rgba(0,0,0,.6);
   position:relative;overflow:hidden;}
 .strip-ov.opzioni .pol-img::after{content:'';position:absolute;top:18%;left:8%;right:55%;height:1px;
@@ -1523,6 +1524,11 @@ body.pudica [data-spicy].revealed{filter:none;}
   opacity:0;transition:opacity .35s ease,background .15s linear;
   display:flex;align-items:stretch;justify-content:stretch;}
 .game-modal.show{opacity:1;}
+/* Chiusura morbida: il modal resta opaco mentre lo sheet scivola giù; si
+   dissolvono solo lo scrim e il blur. Evita lo "snap" della sola opacity. */
+.game-modal.closing{opacity:1;background:rgba(8,2,4,0);
+  backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);
+  transition:background .42s ease,backdrop-filter .42s ease;}
 .game-modal-sheet{position:relative;flex:1;
   background:radial-gradient(ellipse at top,#3a1019 0%,#1a060a 75%);
   display:flex;flex-direction:column;overflow:hidden;
