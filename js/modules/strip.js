@@ -11,7 +11,7 @@ import {
   risultatoPartita, testaATesta,
 } from '../lib/logic.js';
 import { listStripPartite, addStripPartita, getPartner, deleteStripPartiteForCouple } from '../store.js';
-import { enterGameFocus } from './giochi.js';
+import { openGameModal } from './giochi.js';
 
 let ctx = null, host = null, partite = [];
 let partner = null;
@@ -219,24 +219,39 @@ function buildFig(box, F, st) {
   });
 }
 
-let stripFocusExitWired = false;
+// Una partita è "attiva" se lo stato dei capi esiste e nessuno è già rimasto
+// senza nulla da togliere. Usato dal selettore giochi per il badge oro sul tab.
+export function hasActiveGame() {
+  if (!stato) return false;
+  return !risultatoPartita(stato);
+}
+
 export async function renderStrip(context) {
-  ctx = context; host = context.panel;
-  enterGameFocus('♠️ Strip');
-  if (!stripFocusExitWired) {
-    document.addEventListener('game-focus:exit', () => {
-      document.querySelectorAll('.strip-ov, .dadi-scrim').forEach(n => n.remove());
-    });
-    stripFocusExitWired = true;
-  }
-  // overlay residui di altri moduli possono ancora intercettare i click anche se
-  // invisibili (opacity 0 senza .show): rimuoverli prima di disegnare
+  ctx = context;
   document.querySelectorAll('.dadi-scrim, .strip-ov').forEach(n => n.remove());
-  try {
-    partite = await listStripPartite(ctx.client, ctx.me.couple_id);
-    partner = await getPartner(ctx.client, ctx.me.couple_id, ctx.me.id);
-  } catch (err) { toast('Errore caricamento strip: ' + err.message, 'err'); partite = partite || []; }
-  drawApertura();
+  // Carica storia e partner solo se non già in cache, e solo quando non siamo
+  // in mezzo a una partita (la lista partite serve a drawApertura).
+  const resuming = hasActiveGame();
+  if (!resuming) {
+    try {
+      partite = await listStripPartite(ctx.client, ctx.me.couple_id);
+      partner = await getPartner(ctx.client, ctx.me.couple_id, ctx.me.id);
+    } catch (err) { toast('Errore caricamento strip: ' + err.message, 'err'); partite = partite || []; }
+  }
+  openGameModal('♠️ Strip', (modalBody) => {
+    host = modalBody;
+    if (resuming) {
+      // Riprende la partita in corso: capi conservati, mano nuova
+      drawTavolo();
+      resetMano();
+      if (mode === 'holdem') dealHold(); else dealDraw();
+    } else {
+      drawApertura();
+    }
+  }, () => {
+    document.querySelectorAll('.strip-ov, .dadi-scrim').forEach(n => n.remove());
+    stripBusy = false;
+  });
 }
 
 // ---------------------------------------------------------------------------

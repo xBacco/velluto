@@ -1,6 +1,6 @@
 import { mk, add, clear, toast, openSheet } from '../ui.js';
 import { accreditaGiro, getPartner } from '../store.js';
-import { enterGameFocus } from './giochi.js';
+import { openGameModal, closeGameModal } from './giochi.js';
 
 // ---------------------------------------------------------------------------
 // Yahtzutra — Yahtzee a tema spicy (13 caselle, 2 giocatori pass-the-phone)
@@ -149,25 +149,34 @@ function punteggio(key, player) {
 // ---------------------------------------------------------------------------
 // RENDER
 // ---------------------------------------------------------------------------
-let focusExitWired = false;
+// Una partita è "attiva" finché c'è almeno un tiro fatto o una casella
+// segnata, e la partita non è ancora finita. Il selettore giochi usa questo
+// flag per mostrare il badge oro pulsante sul tab Yahtzutra.
+export function hasActiveGame() {
+  if (gameOver) return false;
+  if (!filled) return false;
+  if (tiriUsati > 0 || cadConfermaAttiva) return true;
+  return Object.keys(filled.lui).length > 0 || Object.keys(filled.lei).length > 0;
+}
+
 export async function renderYahtzutra(context) {
   ctx = context;
   loadAzioni();
-  let partner = null;
-  try { partner = await getPartner(ctx.client, ctx.me.couple_id, ctx.me.id); } catch { /* tollerante */ }
-  buildPlayers(partner);
-  if (!filled) resetGame();
-  enterGameFocus('🎲 Yahtzutra');
-  if (!focusExitWired) {
-    // Quando l'utente preme "✕ esci" cleanup tutto lo stato visivo del gioco.
-    document.addEventListener('game-focus:exit', () => {
-      if (tableScrim) { tableScrim.remove(); tableScrim = null; }
-      if (dockEl) { dockEl.remove(); dockEl = null; }
-      document.body.classList.remove('yz-busy');
-    });
-    focusExitWired = true;
+  if (!players) {
+    let partner = null;
+    try { partner = await getPartner(ctx.client, ctx.me.couple_id, ctx.me.id); } catch { /* tollerante */ }
+    buildPlayers(partner);
   }
-  draw();
+  if (!filled) resetGame();
+  openGameModal('🎲 Yahtzutra', (host) => {
+    ctx.panel = host;
+    draw();
+  }, () => {
+    // onClose: lo stato della partita resta intatto. Cleanup solo ephemeral
+    // (tavolo dadi aperto, body.yz-busy che blocca il pager).
+    if (tableScrim) { tableScrim.remove(); tableScrim = null; }
+    document.body.classList.remove('yz-busy');
+  });
 }
 
 function draw() {
@@ -291,31 +300,6 @@ function renderScheda() {
     if (canClick) div.onclick = () => registra(item, pts);
     wrap.appendChild(div);
   }
-  updateDock();
-}
-
-// Dock galleggiante in basso: appare quando il tavolo è chiuso ma il turno
-// è in corso (tiriUsati>0). Mostra mini-dadi + label "tiro X/3 ▲". Click =
-// riapre il tavolo. Sparisce quando il turno viene registrato (tiriUsati→0).
-let dockEl = null;
-function updateDock() {
-  const show = !gameOver && tiriUsati > 0 && !tableScrim;
-  if (!show) {
-    if (dockEl) { dockEl.remove(); dockEl = null; }
-    return;
-  }
-  if (!dockEl) {
-    dockEl = mk('div', 'yz-dock');
-    dockEl.onclick = openTable;
-    document.body.appendChild(dockEl);
-  }
-  clear(dockEl);
-  const mini = mk('div', 'mini');
-  for (let i = 0; i < 5; i++) mini.appendChild(makeDie(dice[i], true, held[i]));
-  dockEl.appendChild(mini);
-  const lblTxt = tiriUsati >= 3 ? 'Tiri esauriti · segna' : 'Tiro ' + (tiriUsati + 1) + '/3';
-  dockEl.appendChild(mk('span', 'lbl', lblTxt));
-  dockEl.appendChild(mk('span', 'arr', '▲'));
 }
 
 // ---------------------------------------------------------------------------
@@ -366,7 +350,6 @@ function openTable() {
 
   renderStage(false);
   updateCtrls();
-  updateDock();
   // Auto-roll solo al primo tiro: se l'utente aveva chiuso il tavolo a metà
   // partita (es. dopo 1 tiro), riaprire NON deve consumargli un tiro.
   if (tiriUsati === 0) setTimeout(roll, 380);
@@ -374,15 +357,13 @@ function openTable() {
 
 function closeTable() {
   if (tableScrim) { tableScrim.remove(); tableScrim = null; }
-  // Refresh UI principale: lo strip mostra i dadi correnti e il dock
-  // galleggiante appare con "tiro X/3 ▲" per ri-aprire il tavolo.
   renderScheda();
   renderStrip();
 }
 
-// Drag handle del tavolo: trascina giù → chiude (= si minimizza nel dock
-// galleggiante in basso). Soglia 90px o velocità > 0.5 px/ms. touch-action:
-// none in CSS sull'handle impedisce lo scroll della pagina sotto.
+// Drag handle del tavolo: trascina giù → chiude il tavolo dadi (la scheda
+// del gioco resta visibile dietro). Soglia 90px o velocità > 0.5 px/ms.
+// touch-action: none in CSS sull'handle impedisce lo scroll della pagina.
 function wireDragToClose(handle, sheet, scrim) {
   let start = null;
   let moved = false;
@@ -773,6 +754,29 @@ function openImpostazioni() {
     };
     add(btns, reset, save);
     s.appendChild(btns);
+
+    if (hasActiveGame()) {
+      const danger = mk('div', 'yz-set-danger');
+      danger.style.cssText = 'margin-top:18px;padding-top:14px;border-top:1px dashed rgba(212,168,108,.2);';
+      const abandon = mk('button', 'btn ghost sm yz-danger', '⚑ Abbandona partita');
+      abandon.style.cssText = 'width:100%;';
+      let armed = false;
+      abandon.onclick = () => {
+        if (!armed) {
+          armed = true;
+          abandon.textContent = 'Sicuro? Tocca di nuovo per confermare';
+          setTimeout(() => { armed = false; abandon.textContent = '⚑ Abbandona partita'; }, 3500);
+          return;
+        }
+        s.closest('.modal').remove();
+        if (tableScrim) { tableScrim.remove(); tableScrim = null; }
+        resetGame();
+        closeGameModal();
+        toast('Partita abbandonata', 'info');
+      };
+      danger.appendChild(abandon);
+      s.appendChild(danger);
+    }
   });
 }
 

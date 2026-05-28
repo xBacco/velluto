@@ -4,8 +4,8 @@ import {
 } from '../lib/logic.js';
 import { listDadiFacce, seedDadiFacce, updateDadiFaccia } from '../store.js';
 import { renderRuota, openEditorRuota } from './ruota.js';
-import { renderStrip } from './strip.js';
-import { renderYahtzutra } from './yahtzutra.js';
+import { renderStrip, hasActiveGame as stripHasActiveGame } from './strip.js';
+import { renderYahtzutra, hasActiveGame as yzHasActiveGame } from './yahtzutra.js';
 
 let giocoCorrente = 'dadi';   // 'dadi' | 'ruota'
 let ctx = null;          // { client, me, panel }
@@ -36,6 +36,7 @@ export async function renderGiochi(context) {
       if (giocoCorrente === 'dadi') openEditor();
       else if (giocoCorrente === 'ruota') openEditorRuota();
     });
+    document.addEventListener('giochi:tabs-refresh', refreshSelettore);
     wired = true;
   }
   drawSelettore();
@@ -45,56 +46,138 @@ export async function renderGiochi(context) {
 
 function drawSelettore() {
   const p = ctx.panel; clear(p);
+  p.appendChild(buildSelettore());
+  p.appendChild(mk('div', 'gioco-host'));
+}
+
+function refreshSelettore() {
+  if (!ctx) return;
+  const existing = ctx.panel.querySelector('.gioco-selettore');
+  if (existing) existing.replaceWith(buildSelettore());
+}
+
+function buildSelettore() {
   const sel = mk('div', 'gioco-selettore');
   for (const [k, ico, lbl] of [['dadi', '🎰', 'Slot'], ['ruota', '🎡', 'Ruota'], ['yz', '🎲', 'Yahtzutra'], ['strip', '♠️', 'Strip']]) {
     const b = mk('button', 'gioco-tab' + (giocoCorrente === k ? ' on' : ''));
     add(b, mk('span', 'ico', ico), mk('span', 'lab', lbl));
-    b.onclick = () => { giocoCorrente = k; renderGiochi(ctx); };
+    if (k === 'yz' && yzHasActiveGame()) b.appendChild(mk('span', 'gt-badge'));
+    if (k === 'strip' && stripHasActiveGame()) b.appendChild(mk('span', 'gt-badge'));
+    b.onclick = () => {
+      if (k === 'yz') { renderYahtzutra({ client: ctx.client, me: ctx.me }); return; }
+      if (k === 'strip') { renderStrip({ client: ctx.client, me: ctx.me }); return; }
+      giocoCorrente = k;
+      renderGiochi(ctx);
+    };
     sel.appendChild(b);
   }
-  p.appendChild(sel);
-  p.appendChild(mk('div', 'gioco-host'));
+  return sel;
 }
 
 // ===========================================================================
-// FOCUS MODE PAGINA INTERA
-// Yahtzutra e Strip occupano tutto lo schermo: nav inferiore e selettore
-// vengono nascosti; un header floating con "✕" permette di tornare alla
-// vista normale (selettore visibile + nav).
+// GAME MODAL
+// Pop-up full-screen per Yahtzutra e Strip. Lo stato del gioco vive nei
+// moduli e NON si resetta quando il modal si chiude — la chiusura emette
+// solo onClose() per il cleanup ephemeral (overlay residui, body classes).
+// Riapertura: tap sul tab → renderYahtzutra/renderStrip aprono di nuovo il
+// modal con la partita esattamente dov'era rimasta.
 // ===========================================================================
-export function enterGameFocus(title) {
-  document.body.classList.add('game-focus');
-  let header = document.getElementById('game-focus-header');
-  if (header) header.remove();
-  header = mk('div', 'game-focus-header'); header.id = 'game-focus-header';
-  header.appendChild(mk('span', 'gfh-title', title));
-  const close = mk('button', 'gfh-close', '✕');
-  close.title = 'Esci dal gioco';
-  close.onclick = exitGameFocus;
-  header.appendChild(close);
-  document.body.appendChild(header);
+let modalEl = null;
+let modalCloseHandler = null;
+
+export function openGameModal(title, mount, onClose) {
+  closeGameModal({ silent: true });
+  const overlay = mk('div', 'game-modal');
+  const sheet = mk('div', 'game-modal-sheet');
+  sheet.appendChild(mk('div', 'game-modal-edge'));
+  const topbar = mk('div', 'game-modal-topbar');
+  const arrow = mk('button', 'gmt-arrow');
+  arrow.textContent = '←';
+  arrow.title = 'Esci dal gioco';
+  arrow.onclick = e => { e.stopPropagation(); closeGameModal(); };
+  arrow.addEventListener('pointerdown', e => e.stopPropagation());
+  topbar.appendChild(mk('div', 'gmt-title', title));
+  topbar.appendChild(arrow);
+  sheet.appendChild(topbar);
+  const body = mk('div', 'game-modal-body');
+  sheet.appendChild(body);
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('show'));
+  wireModalSwipe(sheet, overlay);
+  modalEl = overlay;
+  modalCloseHandler = onClose;
+  mount(body);
 }
 
-export function exitGameFocus() {
-  document.body.classList.remove('game-focus');
-  const header = document.getElementById('game-focus-header');
-  if (header) header.remove();
-  // I moduli (yahtzutra, strip) ascoltano questo evento per pulire il
-  // proprio stato (dock galleggiante, scrim aperti, body classes, ecc.)
-  document.dispatchEvent(new CustomEvent('game-focus:exit'));
-  // Torna al selettore con default Slot (gioco non-focus).
-  giocoCorrente = 'dadi';
-  if (ctx) renderGiochi(ctx);
+export function closeGameModal(opts) {
+  const silent = opts && opts.silent;
+  if (!modalEl) return;
+  const m = modalEl;
+  const h = modalCloseHandler;
+  modalEl = null;
+  modalCloseHandler = null;
+  m.classList.remove('show');
+  setTimeout(() => { if (m.parentNode) m.remove(); }, 320);
+  if (!silent && typeof h === 'function') h();
+  document.dispatchEvent(new CustomEvent('giochi:tabs-refresh'));
+}
+
+// Swipe laterale (entrambe le direzioni) per chiudere. touch-action:pan-y sul
+// sheet lascia lo scroll verticale al browser; orizzontalmente cattura noi.
+function wireModalSwipe(sheet, overlay) {
+  let start = null, dragging = false;
+  const onDown = e => {
+    if (e.button !== undefined && e.button !== 0) return;
+    if (e.target.closest('button, input, textarea, select, .yz-scrim, .dadi-scrim, .strip-ov, .modal')) return;
+    start = { x: e.clientX, y: e.clientY, t: Date.now() };
+    dragging = false;
+  };
+  const onMove = e => {
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (!dragging) {
+      if (Math.abs(dy) > 8 && Math.abs(dy) >= Math.abs(dx)) { start = null; return; }
+      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+        dragging = true;
+        sheet.classList.add('swiping');
+        try { sheet.setPointerCapture(e.pointerId); } catch (_) {}
+      } else { return; }
+    }
+    e.preventDefault();
+    sheet.style.transform = 'translateX(' + dx + 'px)';
+    const alpha = Math.max(.25, .72 - Math.abs(dx) / 650);
+    overlay.style.background = 'rgba(8,2,4,' + alpha + ')';
+  };
+  const onUp = e => {
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    const dt = Math.max(1, Date.now() - start.t);
+    const v = Math.abs(dx) / dt;
+    const wasDragging = dragging;
+    start = null; dragging = false;
+    sheet.classList.remove('swiping');
+    if (!wasDragging) { sheet.style.transform = ''; overlay.style.background = ''; return; }
+    if (Math.abs(dx) > 100 || v > 0.55) {
+      sheet.style.transform = 'translateX(' + (dx > 0 ? '110%' : '-110%') + ')';
+      overlay.style.opacity = '0';
+      setTimeout(() => closeGameModal(), 260);
+    } else {
+      sheet.style.transform = '';
+      overlay.style.background = '';
+    }
+  };
+  sheet.addEventListener('pointerdown', onDown);
+  sheet.addEventListener('pointermove', onMove, { passive: false });
+  sheet.addEventListener('pointerup', onUp);
+  sheet.addEventListener('pointercancel', onUp);
 }
 
 async function montaGiocoCorrente() {
   const host = ctx.panel.querySelector('.gioco-host');
   if (giocoCorrente === 'ruota') {
     await renderRuota({ client: ctx.client, me: ctx.me, panel: host });
-  } else if (giocoCorrente === 'strip') {
-    await renderStrip({ client: ctx.client, me: ctx.me, panel: host });
-  } else if (giocoCorrente === 'yz') {
-    await renderYahtzutra({ client: ctx.client, me: ctx.me, panel: host });
   } else {
     await montaDadi(host);
   }
