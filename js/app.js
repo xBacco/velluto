@@ -33,6 +33,7 @@ let pagerInit = false;         // guard: enablePager si registra una volta sola
 async function boot() {
   const { data: { session } } = await client.auth.getSession();
   if (session) await enterApp();
+  else $('login').style.display = '';
   $('loginForm').addEventListener('submit', onLogin);
 }
 
