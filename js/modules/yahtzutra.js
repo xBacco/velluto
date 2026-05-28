@@ -739,46 +739,69 @@ function openConfronto() {
 // ---------------------------------------------------------------------------
 // IMPOSTAZIONI AZIONI
 // ---------------------------------------------------------------------------
+// Monta l'editor delle azioni Yahtzutra dentro a `host`.
+// Usato sia dal cog ⚙ dentro al gioco (via openImpostazioni) sia dall'hub
+// "Contenuti dei giochi" in Impostazioni. onSaved: callback opzionale.
+// NOTA: il blocco "Abbandona partita" NON è qui — vive solo nel wrapper cog.
+export function renderYahtzutraEditorInto(host, context, onSaved) {
+  if (!ctx || ctx.client !== context.client) {
+    ctx = context;
+    loadAzioni();
+  }
+
+  clear(host);
+  host.appendChild(mk('p', 'muted', 'Personalizza l\'azione abbinata a ogni casella. Le modifiche valgono per la prossima partita.'));
+  host.appendChild(mk('div', 'yz-sep', '— Numeri —'));
+
+  const dirty = {};
+  for (const item of CASELLE) {
+    if (item === '--') {
+      host.appendChild(mk('div', 'yz-sep', '— Combinazioni —'));
+      continue;
+    }
+    const row = mk('div', 'yz-row');
+    const head = mk('div', 'yz-head');
+    head.appendChild(mk('div', 'yz-nm', item.nome));
+    head.appendChild(mk('div', 'yz-val', item.val));
+    row.appendChild(head);
+    const az = mk('input', 'yz-az');
+    az.value = azioni[item.key] || '';
+    az.placeholder = 'Azione abbinata...';
+    az.oninput = () => { dirty[item.key] = az.value.trim(); };
+    row.appendChild(az);
+    host.appendChild(row);
+  }
+
+  const btns = mk('div', 'yz-set-btns');
+  const reset = mk('button', 'btn ghost sm', 'Ripristina default');
+  const save = mk('button', 'btn gold sm', 'Salva');
+  reset.onclick = () => {
+    azioni = { ...DEFAULT_AZ };
+    saveAzioni();
+    renderYahtzutraEditorInto(host, ctx, onSaved);
+    toast('Ripristinate le azioni di default', 'info');
+  };
+  save.onclick = () => {
+    Object.assign(azioni, dirty);
+    saveAzioni();
+    toast('Yahtzutra salvato', 'ok');
+    onSaved && onSaved();
+  };
+  add(btns, reset, save);
+  host.appendChild(btns);
+}
+
 function openImpostazioni() {
   openSheet('⚙ Impostazioni Yahtzutra', s => {
-    s.appendChild(mk('p', 'muted', 'Personalizza l\'azione abbinata a ogni casella. Le modifiche valgono per la prossima partita.'));
-    const dirty = {};
-    for (const item of CASELLE) {
-      if (item === '--') {
-        s.appendChild(mk('div', 'section-label', '— combinazioni —'));
-        continue;
-      }
-      const row = mk('div', 'yz-set-row');
-      const head = mk('div', 'h');
-      head.appendChild(mk('div', 'nm', item.nome));
-      head.appendChild(mk('div', 'val', item.val));
-      const ta = mk('textarea');
-      ta.value = azioni[item.key] || '';
-      ta.placeholder = 'Azione abbinata...';
-      ta.oninput = () => { dirty[item.key] = ta.value.trim(); };
-      add(row, head, ta);
-      s.appendChild(row);
-    }
-    const btns = mk('div', 'yz-set-btns');
-    const reset = mk('button', 'btn ghost sm', 'Ripristina default');
-    const save = mk('button', 'btn gold sm', 'Salva');
-    reset.onclick = () => {
-      azioni = { ...DEFAULT_AZ };
-      saveAzioni();
-      s.closest('.modal').remove();
-      openImpostazioni();
-      toast('Ripristinate le azioni di default', 'info');
-    };
-    save.onclick = () => {
-      Object.assign(azioni, dirty);
-      saveAzioni();
+    renderYahtzutraEditorInto(s, ctx, () => {
+      // Dentro al gioco: chiudi il sheet dopo save e re-renderizza la scheda
+      // (così se le azioni cambiano si vedono subito sui prossimi tap).
       s.closest('.modal').remove();
       renderScheda();
-      toast('Salvato · le azioni sono aggiornate', 'info');
-    };
-    add(btns, reset, save);
-    s.appendChild(btns);
+    });
 
+    // Danger zone: appare solo se c'è una partita attiva.
+    // Vive nel wrapper del cog, NON nell'editor riusabile.
     if (hasActiveGame()) {
       const danger = mk('div', 'yz-set-danger');
       danger.style.cssText = 'margin-top:18px;padding-top:14px;border-top:1px dashed rgba(212,168,108,.2);';
