@@ -42,16 +42,11 @@ test('sortByDateDesc ordina dalla data più recente, senza mutare', () => {
   assert.deepEqual(src, copy);
 });
 
-test('fiammeLabel: voto -> 5 simboli (interi + mezzi)', () => {
+test('fiammeLabel: voto -> 5 simboli', () => {
   assert.equal(fiammeLabel(0), '🤍🤍🤍🤍🤍');
   assert.equal(fiammeLabel(3), '🔥🔥🔥🤍🤍');
   assert.equal(fiammeLabel(5), '🔥🔥🔥🔥🔥');
-  assert.equal(fiammeLabel(9), '🔥🔥🔥🔥🔥'); // clamp alto
-  // mezze fiamme step 0.5
-  assert.equal(fiammeLabel(0.5), '½🤍🤍🤍🤍');
-  assert.equal(fiammeLabel(3.5), '🔥🔥🔥½🤍');
-  assert.equal(fiammeLabel(4.5), '🔥🔥🔥🔥½');
-  assert.equal(fiammeLabel(2.5), '🔥🔥½🤍🤍');
+  assert.equal(fiammeLabel(9), '🔥🔥🔥🔥🔥'); // clamp
 });
 
 test('fotoPath: <couple>/<contesto>/<ref>/<now>-<file sanificato>', () => {

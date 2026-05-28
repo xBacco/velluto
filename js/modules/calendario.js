@@ -213,7 +213,7 @@ async function removeEsperienzaConFoto(esperienzaId) {
 // ---- form evento ricco (con selettore tag) ----
 function openEdit(esp, presetData) {
   const isNew = !esp;
-  let voto = esp ? Number(esp.voto) || 0 : 0;
+  let voto = esp ? esp.voto : 0;
   let chosen = esp && esp.tipo_id ? esp.tipo_id : (tipi[0] ? tipi[0].id : null);
 
   openSheet(isNew ? 'Nuovo evento' : 'Modifica evento', s => {
@@ -238,40 +238,13 @@ function openEdit(esp, presetData) {
     const data = mk('input'); data.type = 'date'; data.value = esp ? esp.data : presetData;
     const testo = mk('textarea'); testo.placeholder = "Com'è andata…"; testo.value = esp && esp.testo ? esp.testo : '';
 
-    // Picker fiamme con step 0.5: 5 fiamme cliccabili + chip ½ + display numerico.
-    // - Tap su fiamma N → voto intero N (½ resettato)
-    // - Tap su chip ½ → toggle mezzo punto sul voto corrente (0 → 0.5; 5 + ½ resta 5)
-    const votoBox = mk('div', 'voto-box');
     const votoPick = mk('div', 'voto-pick');
     const flames = [];
-    const halfChip = mk('button', 'half-chip', '½'); halfChip.type = 'button';
-    const votoTxt = mk('span', 'voto-num');
-    function repaintVoto() {
-      const full = Math.floor(voto);
-      const half = (voto - full) >= 0.5;
-      flames.forEach((el, idx) => {
-        const k = idx + 1;
-        if (k <= full) el.textContent = '🔥';
-        else if (k === full + 1 && half) el.textContent = '½';
-        else el.textContent = '🤍';
-      });
-      halfChip.classList.toggle('on', half);
-      const v = voto.toString().replace('.', ',');
-      votoTxt.textContent = v + ' / 5';
-    }
     for (let i = 1; i <= 5; i++) {
-      const f = mk('span');
-      f.onclick = () => { voto = i; repaintVoto(); };
+      const f = mk('span', null, i <= voto ? '🔥' : '🤍');
+      f.onclick = () => { voto = i; flames.forEach((el, idx) => { el.textContent = (idx + 1) <= voto ? '🔥' : '🤍'; }); };
       flames.push(f); votoPick.appendChild(f);
     }
-    halfChip.onclick = () => {
-      const full = Math.floor(voto);
-      const half = (voto - full) >= 0.5;
-      voto = half ? full : Math.min(5, full + 0.5);
-      repaintVoto();
-    };
-    add(votoBox, votoPick, halfChip, votoTxt);
-    repaintVoto();
 
     const foto = fotoEditor(ctx, { contesto: 'esperienza', refId: esp ? esp.id : null });
 
@@ -303,7 +276,7 @@ function openEdit(esp, presetData) {
     add(s,
       mk('label', 'lbl', 'Titolo'), titolo,
       mk('label', 'lbl', 'Data'), data,
-      mk('label', 'lbl', 'Voto'), votoBox,
+      mk('label', 'lbl', 'Voto'), votoPick,
       mk('label', 'lbl', 'Racconto'), testo,
       mk('label', 'lbl', 'Foto'), foto.el,
       save);

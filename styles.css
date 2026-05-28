@@ -277,17 +277,8 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
 
 /* voto fiamme */
 .fiamme{font-size:18px;letter-spacing:2px;}
-.voto-pick{display:flex;gap:6px;font-size:26px;}
+.voto-pick{display:flex;gap:6px;margin-bottom:12px;font-size:26px;}
 .voto-pick span{cursor:pointer;}
-/* contenitore picker fiamme: include chip ½ e display numerico per voti decimali */
-.voto-box{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
-.half-chip{background:transparent;border:1px solid rgba(212,168,108,.4);color:var(--gold);
-  padding:4px 12px;border-radius:14px;font-family:Georgia,"Times New Roman",serif;
-  cursor:pointer;font-size:18px;min-height:32px;line-height:1;}
-.half-chip.on{background:linear-gradient(180deg,var(--gold-soft),var(--gold));
-  color:#3a2405;border-color:var(--gold);}
-.voto-num{font-size:13px;color:var(--gold-soft);font-family:Arial,Helvetica,sans-serif;
-  letter-spacing:.3px;}
 
 /* thumbnails foto */
 .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
@@ -772,10 +763,8 @@ body.locked{overflow:hidden;touch-action:none;}
   border-radius:10px;color:var(--cream);padding:11px;font-family:inherit;font-size:15px;}
 .mappa-field textarea{min-height:70px;resize:vertical;}
 .mappa-check{display:flex;align-items:center;gap:9px;margin-bottom:12px;cursor:pointer;font-size:15px;}
-.mappa-voto{display:flex;gap:6px;font-size:24px;cursor:pointer;align-items:center;flex-wrap:wrap;}
+.mappa-voto{display:flex;gap:6px;font-size:24px;cursor:pointer;}
 .mappa-cuore{color:#b83c5a;user-select:none;}
-/* chip ½ del picker luoghi (corpo simile al picker fiamme ma con icona ◐) */
-.mappa-voto .half-chip{font-size:16px;margin-left:4px;}
 .mappa-coord{font-size:12px;color:var(--gold-soft);margin-bottom:12px;font-family:Arial,sans-serif;}
 .mappa-fotolbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);
   margin:4px 0 6px;font-family:Arial,sans-serif;}
