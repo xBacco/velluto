@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Yahtzutra · pop-up mockup</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{
+    --rosso-bg:#1a060a;
+    --rosso-card:#2a0e14;
+    --rosso-deep:#3a1019;
+    --oro:#c8a96a;
+    --oro-soft:#a8895a;
+    --oro-dim:#8a6f48;
+    --testo:#f3e7d0;
+    --muted:#8a7a64;
+    --rosso-acceso:#c0334a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#0c0306;color:var(--testo);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  body{padding:32px 20px 80px;min-height:100vh}
+  h1{font-family:Georgia,serif;color:var(--oro);font-weight:500;letter-spacing:.5px;margin:0 0 8px;font-size:28px}
+  .lead{color:var(--muted);max-width:680px;margin:0 0 32px;line-height:1.5;font-size:14.5px}
+  .lead b{color:var(--testo)}
+  .row{display:flex;gap:28px;flex-wrap:wrap;justify-content:center}
+
+  /* phone frame */
+  .phone{
+    position:relative;
+    width:330px;flex:0 0 330px;
+    background:#000;
+    border-radius:42px;
+    padding:14px 10px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.7), 0 0 0 2px #1a1a1a inset;
+    border:1px solid #2a2a2a;
+  }
+  .phone::before{
+    content:"";
+    position:absolute;left:50%;top:18px;transform:translateX(-50%);
+    width:90px;height:24px;border-radius:14px;background:#000;z-index:30;
+  }
+  .screen{
+    position:relative;
+    width:100%;height:680px;
+    background:radial-gradient(ellipse at top, #2a0e14 0%, #160508 70%, #0a0204 100%);
+    border-radius:32px;
+    overflow:hidden;
+    isolation:isolate;
+  }
+  .status{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px 22px 8px;color:#e8d9b8;font-size:12px;font-weight:600;
+    position:relative;z-index:5;
+  }
+  .status .right{display:flex;gap:6px;align-items:center;opacity:.85}
+
+  /* nav inferiore (visibile dietro al popup) */
+  .nav{
+    position:absolute;bottom:0;left:0;right:0;height:62px;
+    background:rgba(20,5,9,.92);
+    border-top:1px solid rgba(200,169,106,.18);
+    display:flex;align-items:center;justify-content:space-around;
+    padding:0 12px;z-index:2;
+    backdrop-filter:blur(8px);
+  }
+  .nav .ni{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--oro-dim);font-size:10px;letter-spacing:.4px}
+  .nav .ni span:first-child{font-size:20px}
+  .nav .ni.on{color:var(--oro)}
+
+  /* selettore giochi (dietro al pop-up, sfocato) */
+  .sel{
+    position:absolute;top:48px;left:14px;right:14px;
+    display:flex;gap:8px;justify-content:space-between;
+    z-index:2;
+  }
+  .tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:10px 4px;border-radius:14px;
+    background:rgba(58,16,25,.5);
+    border:1px solid rgba(200,169,106,.15);
+    font-size:10.5px;color:var(--oro-soft);letter-spacing:.3px;
+    position:relative;
+  }
+  .tab span:first-child{font-size:17px}
+  .tab.on{background:rgba(192,51,74,.18);border-color:rgba(200,169,106,.45);color:var(--oro)}
+  .tab .badge{
+    position:absolute;top:6px;right:8px;width:9px;height:9px;border-radius:50%;
+    background:linear-gradient(135deg,#e8d091 0%,#c0334a 100%);
+    box-shadow:0 0 0 2px rgba(58,16,25,.95), 0 0 10px rgba(192,51,74,.7);
+    animation:pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.18);opacity:.85}}
+
+  /* contenuto sfocato dietro */
+  .behind{
+    position:absolute;top:120px;left:0;right:0;bottom:62px;
+    padding:18px 18px;
+    filter:blur(4px) brightness(.6);
+    pointer-events:none;
+    z-index:1;
+  }
+  .behind .line{height:14px;background:rgba(200,169,106,.18);border-radius:6px;margin:0 0 12px}
+  .behind .line.s{width:60%}
+  .behind .line.m{width:80%}
+
+  /* scrim */
+  .scrim{
+    position:absolute;inset:0;
+    background:rgba(8,2,4,.7);
+    backdrop-filter:blur(10px);
+    z-index:10;
+  }
+
+  /* === VARIANTE A — Sheet con margini, swipe DOWN === */
+  .sheetA{
+    position:absolute;left:8px;right:8px;bottom:8px;top:60px;
+    background:linear-gradient(180deg, #3a1019 0%, #240a11 100%);
+    border-radius:26px;
+    border:1px solid rgba(200,169,106,.3);
+    box-shadow:
+      0 -40px 80px -20px rgba(0,0,0,.6),
+      0 0 0 1px rgba(200,169,106,.08) inset,
+      0 0 60px rgba(192,51,74,.08) inset;
+    z-index:20;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+    animation:slideUpA .5s cubic-bezier(.2,.9,.25,1) both;
+  }
+  @keyframes slideUpA{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .sheetA .handle{
+    display:flex;justify-content:center;padding:10px 0 4px;
+  }
+  .sheetA .handle span{
+    width:48px;height:4.5px;border-radius:3px;
+    background:linear-gradient(90deg,var(--oro-dim),var(--oro),var(--oro-dim));
+    opacity:.85;
+  }
+  .sheetA .head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:6px 22px 14px;
+    border-bottom:1px solid rgba(200,169,106,.13);
+  }
+  .sheetA .head .t{
+    font-family:Georgia,serif;color:var(--oro);font-size:22px;letter-spacing:.4px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .sheetA .head .x{
+    width:34px;height:34px;border-radius:50%;
+    background:rgba(200,169,106,.14);color:var(--oro);
+    display:grid;place-items:center;font-size:16px;
+    border:1px solid rgba(200,169,106,.2);
+  }
+  .sheetA .body{flex:1;overflow:hidden;padding:14px 18px 22px}
+
+  /* === VARIANTE B — Full-screen con swipe LATERALE (handle a destra) === */
+  .sheetB{
+    position:absolute;inset:0;
+    background:radial-gradient(ellipse at top,#3a1019 0%,#1a060a 75%);
+    z-index:20;
+    display:flex;flex-direction:column;
+    animation:slideInB .45s cubic-bezier(.2,.9,.25,1) both;
+  }
+  @keyframes slideInB{from{transform:translateX(60px);opacity:0}to{transform:translateX(0);opacity:1}}
+  .sheetB .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:46px 20px 10px;
+    background:rgba(0,0,0,.25);
+    border-bottom:1px solid rgba(200,169,106,.15);
+  }
+  .sheetB .topbar .t{
+    font-family:Georgia,serif;color:var(--oro);font-size:20px;letter-spacing:.5px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .sheetB .topbar .arrow{
+    width:36px;height:36px;border-radius:50%;
+    background:rgba(200,169,106,.14);color:var(--oro);
+    display:grid;place-items:center;font-size:18px;
+    border:1px solid rgba(200,169,106,.2);
+  }
+  .sheetB .edge{
+    position:absolute;right:0;top:50%;transform:translateY(-50%);
+    width:6px;height:80px;border-radius:6px 0 0 6px;
+    background:linear-gradient(180deg,transparent,var(--oro),transparent);
+    opacity:.55;
+  }
+  .sheetB .body{flex:1;overflow:hidden;padding:14px 18px 22px}
+
+  /* === VARIANTE C — Pop-up "card" centrato, swipe in qualsiasi direzione === */
+  .sheetC{
+    position:absolute;left:14px;right:14px;top:36px;bottom:80px;
+    background:linear-gradient(180deg,#3a1019 0%,#240a11 100%);
+    border-radius:22px;
+    border:1px solid rgba(200,169,106,.35);
+    box-shadow:
+      0 30px 60px -10px rgba(0,0,0,.7),
+      0 0 0 1px rgba(200,169,106,.1) inset,
+      0 0 80px rgba(192,51,74,.12) inset;
+    z-index:20;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+    transform:rotate(-1.5deg);
+    animation:bounceInC .55s cubic-bezier(.34,1.5,.64,1) both;
+  }
+  @keyframes bounceInC{from{transform:rotate(-1.5deg) scale(.85);opacity:0}to{transform:rotate(-1.5deg) scale(1);opacity:1}}
+  .sheetC .head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 20px 14px;
+    border-bottom:1px solid rgba(200,169,106,.13);
+  }
+  .sheetC .head .t{
+    font-family:Georgia,serif;color:var(--oro);font-size:20px;letter-spacing:.4px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .sheetC .head .x{
+    width:32px;height:32px;border-radius:50%;
+    background:rgba(200,169,106,.14);color:var(--oro);
+    display:grid;place-items:center;font-size:15px;
+    border:1px solid rgba(200,169,106,.2);
+  }
+  .sheetC .body{flex:1;overflow:hidden;padding:12px 16px 20px}
+  .sheetC .corners{position:absolute;inset:6px;border-radius:18px;pointer-events:none;
+    background:
+      linear-gradient(135deg,rgba(200,169,106,.18) 0%, transparent 14%) top left/40px 40px no-repeat,
+      linear-gradient(225deg,rgba(200,169,106,.18) 0%, transparent 14%) top right/40px 40px no-repeat,
+      linear-gradient(45deg,rgba(200,169,106,.18) 0%, transparent 14%) bottom left/40px 40px no-repeat,
+      linear-gradient(315deg,rgba(200,169,106,.18) 0%, transparent 14%) bottom right/40px 40px no-repeat;
+  }
+
+  /* contenuto comune del gioco */
+  .game-meta{color:var(--muted);font-size:11px;letter-spacing:.4px;margin:0 0 12px;text-align:center}
+  .pcards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+  .pcard{
+    background:rgba(58,16,25,.55);
+    border:1px solid rgba(200,169,106,.2);
+    border-radius:14px;padding:10px 12px;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .pcard.on{border-color:var(--oro);box-shadow:0 0 0 1px var(--oro), 0 0 16px rgba(200,169,106,.18) inset}
+  .pcard .nl{display:flex;flex-direction:column;gap:1px}
+  .pcard .av{font-size:14px}
+  .pcard .nm{font-size:13px;color:var(--testo)}
+  .pcard .tg{font-size:8.5px;letter-spacing:.7px;color:var(--oro);font-weight:700}
+  .pcard .pt{font-family:Georgia,serif;font-size:22px;color:var(--oro)}
+
+  .roll{
+    display:block;width:100%;text-align:center;
+    background:linear-gradient(180deg,#e8d091 0%,#b8924c 100%);
+    color:#2a0e14;font-weight:700;letter-spacing:1.2px;font-size:13px;
+    padding:13px 0;border-radius:14px;border:1px solid #d4b270;
+    box-shadow:0 6px 14px -4px rgba(232,208,145,.4), 0 0 0 1px rgba(0,0,0,.3) inset;
+    margin:0 0 8px;
+  }
+  .roll::before{content:"🎲 ";font-size:14px}
+
+  .tools{display:flex;gap:10px;justify-content:center;margin:0 0 10px}
+  .tools .b{
+    width:32px;height:32px;border-radius:50%;
+    background:rgba(200,169,106,.12);
+    border:1px solid rgba(200,169,106,.25);
+    display:grid;place-items:center;font-size:13px;color:var(--oro);
+  }
+
+  .cell{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:9px 12px;
+    background:rgba(58,16,25,.4);
+    border:1px solid rgba(200,169,106,.13);
+    border-radius:10px;margin:0 0 5px;
+    font-size:11.5px;
+  }
+  .cell .lf{display:flex;gap:6px;align-items:center}
+  .cell .nm{color:var(--testo)}
+  .cell .ac{color:var(--muted);font-style:italic;font-size:10.5px}
+  .cell .vl{color:var(--oro-dim)}
+
+  /* caption block */
+  .cap{
+    margin-top:18px;padding:18px 20px;
+    background:linear-gradient(180deg,rgba(58,16,25,.3),rgba(58,16,25,.1));
+    border:1px solid rgba(200,169,106,.15);border-radius:14px;
+    max-width:330px;
+  }
+  .cap h3{
+    margin:0 0 10px;font-family:Georgia,serif;color:var(--oro);font-size:17px;font-weight:500;
+    display:flex;align-items:center;gap:8px;
+  }
+  .cap h3 .num{
+    width:24px;height:24px;border-radius:50%;
+    background:var(--oro);color:#2a0e14;display:grid;place-items:center;
+    font-family:-apple-system,sans-serif;font-size:12px;font-weight:700;
+  }
+  .cap ul{margin:0;padding:0 0 0 16px;font-size:13px;line-height:1.6;color:#d8c8a8}
+  .cap ul li{margin-bottom:4px}
+  .cap ul li b{color:var(--oro)}
+  .cap .gest{
+    margin-top:10px;padding-top:10px;
+    border-top:1px dashed rgba(200,169,106,.2);
+    font-size:12px;color:var(--muted);
+  }
+  .cap .gest b{color:var(--oro-soft)}
+
+  .pickbar{
+    display:flex;justify-content:center;margin:42px 0 0;gap:14px;flex-wrap:wrap;
+  }
+  .pickbar .pick{
+    background:rgba(200,169,106,.08);
+    border:1px solid rgba(200,169,106,.25);
+    color:var(--oro);font-size:13px;letter-spacing:.5px;
+    padding:10px 18px;border-radius:30px;cursor:pointer;
+  }
+  .pickbar .pick:hover{background:rgba(200,169,106,.16)}
+
+  .legenda{
+    max-width:760px;margin:48px auto 0;
+    padding:20px 24px;
+    border:1px dashed rgba(200,169,106,.25);border-radius:14px;
+    background:rgba(58,16,25,.15);
+    font-size:13px;color:#c8b890;line-height:1.6;
+  }
+  .legenda h3{margin:0 0 8px;color:var(--oro);font-family:Georgia,serif;font-weight:500;font-size:15px}
+  .legenda b{color:var(--testo)}
+
+  @media(max-width:760px){
+    .phone{width:100%;flex:0 0 100%;max-width:360px}
+  }
+</style>
+</head>
+<body>
+
+<h1>Yahtzutra · pop-up mockup</h1>
+<p class="lead">
+  Tre varianti del nuovo pop-up. Sotto a ognuna: <b>gesture di uscita</b>, <b>animazione</b>, e cosa vedi appena chiudi.
+  In tutte e tre: <b>la partita NON si resetta</b> quando esci — il tab "Yahtzutra" mostra un pallino oro pulsante a indicare che c'è una partita in corso, basta toccarlo per riprendere.
+</p>
+
+<div class="row">
+
+  <!-- ===================== VARIANTE A ===================== -->
+  <div>
+    <div class="phone">
+      <div class="screen">
+        <div class="status">
+          <span>16:05</span>
+          <span class="right">📶 100%</span>
+        </div>
+
+        <!-- sfondo: tab + selettore + nav sfocati dietro -->
+        <div class="sel">
+          <div class="tab"><span>🎰</span><span>Slot</span></div>
+          <div class="tab"><span>🎡</span><span>Ruota</span></div>
+          <div class="tab on"><span>🎲</span><span>Yahtzutra</span><div class="badge"></div></div>
+          <div class="tab"><span>♠️</span><span>Strip</span></div>
+        </div>
+        <div class="behind">
+          <div class="line m"></div><div class="line s"></div>
+          <div class="line m"></div><div class="line s"></div>
+        </div>
+        <div class="nav">
+          <div class="ni"><span>🏠</span><span>Casa</span></div>
+          <div class="ni on"><span>🎮</span><span>Giochi</span></div>
+          <div class="ni"><span>🗓️</span><span>Calendario</span></div>
+          <div class="ni"><span>⚙️</span><span>Setup</span></div>
+        </div>
+
+        <div class="scrim"></div>
+
+        <!-- POP-UP A -->
+        <div class="sheetA">
+          <div class="handle"><span></span></div>
+          <div class="head">
+            <div class="t">🎲 Yahtzutra</div>
+            <div class="x">✕</div>
+          </div>
+          <div class="body">
+            <p class="game-meta">2 giocatori · 13 caselle · 3 tiri/turno</p>
+            <div class="pcards">
+              <div class="pcard on">
+                <div class="nl"><span class="av">🐻 <span class="nm">Tomas</span></span><span class="tg">TURNO</span></div>
+                <div class="pt">0</div>
+              </div>
+              <div class="pcard">
+                <div class="nl"><span class="av">🧁 <span class="nm">Giulia</span></span></div>
+                <div class="pt">0</div>
+              </div>
+            </div>
+            <button class="roll">LANCIA I DADI</button>
+            <div class="tools"><div class="b">📊</div><div class="b">⚙️</div></div>
+            <div class="cell"><div class="lf"><span class="nm">Solo 1</span><span class="ac">→ sfioro lieve</span></div><span class="vl">—</span></div>
+            <div class="cell"><div class="lf"><span class="nm">Solo 2</span><span class="ac">→ bacio leggero</span></div><span class="vl">—</span></div>
+            <div class="cell"><div class="lf"><span class="nm">Solo 3</span><span class="ac">→ bacio profondo</span></div><span class="vl">—</span></div>
+            <div class="cell"><div class="lf"><span class="nm">Solo 4</span><span class="ac">→ morso leggero</span></div><span class="vl">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cap">
+      <h3><span class="num">A</span> Sheet con margini</h3>
+      <ul>
+        <li><b>Apertura:</b> slide-up dal basso, scrim + blur, margini di 8px su lati e bottom</li>
+        <li><b>Sfondo:</b> intravvedi nav inferiore + tab giochi (sfocati)</li>
+        <li><b>Identità:</b> handle oro in alto + bordo oro sottile, sembra un foglio di velluto sollevato</li>
+      </ul>
+      <div class="gest">
+        Esci con <b>swipe verso il basso</b> (handle in alto) <b>o swipe da sinistra a destra</b> (gesture di "back") <b>o ✕</b>.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== VARIANTE B ===================== -->
+  <div>
+    <div class="phone">
+      <div class="screen">
+        <div class="status">
+          <span>16:05</span>
+          <span class="right">📶 100%</span>
+        </div>
+
+        <!-- POP-UP B: full-screen con swipe laterale -->
+        <div class="sheetB">
+          <div class="edge"></div>
+          <div class="topbar">
+            <div class="t">🎲 Yahtzutra</div>
+            <div class="arrow">←</div>
+          </div>
+          <div class="body">
+            <p class="game-meta">2 giocatori · 13 caselle · 3 tiri/turno</p>
+            <div class="pcards">
+              <div class="pcard on">
+                <div class="nl"><span class="av">🐻 <span class="nm">Tomas</span></span><span class="tg">TURNO</span></div>
+                <div class="pt">0</div>
+              </div>
+              <div class="pcard">
+                <div class="nl"><span class="av">🧁 <span class="nm">Giulia</span></span></div>
+                <div class="pt">0</div>
+              </div>
+            </div>
+            <button class="roll">LANCIA I DADI</button>
+            <div class="tools"><div class="b">📊</div><div class="b">⚙️</div></div>
+            <div class="cell"><div class="lf"><span class="nm">Solo 1</span><span class="ac">→ sfioro lieve</span></div><span class="vl">—</span></div>
+            <div class="cell"><div class="lf"><span class="nm">Solo 2</span><span class="ac">→ bacio leggero</span></div><span class="vl">—</span></div>
+            <div class="cell"><div class="lf"><span class="nm">Solo 3</span><span class="ac">→ bacio profondo</span></div><span class="vl">—</span></div>
+            <div class="cell"><div class="lf"><span class="nm">Solo 4</span><span class="ac">→ morso leggero</span></div><span class="vl">—</span></div>
+            <div class="cell"><div class="lf"><span class="nm">Solo 5</span><span class="ac">→ succhiotto</span></div><span class="vl">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cap">
+      <h3><span class="num">B</span> Full-screen, freccia "←"</h3>
+      <ul>
+        <li><b>Apertura:</b> slide laterale (dal lato destro che entra a coprire)</li>
+        <li><b>Header floating</b> con titolo + freccia ← (back style mobile-native)</li>
+        <li><b>Edge handle</b> dorato sul lato destro: visivamente comunica "trascinami via"</li>
+      </ul>
+      <div class="gest">
+        Esci con <b>swipe da destra verso sinistra</b> (afferri l'edge handle) <b>o swipe da sinistra a destra</b> (gesture back classica) <b>o freccia ←</b>.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== VARIANTE C ===================== -->
+  <div>
+    <div class="phone">
+      <div class="screen">
+        <div class="status">
+          <span>16:05</span>
+          <span class="right">📶 100%</span>
+        </div>
+
+        <!-- sfondo: tab + selettore + nav sfocati dietro -->
+        <div class="sel">
+          <div class="tab"><span>🎰</span><span>Slot</span></div>
+          <div class="tab"><span>🎡</span><span>Ruota</span></div>
+          <div class="tab on"><span>🎲</span><span>Yahtzutra</span><div class="badge"></div></div>
+          <div class="tab"><span>♠️</span><span>Strip</span></div>
+        </div>
+        <div class="behind">
+          <div class="line m"></div><div class="line s"></div>
+          <div class="line m"></div>
+        </div>
+        <div class="nav">
+          <div class="ni"><span>🏠</span><span>Casa</span></div>
+          <div class="ni on"><span>🎮</span><span>Giochi</span></div>
+          <div class="ni"><span>🗓️</span><span>Calendario</span></div>
+          <div class="ni"><span>⚙️</span><span>Setup</span></div>
+        </div>
+
+        <div class="scrim"></div>
+
+        <!-- POP-UP C: card centrata leggermente ruotata -->
+        <div class="sheetC">
+          <div class="corners"></div>
+          <div class="head">
+            <div class="t">🎲 Yahtzutra</div>
+            <div class="x">✕</div>
+          </div>
+          <div class="body">
+            <p class="game-meta">2 giocatori · 13 caselle · 3 tiri/turno</p>
+            <div class="pcards">
+              <div class="pcard on">
+                <div class="nl"><span class="av">🐻 <span class="nm">Tomas</span></span><span class="tg">TURNO</span></div>
+                <div class="pt">0</div>
+              </div>
+              <div class="pcard">
+                <div class="nl"><span class="av">🧁 <span class="nm">Giulia</span></span></div>
+                <div class="pt">0</div>
+              </div>
+            </div>
+            <button class="roll">LANCIA I DADI</button>
+            <div class="tools"><div class="b">📊</div><div class="b">⚙️</div></div>
+            <div class="cell"><div class="lf"><span class="nm">Solo 1</span><span class="ac">→ sfioro lieve</span></div><span class="vl">—</span></div>
+            <div class="cell"><div class="lf"><span class="nm">Solo 2</span><span class="ac">→ bacio leggero</span></div><span class="vl">—</span></div>
+            <div class="cell"><div class="lf"><span class="nm">Solo 3</span><span class="ac">→ bacio profondo</span></div><span class="vl">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cap">
+      <h3><span class="num">C</span> Carta centrata, "tarocco"</h3>
+      <ul>
+        <li><b>Apertura:</b> bounce-in scalato, leggermente <b>ruotata</b> (-1.5°), come una carta posata sul panno</li>
+        <li><b>Cornice oro</b> agli angoli, identità più <b>materica</b> e meno "modal generico"</li>
+        <li><b>Sfondo visibile</b> sopra/sotto (nav e selettore dietro al blur)</li>
+      </ul>
+      <div class="gest">
+        Esci trascinando la carta in <b>qualsiasi direzione</b> (su, giù, sx, dx) — "scarta" la mano. Oppure ✕.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="legenda">
+  <h3>Comportamento comune in tutte e tre</h3>
+  <p>
+    • <b>Sfondo bloccato</b>: niente scroll dietro, niente swipe sui tab dietro quando il pop-up è aperto.<br>
+    • <b>Stato persistente</b>: chiudere il pop-up <i>non resetta</i> la partita. Dadi tenuti, tiri usati, punteggi, turno corrente → tutto preservato in memoria.<br>
+    • <b>Badge tab</b>: il tab <b>🎲 Yahtzutra</b> mostra un pallino oro pulsante finché c'è una partita aperta. Tap → riapre il pop-up esattamente dov'eri.<br>
+    • <b>Esci davvero</b>: se vuoi <i>abbandonare</i> la partita, il bottone ⚙️ apre un menu con "Abbandona partita" → conferma → reset.
+  </p>
+</div>
+
+<div class="pickbar">
+  <div class="pick">Mi piace la A</div>
+  <div class="pick">Mi piace la B</div>
+  <div class="pick">Mi piace la C</div>
+  <div class="pick">Mix: prendi X da una e Y dall'altra</div>
+</div>
+
+</body>
+</html>
