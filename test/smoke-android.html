@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#160409">
+<meta name="robots" content="noindex,nofollow">
+<title>Smoke Android · Lussuria</title>
+<style>
+  :root{
+    --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+    --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0;
+    --ok:#5fb285; --ko:#d27a7a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--cream);font-family:Georgia,"Times New Roman",serif;line-height:1.45}
+  body{padding-bottom:160px}
+  header{
+    position:sticky;top:0;z-index:5;background:linear-gradient(180deg,var(--bg) 0%,var(--bg) 70%,rgba(22,4,9,.85) 100%);
+    padding:18px 18px 12px;border-bottom:1px solid rgba(212,168,108,.18)
+  }
+  h1{margin:0;font-size:22px;color:var(--gold-soft);font-weight:400;letter-spacing:.5px}
+  .sub{margin:4px 0 0;font-size:13px;color:rgba(243,217,176,.65);font-style:italic}
+  .progress{margin-top:10px;height:6px;background:rgba(212,168,108,.12);border-radius:3px;overflow:hidden}
+  .progress > div{height:100%;background:linear-gradient(90deg,var(--wine),var(--gold));transition:width .25s ease}
+  .counter{font-size:12px;color:var(--gold);margin-top:6px;letter-spacing:.5px}
+  main{padding:8px 14px 30px}
+  details{
+    background:var(--bg2);margin:10px 0;border:1px solid rgba(212,168,108,.15);
+    border-radius:8px;overflow:hidden
+  }
+  summary{
+    cursor:pointer;list-style:none;padding:14px 16px;font-size:15px;color:var(--gold-soft);
+    display:flex;justify-content:space-between;align-items:center;user-select:none
+  }
+  summary::-webkit-details-marker{display:none}
+  summary .sec-badge{
+    font-size:12px;padding:2px 10px;border-radius:12px;background:rgba(212,168,108,.1);
+    color:var(--gold);font-family:Arial,sans-serif;letter-spacing:.3px
+  }
+  .items{padding:0 16px 12px}
+  .item{
+    display:flex;flex-direction:column;gap:6px;padding:12px 0;
+    border-top:1px dashed rgba(212,168,108,.12)
+  }
+  .item:first-child{border-top:none}
+  .item-row{display:flex;align-items:flex-start;gap:12px}
+  .item input[type=checkbox]{
+    appearance:none;-webkit-appearance:none;width:22px;height:22px;flex:0 0 22px;
+    border:1.5px solid var(--gold);border-radius:4px;background:transparent;
+    cursor:pointer;position:relative;margin-top:2px
+  }
+  .item input[type=checkbox]:checked{background:var(--wine);border-color:var(--gold)}
+  .item input[type=checkbox]:checked::after{
+    content:"✓";position:absolute;inset:0;display:grid;place-items:center;
+    color:var(--gold-soft);font-size:15px;font-weight:bold
+  }
+  .item label{font-size:14px;color:var(--cream);line-height:1.4;flex:1;cursor:pointer}
+  .item .ko{
+    margin-left:34px;display:none;border:1px solid rgba(210,122,122,.25);
+    background:rgba(210,122,122,.06);border-radius:6px;padding:6px 8px
+  }
+  .item.has-note .ko{display:block}
+  .item textarea{
+    width:100%;background:transparent;color:var(--cream);border:none;outline:none;
+    font-family:inherit;font-size:13px;resize:vertical;min-height:46px
+  }
+  .item textarea::placeholder{color:rgba(243,217,176,.4);font-style:italic}
+  .item .actions{margin-left:34px;display:flex;gap:8px;font-size:11px}
+  .item .actions button{
+    background:transparent;border:1px solid rgba(212,168,108,.3);color:var(--gold);
+    padding:3px 9px;border-radius:11px;font-family:Arial,sans-serif;cursor:pointer;letter-spacing:.3px
+  }
+  .item .actions button.on{background:rgba(210,122,122,.18);border-color:rgba(210,122,122,.5);color:var(--ko)}
+  .footer-bar{
+    position:fixed;bottom:0;left:0;right:0;padding:14px;
+    background:linear-gradient(180deg,rgba(22,4,9,0) 0%,var(--bg) 30%);
+    display:flex;gap:10px;justify-content:center
+  }
+  .footer-bar button{
+    flex:1;max-width:200px;padding:14px 18px;border-radius:8px;font-family:Georgia,serif;
+    font-size:15px;letter-spacing:.5px;cursor:pointer;border:none
+  }
+  .btn-export{background:var(--gold);color:var(--bg);font-weight:bold}
+  .btn-reset{background:transparent;color:rgba(243,217,176,.5);border:1px solid rgba(243,217,176,.2)!important}
+  /* modal */
+  .modal-bg{
+    position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;z-index:20;
+    align-items:flex-start;justify-content:center;padding:30px 14px;overflow-y:auto
+  }
+  .modal-bg.on{display:flex}
+  .modal{
+    background:var(--bg2);border:1px solid var(--gold);border-radius:10px;
+    padding:18px;max-width:560px;width:100%;color:var(--cream)
+  }
+  .modal h2{margin:0 0 10px;color:var(--gold-soft);font-weight:400}
+  .modal textarea{
+    width:100%;min-height:280px;background:var(--bg);color:var(--cream);
+    border:1px solid rgba(212,168,108,.2);border-radius:6px;padding:10px;
+    font-family:"Courier New",monospace;font-size:12px;line-height:1.5
+  }
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+  .modal-actions button{
+    padding:10px 16px;border-radius:6px;border:1px solid var(--gold);
+    background:var(--gold);color:var(--bg);font-family:Georgia,serif;cursor:pointer
+  }
+  .modal-actions button.ghost{background:transparent;color:var(--gold)}
+  /* candela */
+  .candela{font-size:36px;text-align:center;margin:0 0 4px}
+</style>
+</head>
+<body>
+<header>
+  <div class="candela">🕯️</div>
+  <h1>Smoke Android · Lussuria</h1>
+  <p class="sub">Prima apertura sul telefono — spunta ciò che va, scrivi cosa non va.</p>
+  <div class="progress"><div id="bar" style="width:0%"></div></div>
+  <div class="counter" id="counter">0 / 0 verificate</div>
+</header>
+<main id="main"></main>
+<div class="footer-bar">
+  <button class="btn-reset" id="btnReset">Reset</button>
+  <button class="btn-export" id="btnExport">Esporta report</button>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2>Report da incollare in smoke.md</h2>
+    <textarea id="reportTxt" readonly></textarea>
+    <div class="modal-actions">
+      <button class="ghost" id="btnCopy">📋 Copia</button>
+      <button id="btnClose">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ============ Definizione checklist ============
+const SECTIONS = [
+  {id:'A', title:'A · Setup & PWA', items:[
+    'Apri https://xbacco.github.io/velluto/ in Chrome Android: pagina carica, candela 🕯️ visibile, titolo "Lussuria"',
+    'Menu Chrome (⋮) → "Aggiungi a schermata Home" / "Installa app"',
+    'Icona app sulla home: bordeaux con "L" o icona Lussuria (non placeholder Chrome generico)',
+    'Tap icona → l\'app si apre standalone (nessuna barra URL Chrome visibile)',
+    'Theme color barra di stato è bordeaux scuro (#160409)',
+    'Orientamento bloccato in verticale (ruota il telefono: rimane in portrait)',
+    'Nessuno scroll-bounce orizzontale toccando i bordi',
+  ]},
+  {id:'B', title:'B · Login Tomas 🐻', items:[
+    'Schermata login: campo email + password + bottone "Entra"',
+    'Password vuota → submit blocca (validazione HTML required)',
+    'Email/password sbagliata → messaggio "Email o password non corretti."',
+    'Login con tomascoronato01@gmail.com → entra nell\'app',
+    'Header in alto: chip profilo mostra 🐻 + nome (Tomas)',
+    'Reload (chiusura+riapertura app): sessione resta attiva, non torna al login',
+  ]},
+  {id:'C', title:'C · Lock PIN + Biometrico', items:[
+    'Impostazioni → toggle "Blocco con codice" attivo',
+    'Imposta PIN (es. 1234), conferma ripetendolo → salvataggio ok',
+    'Background app + riapri → schermo "Inserisci il codice" appare',
+    'PIN sbagliato → feedback errore, dots si svuotano',
+    'PIN giusto → entra in app',
+    'Impostazioni → toggle "Sblocco biometrico" attivo (richiesta sistema)',
+    'Riapri app → bottone "👆 Sblocca con Face ID / impronta" visibile + autenticazione sistema → entra',
+    'Impostazioni → "Cambia codice" funziona (vecchio + nuovo + conferma)',
+  ]},
+  {id:'D', title:'D · Modalità pudica', items:[
+    'Impostazioni → toggle "Pudica" ON',
+    'Galleria + thumbnail nei buoni / esperienze → blur visibile su tutte le foto',
+    'Tap su foto sfocata → si rivela (reveal singolo)',
+    'Pudica OFF → tutte le foto tornano nitide',
+  ]},
+  {id:'E', title:'E · 🔥 Desideri', items:[
+    'Tab Desideri → lista (può essere vuota o coi vecchi inserimenti)',
+    'Aggiungi desiderio: testo + categoria → compare come "Da provare"',
+    'Segna realizzato → pill "Realizzato" + data odierna',
+    'Filtri "Tutti / Da provare / Realizzati" mostrano viste coerenti',
+    'Elimina desiderio: tap "Elimina" → "Sicuro?" → secondo tap rimuove',
+  ]},
+  {id:'F', title:'F · 📅 Esperienze (calendario+foto)', items:[
+    'Tab Esperienze → calendario mese corrente, oggi evidenziato',
+    'Aggiungi esperienza: titolo + data + racconto + voto fiamme (1-5)',
+    'Upload foto: si apre selettore galleria telefono → carica → thumb appare',
+    'Card in timeline mostra voto 🔥 corretto + thumbnail',
+    'Tap su giorno con esperienze → sheet "Esperienze del [data]"',
+    'Modifica voto + rimuovi foto: persistono dopo reload',
+  ]},
+  {id:'G', title:'G · 🗺️ Mappa Luoghi', items:[
+    'Tab Mappa → tile Leaflet caricano (no schermo grigio)',
+    'Pin esistenti visibili, vista auto-fit sui vostri pin',
+    'Chip filtro "tutti / viaggi / intimi" filtrano i pin',
+    'Tap pin → popup con titolo luogo + info',
+    'Bottone "Apri in Maps" → apre Google Maps / Maps di sistema',
+    'Aggiungi nuovo luogo: tap su mappa o + → form → salva → pin nuovo appare',
+  ]},
+  {id:'H', title:'H · 🎟️ Buoni', items:[
+    'Tab Buoni → tre viste Ricevuti / Inviati / Richieste',
+    'Crea regalo + foto → compare in Inviati con thumb sfocata (tap rivela)',
+    'Crea bundle (2+ sotto-buoni) → "Apri bundle" mostra le voci',
+    'Riscatta una voce del bundle → stato persiste dopo reload',
+    'Crea richiesta → appare in "Richieste" come "in attesa"',
+  ]},
+  {id:'I', title:'I · 🖼️ Galleria', items:[
+    'Tab Galleria → foto raggruppate per contesto (esperienza / buono / luogo)',
+    'Tap thumbnail → viewer fullscreen con foto nitida',
+    'Bottone "↩ Vai all\'origine" → naviga al buono/esperienza sorgente',
+  ]},
+  {id:'J', title:'J · 🎲 Giochi', items:[
+    'Tab Giochi → selettore mostra Dadi / Ruota / Strip Poker',
+    '🎲 Dadi: tap "Tira" → risultato visibile + animazione',
+    '🎲 Dadi: tap ＋ apre editor; modifica un valore → persiste',
+    '🎡 Ruota: gira → premio assegnato',
+    '🎡 Ruota: secondo giro nello stesso giorno è bloccato (1 al giorno)',
+    '♠️ Strip Poker: "Nuova partita" → setup guardaroba (catalogo capi, checklist Lui/Lei)',
+    '♠️ Strip Poker: gioca una mano → showdown → spogliarello (tap su capo/chip)',
+    '♠️ Strip Poker: partita salvata in storico (riapri tab → testa-a-testa visibile)',
+  ]},
+  {id:'K', title:'K · Navigazione + dock', items:[
+    'Dock nav in basso: 6 icone (Desideri/Giochi/Esperienze/Mappa/Buoni/Galleria)',
+    'Tap su un\'icona → cambia tab, icona attiva evidenziata',
+    'Swipe orizzontale tra tab → naviga avanti/indietro',
+    'Pinch-to-zoom bloccato (no zoom accidentale su doppio tap)',
+    'Tasto Back Android (gesture o pulsante) si comporta sensatamente (chiude modal/torna indietro)',
+  ]},
+  {id:'L', title:'L · Impostazioni (resto)', items:[
+    'Cambio nome profilo → persiste',
+    'Cambio icona profilo (🐻/altro) → persiste in chip',
+    '"Cambia password" → vecchia+nuova+conferma → login successivo con nuova',
+    '"Svuota dati" → conferma → wipe tutto + redirect login (NON cancella account auth)',
+    '"Tag" / "Contenuti giochi" → editor funzionanti, salvataggio ok',
+  ]},
+  {id:'M', title:'M · Offline (PWA cache)', items:[
+    'Disattiva wifi + dati cellulari',
+    'Apri app dalla home: shell carica dalla cache (login + UI visibili)',
+    'Operazioni Supabase ovviamente falliscono (no rete) ma l\'app non crasha',
+    'Riattiva rete → operazioni tornano normali senza ricaricare',
+  ]},
+  {id:'N', title:'N · Cross-account con Giulia 🧁 (opzionale)', items:[
+    'Da telefono Giulia (o browser separato): login con giulia.seconda2@gmail.com → chip 🧁',
+    'Giulia vede i desideri/esperienze/buoni della coppia (RLS ok)',
+    'Tomas crea richiesta → Giulia la vede in Richieste → accetta o rifiuta',
+    'Tomas crea regalo per Giulia → Giulia lo vede in Ricevuti e lo riscatta',
+  ]},
+];
+
+const STORAGE_KEY = 'lussuria.smoke.android.v1';
+
+// ============ DOM helpers (no innerHTML) ============
+function $(sel,root){return (root||document).querySelector(sel)}
+function $$(sel,root){return Array.from((root||document).querySelectorAll(sel))}
+function el(tag,cls,txt){
+  const e=document.createElement(tag);
+  if(cls)e.className=cls;
+  if(txt!=null)e.textContent=txt;
+  return e;
+}
+
+// ============ State ============
+let state = loadState();
+function loadState(){
+  try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||{}}catch(e){return{}}
+}
+function saveState(){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){}
+}
+function keyOf(secId,idx){return secId+'_'+idx}
+
+// ============ Render ============
+function render(){
+  const main=$('#main');
+  while(main.firstChild)main.removeChild(main.firstChild);
+  SECTIONS.forEach(sec=>{
+    const det=el('details');
+    // apri di default le prime due sezioni
+    if(sec.id==='A'||sec.id==='B')det.open=true;
+    const sum=el('summary');
+    sum.appendChild(el('span',null,sec.title));
+    const badge=el('span','sec-badge');
+    badge.id='badge_'+sec.id;
+    sum.appendChild(badge);
+    det.appendChild(sum);
+    const wrap=el('div','items');
+    sec.items.forEach((txt,idx)=>{
+      const k=keyOf(sec.id,idx);
+      const rec=state[k]||{};
+      const item=el('div','item');
+      if(rec.note)item.classList.add('has-note');
+
+      const row=el('div','item-row');
+      const cb=el('input');
+      cb.type='checkbox';cb.id=k;cb.checked=!!rec.ok;
+      cb.addEventListener('change',()=>{
+        rec.ok=cb.checked;state[k]=rec;saveState();updateCounters();
+      });
+      const lbl=el('label',null,txt);
+      lbl.htmlFor=k;
+      row.appendChild(cb);
+      row.appendChild(lbl);
+      item.appendChild(row);
+
+      const act=el('div','actions');
+      const btn=el('button',rec.note?'on':null,rec.note?'✕ rimuovi nota':'＋ aggiungi nota');
+      btn.addEventListener('click',()=>{
+        if(item.classList.contains('has-note')){
+          item.classList.remove('has-note');
+          rec.note='';state[k]=rec;saveState();
+          btn.classList.remove('on');btn.textContent='＋ aggiungi nota';
+          ta.value='';
+        }else{
+          item.classList.add('has-note');
+          btn.classList.add('on');btn.textContent='✕ rimuovi nota';
+          setTimeout(()=>ta.focus(),50);
+        }
+      });
+      act.appendChild(btn);
+      item.appendChild(act);
+
+      const ko=el('div','ko');
+      const ta=el('textarea');
+      ta.placeholder='Cosa non va? (es: foto non carica, app crasha al tap...)';
+      ta.value=rec.note||'';
+      ta.addEventListener('input',()=>{
+        rec.note=ta.value;state[k]=rec;saveState();
+      });
+      ko.appendChild(ta);
+      item.appendChild(ko);
+
+      wrap.appendChild(item);
+    });
+    det.appendChild(wrap);
+    main.appendChild(det);
+  });
+  updateCounters();
+}
+
+function updateCounters(){
+  let total=0,done=0;
+  SECTIONS.forEach(sec=>{
+    let st=0,sd=0;
+    sec.items.forEach((_,idx)=>{
+      total++;st++;
+      const r=state[keyOf(sec.id,idx)];
+      if(r&&r.ok){done++;sd++}
+    });
+    const b=$('#badge_'+sec.id);
+    if(b)b.textContent=sd+'/'+st;
+  });
+  $('#counter').textContent=done+' / '+total+' verificate';
+  const pct=total?Math.round(done/total*100):0;
+  $('#bar').style.width=pct+'%';
+}
+
+// ============ Report ============
+function buildReport(){
+  const date=new Date().toISOString().slice(0,10);
+  const lines=[];
+  lines.push('# Smoke test Android — Lussuria (prima apertura)');
+  lines.push('');
+  lines.push('Data: '+date);
+  lines.push('Device: ___________ (compila)');
+  lines.push('Android: ___ — Chrome: ___');
+  lines.push('URL: https://xbacco.github.io/velluto/');
+  lines.push('');
+  let totDone=0,totAll=0,issues=[];
+  SECTIONS.forEach(sec=>{
+    lines.push('## '+sec.title);
+    sec.items.forEach((txt,idx)=>{
+      const r=state[keyOf(sec.id,idx)]||{};
+      totAll++;
+      if(r.ok)totDone++;
+      const mark=r.ok?'[x]':'[ ]';
+      lines.push('- '+mark+' '+txt);
+      if(r.note&&r.note.trim()){
+        lines.push('      Nota: '+r.note.trim().replace(/\n/g,' / '));
+        if(!r.ok)issues.push({sec:sec.id,idx,txt,note:r.note.trim()});
+      }
+    });
+    lines.push('');
+  });
+  lines.push('## Sommario');
+  lines.push('Verificate: '+totDone+' / '+totAll);
+  if(issues.length){
+    lines.push('');
+    lines.push('## Bug / problemi trovati');
+    issues.forEach((b,i)=>{
+      lines.push((i+1)+'. ['+b.sec+'.'+(b.idx+1)+'] '+b.txt);
+      lines.push('   → '+b.note.replace(/\n/g,' / '));
+    });
+  }else{
+    lines.push('');
+    lines.push('Nessun problema annotato.');
+  }
+  return lines.join('\n');
+}
+
+// ============ Event wiring ============
+document.addEventListener('DOMContentLoaded',()=>{
+  render();
+  $('#btnExport').addEventListener('click',()=>{
+    $('#reportTxt').value=buildReport();
+    $('#modalBg').classList.add('on');
+  });
+  $('#btnClose').addEventListener('click',()=>$('#modalBg').classList.remove('on'));
+  $('#btnCopy').addEventListener('click',async()=>{
+    const ta=$('#reportTxt');
+    ta.select();
+    try{await navigator.clipboard.writeText(ta.value);$('#btnCopy').textContent='✓ Copiato';
+      setTimeout(()=>{$('#btnCopy').textContent='📋 Copia'},1500);}
+    catch(e){document.execCommand('copy')}
+  });
+  $('#btnReset').addEventListener('click',()=>{
+    if(confirm('Cancellare tutte le spunte e le note?')){
+      state={};localStorage.removeItem(STORAGE_KEY);render();
+    }
+  });
+  // chiudi modal toccando lo sfondo
+  $('#modalBg').addEventListener('click',(e)=>{
+    if(e.target===$('#modalBg'))$('#modalBg').classList.remove('on');
+  });
+});
+</script>
+</body>
+</html>
