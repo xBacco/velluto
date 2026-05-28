@@ -2,13 +2,9 @@ import { mk, add, toast, openSheet } from '../ui.js';
 import { fotoPath } from '../lib/logic.js';
 import { uploadFoto, listFoto, signedUrl, deleteFoto } from '../store.js';
 
-// Delegated tap handler for [data-spicy] elements (modalità pudica, Task 11).
-// Adds .revealed on first tap so CSS body.pudica [data-spicy].revealed un-blurs them.
-// No-op when body.pudica is absent (class is added but has no visual effect).
-document.addEventListener('click', e => {
-  const el = e.target.closest('[data-spicy]');
-  if (el && !el.classList.contains('revealed')) { el.classList.add('revealed'); e.stopPropagation(); }
-});
+// Le thumbnail foto/galleria hanno il proprio onclick (rimuove .thumb-blur);
+// il CSS body.pudica [data-spicy].revealed resta valido se in futuro
+// marcheremo contenuti con data-spicy.
 
 // Editor riusabile. refId può essere null (genitore non ancora creato):
 // le foto già esistenti si mostrano solo se refId è valorizzato; i nuovi file
