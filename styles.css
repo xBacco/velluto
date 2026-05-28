@@ -1600,6 +1600,56 @@ body.game-modal-open .strip-ov{top:calc(env(safe-area-inset-top,0px) + 66px);}
 }
 .cg-pane{min-height:120px;}
 
+/* Sheet "Nuova fantasia" — variante V cartolina velluto (on-brand) */
+.fantasia-sheet{padding:14px 14px 20px;}
+.fantasia-card{position:relative;display:grid;grid-template-columns:1fr 80px;gap:14px;
+  background:
+    repeating-linear-gradient(45deg,rgba(212,168,108,.04) 0 14px,transparent 14px 28px),
+    radial-gradient(110% 80% at 10% 0%,#3d0e1f,#1d0710 75%);
+  border:1px solid rgba(212,168,108,.3);border-radius:10px;padding:18px 16px 16px;
+  box-shadow:0 14px 30px rgba(0,0,0,.55),inset 0 1px 0 rgba(212,168,108,.15);}
+.fantasia-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;
+  background:repeating-linear-gradient(90deg,transparent 0 10px,rgba(212,168,108,.22) 10px 20px);
+  border-radius:10px 10px 0 0;opacity:.5;}
+.fantasia-left{display:flex;flex-direction:column;gap:8px;min-width:0;}
+.fantasia-meta{font-family:Arial,Helvetica,sans-serif;font-size:9.5px;color:var(--gold);
+  letter-spacing:1.4px;text-transform:uppercase;
+  border-bottom:1px solid rgba(212,168,108,.22);padding-bottom:6px;
+  display:flex;justify-content:space-between;opacity:.85;}
+.fantasia-ta{width:100%;background:transparent;border:0;outline:none;resize:none;padding:0;
+  font-family:Georgia,"Times New Roman",serif;font-size:15px;color:var(--cream);
+  line-height:1.5;min-height:90px;}
+.fantasia-ta::placeholder{color:#7a6155;font-style:italic;}
+.fantasia-stamp{font-family:Georgia,"Times New Roman",serif;font-size:11px;color:var(--gold);
+  border:1.5px solid var(--gold);text-align:center;padding:5px 4px;border-radius:4px;
+  line-height:1.2;letter-spacing:.5px;text-transform:uppercase;transform:rotate(4deg);
+  height:fit-content;background:radial-gradient(circle at 30% 25%,#3d0e1f,#1d0710);
+  box-shadow:0 2px 6px rgba(0,0,0,.5);}
+.fantasia-stamp .emo{font-size:22px;display:block;margin-bottom:2px;
+  filter:drop-shadow(0 0 6px rgba(212,168,108,.4));}
+.fantasia-chips-lbl{font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#7a6155;
+  letter-spacing:1.3px;text-transform:uppercase;margin:16px 0 8px;}
+.fantasia-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;}
+.fantasia-chips .chip{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#a87e6a;
+  background:transparent;border:1px solid rgba(212,168,108,.3);border-radius:6px;
+  padding:6px 11px;cursor:pointer;letter-spacing:.4px;text-transform:lowercase;
+  user-select:none;-webkit-user-select:none;transition:all .2s;}
+.fantasia-chips .chip:hover{background:rgba(212,168,108,.08);color:var(--gold-soft);}
+.fantasia-chips .chip.on{background:rgba(212,168,108,.18);color:var(--gold-soft);
+  border-color:var(--gold);}
+.fantasia-acts{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:4px;}
+.fantasia-cancel{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#7a6155;
+  background:none;border:0;padding:10px 14px;cursor:pointer;letter-spacing:.3px;}
+.fantasia-cancel:hover{color:var(--cream);}
+.fantasia-send{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:14px;
+  color:#3a2405;background:linear-gradient(180deg,var(--gold-soft),var(--gold));
+  border:0;padding:11px 22px 11px 18px;border-radius:999px;cursor:pointer;
+  letter-spacing:.4px;font-weight:bold;display:inline-flex;align-items:center;gap:7px;
+  box-shadow:0 4px 14px rgba(212,168,108,.25);}
+.fantasia-send::after{content:'→';font-style:normal;font-weight:bold;font-size:16px;}
+.fantasia-send:active{transform:scale(.97);}
+.fantasia-send:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+
 /* ===== Editor Yahtzutra (riga per casella) ===== */
 .yz-row{
   background:rgba(8,2,5,.32);
