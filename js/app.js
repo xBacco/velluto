@@ -1,7 +1,7 @@
 import { client } from './supabase.js';
 import { login, logout, currentProfile } from './auth.js';
 import { mk, add, clear, toast } from './ui.js';
-import { renderDesideri, openQuickAdd } from './modules/desideri.js';
+import { renderDesideri } from './modules/desideri.js';
 import { renderCalendario } from './modules/calendario.js';
 import { openImpostazioni } from './modules/impostazioni.js';
 import { renderBuoni } from './modules/buoni.js';
@@ -133,54 +133,11 @@ function buildNav() {
   const n = $('nav'); clear(n);
   TABS.forEach(([k, i, l]) => {
     const b = mk('button'); add(b, mk('span', null, i), mk('span', 'lab', l));
-    b.dataset.k = k;
-    b.onclick = () => {
-      if (b.dataset.suppressClick === '1') { delete b.dataset.suppressClick; return; }
-      go(k);
-    };
-    if (k === 'desideri') {
-      attachLongPress(b, () => openQuickAdd({
-        client, me, anchorEl: b,
-        onSaved: () => { if (rendered.has(0)) renderTab('desideri'); }
-      }));
-    }
-    n.appendChild(b);
+    b.dataset.k = k; b.onclick = () => go(k); n.appendChild(b);
   });
   enablePager();
   layout(false);
   renderNear();
-}
-
-// Long-press: ~500ms premuto, ring dorato animato via CSS, vibrazione corta al trigger.
-// Se l'utente muove il dito oltre 10px o rilascia prima → cancella.
-function attachLongPress(btn, onTrigger) {
-  const LONG = 500;
-  let timer = null, sx = 0, sy = 0, triggered = false;
-  const cancel = () => {
-    btn.classList.remove('holding');
-    if (timer) { clearTimeout(timer); timer = null; }
-  };
-  btn.addEventListener('pointerdown', e => {
-    triggered = false;
-    sx = e.clientX; sy = e.clientY;
-    btn.classList.add('holding');
-    timer = setTimeout(() => {
-      triggered = true;
-      btn.classList.remove('holding');
-      try { if (navigator.vibrate) navigator.vibrate(25); } catch (_) {}
-      onTrigger();
-    }, LONG);
-  });
-  btn.addEventListener('pointermove', e => {
-    if (!timer) return;
-    if (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10) cancel();
-  });
-  btn.addEventListener('pointerup', () => {
-    cancel();
-    if (triggered) btn.dataset.suppressClick = '1';
-  });
-  btn.addEventListener('pointercancel', cancel);
-  btn.addEventListener('pointerleave', cancel);
 }
 
 function go(k) {

@@ -39,17 +39,9 @@ body{position:fixed;inset:0;font-family:Georgia,"Times New Roman",serif;color:va
   display:flex;gap:4px;background:rgba(13,3,7,.86);backdrop-filter:blur(10px);
   border:1px solid rgba(212,168,108,.3);border-radius:22px;padding:8px;
   box-shadow:0 12px 30px rgba(0,0,0,.55);touch-action:pan-y;user-select:none;}
-.nav button{position:relative;flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:7px;
+.nav button{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:7px;
   font-size:21px;padding:12px 4px;border-radius:15px;color:#c8a89c;min-height:44px;cursor:pointer;
   transition:flex .38s cubic-bezier(.34,1.15,.4,1),background .38s,color .38s,transform .38s;}
-.nav button.holding{background:rgba(212,168,108,.15);}
-.nav button.holding::after{content:'';position:absolute;inset:-3px;border:2px solid var(--gold);
-  border-radius:18px;pointer-events:none;opacity:0;
-  animation:navHoldRing .5s ease-out forwards;}
-@keyframes navHoldRing{
-  0%{opacity:0;transform:scale(.7);}
-  100%{opacity:.9;transform:scale(1);}
-}
 .nav button.on{flex:2.5 1 0;color:#fff;
   background:linear-gradient(180deg,rgba(122,21,51,.9),rgba(92,16,38,.6));
   box-shadow:0 5px 18px rgba(122,21,51,.55);transform:translateY(-3px);}
@@ -625,46 +617,68 @@ body.locked{overflow:hidden;touch-action:none;}
    Var mockup remappate: --bg1→bg2, --oro→gold, --oro-b→gold-soft, --crema→cream,
    --rosso→wine. --muted e --nero restano letterali.
    ============================================================================ */
-.strip-root{font-family:'EB Garamond',Georgia,serif;color:var(--cream);}
+/* Layout root: occupa tutta l'altezza del modal body per evitare lo spazio
+   vuoto in basso e per poter centrare il tavolo bordeaux. */
+.strip-root{font-family:'EB Garamond',Georgia,serif;color:var(--cream);
+  display:flex;flex-direction:column;min-height:100%;}
 .strip-root .ptitle{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:22px;margin:0 0 2px;
   background:linear-gradient(180deg,#f6e3bf,#cf9f57);-webkit-background-clip:text;background-clip:text;color:transparent;text-align:center;}
-.strip-root .psub{margin:0 0 8px;font-size:12px;color:#b79a86;font-style:italic;text-align:center;}
-.strip-root .strip-score{text-align:center;font-size:12px;color:rgba(212,168,108,.65);letter-spacing:.06em;margin:2px 0 14px;}
+.strip-root .psub{margin:0 0 4px;font-size:13px;color:#b79a86;font-style:italic;text-align:center;flex:0 0 auto;}
+.strip-root .strip-score{text-align:center;font-size:12px;color:rgba(212,168,108,.65);letter-spacing:.06em;margin:0 0 10px;flex:0 0 auto;}
 
-.strip-root .play{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
-.strip-root .seat{text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;}
-.strip-root .who{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#b79a86;}
-.strip-root .who b{color:var(--cream);}
+/* .play = TAVOLO bordeaux con bordo dorato (variante A "felt", palette wine).
+   flex:1 + space-between distribuisce Lei / community / Lui sullo spazio. */
+.strip-root .play{flex:1 1 auto;display:flex;flex-direction:column;
+  align-items:center;justify-content:space-between;gap:10px;
+  position:relative;border-radius:18px;padding:16px 10px;min-height:0;
+  background:radial-gradient(130% 90% at 50% 50%,#6a1530 0%,#44102a 55%,#2c0814 100%);
+  box-shadow:inset 0 0 36px rgba(0,0,0,.6),
+             0 0 0 3px #2a0813,
+             0 0 0 5px rgba(212,168,108,.4),
+             0 10px 30px rgba(0,0,0,.55);}
+.strip-root .play::before{content:"";position:absolute;inset:8px;border-radius:13px;
+  border:1px dashed rgba(232,201,143,.22);pointer-events:none;z-index:0;}
+.strip-root .play > *{position:relative;z-index:1;}
+
+.strip-root .seat{text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.strip-root .who{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(232,201,143,.85);}
+.strip-root .who b{color:var(--cream);font-weight:600;}
 .strip-root .who .capi{color:var(--gold-soft);}
 .strip-root .hand-name{min-height:18px;font-family:'Cormorant Garamond',Georgia,serif;font-size:16px;color:var(--gold-soft);font-style:italic;}
 
-.strip-root .felt{position:relative;width:100%;border-radius:18px;padding:13px 10px 11px;display:flex;flex-direction:column;align-items:center;gap:8px;
-  background:radial-gradient(120% 100% at 50% 40%,#5e1528,#3a0d1b 70%,#2c0814);box-shadow:inset 0 0 0 1px rgba(212,168,108,.22), inset 0 0 30px rgba(0,0,0,.5);}
-.strip-root .felt::before{content:"";position:absolute;inset:8px;border-radius:13px;border:1px dashed rgba(212,168,108,.26);pointer-events:none;}
-.strip-root .board-label{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(212,168,108,.6);}
-.strip-root .board{display:flex;justify-content:center;gap:6px;min-height:66px;align-items:center;}
+/* .felt: ora e' solo il wrapper della community area, NO sfondo (il tavolo
+   bordeaux e' su .play). Resta centrata, con la label sopra. */
+.strip-root .felt{position:relative;width:100%;padding:0;background:none;box-shadow:none;
+  display:flex;flex-direction:column;align-items:center;gap:6px;}
+.strip-root .felt::before{display:none;}
+.strip-root .board-label{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:rgba(232,201,143,.7);}
+.strip-root .board{display:flex;justify-content:center;gap:5px;min-height:78px;align-items:center;flex-wrap:wrap;}
 .strip-root .banner{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:18px;color:var(--gold-soft);min-height:22px;opacity:0;transition:opacity .5s;text-align:center;}
 .strip-root .banner.show{opacity:1;}
 
-.strip-root .card{position:relative;width:52px;height:74px;border-radius:8px;background:linear-gradient(160deg,#fbf0d8,#ecd3a6);color:#241712;
-  box-shadow:0 4px 11px rgba(0,0,0,.4), inset 0 0 0 1px rgba(120,70,30,.3);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',Georgia,serif;}
-.strip-root .card .rk{position:absolute;top:4px;left:6px;font-size:16px;font-weight:600;line-height:1;}
-.strip-root .card .rk small{display:block;font-size:12px;}
-.strip-root .card .pip{font-size:28px;}
+/* CARTE: bumpate per leggibilita' (era 52x74, ora 60x84). */
+.strip-root .card{position:relative;width:60px;height:84px;border-radius:8px;background:linear-gradient(160deg,#fbf0d8,#ecd3a6);color:#241712;
+  box-shadow:0 5px 13px rgba(0,0,0,.45), inset 0 0 0 1px rgba(120,70,30,.3);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;}
+.strip-root .card .rk{position:absolute;top:5px;left:7px;font-size:18px;font-weight:700;line-height:.95;}
+.strip-root .card .rk small{display:block;font-size:14px;margin-top:1px;}
+.strip-root .card .pip{font-size:32px;}
 .strip-root .card.red{color:var(--wine);}
-.strip-root .board .card{width:46px;height:66px;}
-.strip-root .board .card .pip{font-size:24px;}
+.strip-root .card.red .rk{color:var(--wine);}
+.strip-root .board .card{width:54px;height:76px;}
+.strip-root .board .card .pip{font-size:26px;}
 .strip-root .board .card .rk{font-size:14px;}
+.strip-root .board .card .rk small{font-size:11px;}
 .strip-root .card.win{box-shadow:0 0 0 2px var(--gold-soft), 0 9px 24px rgba(212,168,108,.55);}
 .strip-root .card.dim{opacity:.4;filter:saturate(.5);}
 .strip-root .card.back{background:radial-gradient(120% 120% at 50% 20%,#6e1730,#4a0f22 70%,#380a1a);box-shadow:0 4px 11px rgba(0,0,0,.45), inset 0 0 0 1px rgba(212,168,108,.5);}
-.strip-root .card.back::after{content:"♥";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(212,168,108,.32);font-size:22px;}
-.strip-root .card.back .frame{position:absolute;inset:4px;border:1px solid rgba(212,168,108,.55);border-radius:5px;}
+.strip-root .card.back::after{content:"♥";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(212,168,108,.32);font-size:24px;}
+.strip-root .card.back .frame{position:absolute;inset:5px;border:1px solid rgba(212,168,108,.55);border-radius:5px;}
 
-/* gruppo carte tenute + SQUEEZE angolo che si piega (piega 3D) */
-.strip-root .squeeze{position:relative;display:inline-flex;justify-content:center;align-items:flex-end;padding:4px 16px 14px;touch-action:manipulation;user-select:none;}
+/* gruppo carte tenute + SQUEEZE angolo che si piega (piega 3D).
+   Card sqc: era 58x82 (--cs:34), ora 74x104 (--cs:42) per matchare .card. */
+.strip-root .squeeze{position:relative;display:inline-flex;justify-content:center;align-items:flex-end;padding:6px 18px 16px;touch-action:manipulation;user-select:none;}
 .strip-root .squeeze.live{cursor:pointer;}
-.strip-root .sqc{--rot:0deg;--cs:34px;position:relative;width:58px;height:82px;margin:0 -16px;transform:rotate(var(--rot));transition:transform .25s;}
+.strip-root .sqc{--rot:0deg;--cs:42px;position:relative;width:74px;height:104px;margin:0 -18px;transform:rotate(var(--rot));transition:transform .25s;}
 .strip-root .sqc .layer{position:absolute;inset:0;}
 .strip-root .sqc .card{width:100%;height:100%;}
 .strip-root .notch{position:absolute;left:0;bottom:0;z-index:5;width:var(--cs);height:var(--cs);
@@ -1611,30 +1625,3 @@ body.game-modal-open .strip-ov{top:calc(env(safe-area-inset-top,0px) + 66px);}
   font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;
   color:#d4a86c;margin:14px 4px 8px;opacity:.85;
 }
-
-/* Quick-add fantasia: popover ancorato al tab Fantasie, aperto da long-press sulla nav */
-.qpop-scrim{position:fixed;inset:0;z-index:70;background:rgba(8,2,5,.5);
-  backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .25s;}
-.qpop-scrim.on{opacity:1;pointer-events:auto;}
-.qpop{position:fixed;z-index:71;
-  background:linear-gradient(180deg,#2a0813,#160409);
-  border:1px solid var(--gold);border-radius:18px;padding:12px 14px 14px;
-  box-shadow:0 18px 38px rgba(0,0,0,.6),0 0 0 4px rgba(8,2,5,.55);
-  opacity:0;transform:translateY(8px) scale(.94);
-  transform-origin:var(--arrow-x,50%) 100%;
-  transition:opacity .25s,transform .28s cubic-bezier(.17,.67,.18,1);
-  pointer-events:none;}
-.qpop.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
-.qpop::after{content:'';position:absolute;bottom:-7px;left:var(--arrow-x,50%);
-  transform:translateX(-50%) rotate(45deg);
-  width:14px;height:14px;background:#160409;
-  border-right:1px solid var(--gold);border-bottom:1px solid var(--gold);}
-.qpop-lbl{font-family:Arial;font-size:10px;color:var(--gold);letter-spacing:1.2px;
-  text-transform:uppercase;margin-bottom:6px;}
-.qpop-input{width:100%;background:rgba(8,2,5,.6);border:1px solid rgba(212,168,108,.2);
-  border-radius:11px;padding:11px 13px;outline:none;
-  font-family:Georgia,"Times New Roman",serif;font-size:14.5px;color:var(--cream);}
-.qpop-input::placeholder{color:#7a6155;font-style:italic;}
-.qpop-input:focus{border-color:var(--gold);}
-.qpop-row{display:flex;gap:8px;margin-top:9px;}
-.qpop-row .btn{flex:1;}
