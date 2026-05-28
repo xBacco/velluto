@@ -257,7 +257,34 @@ function drawApertura() {
   add(root, pick);
   host.appendChild(root);
 }
-function chooseMode(m) { mode = m; drawSetup(); }
+// Diagnostica temporanea Bug 1: banner verde z-index altissimo che mostra
+// gli step di drawSetup. Cosi' anche se l'overlay e' invisibile vediamo
+// dove esattamente la funzione si interrompe.
+function diagStep(label) {
+  let box = document.getElementById('strip-diag');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'strip-diag';
+    box.style.cssText = 'position:fixed;top:env(safe-area-inset-top,8px);left:8px;right:8px;'
+      + 'background:#0e3a1a;color:#9fffb8;border:1px solid #2faa56;border-radius:8px;'
+      + 'padding:8px 10px;font:12px/1.3 monospace;z-index:99999;max-height:60vh;overflow:auto;'
+      + 'white-space:pre-wrap;word-break:break-word;';
+    document.body.appendChild(box);
+  }
+  const t = new Date().toISOString().slice(11, 23);
+  box.textContent += '[' + t + '] ' + label + '\n';
+}
+function chooseMode(m) {
+  try {
+    diagStep('chooseMode ' + m);
+    mode = m;
+    drawSetup();
+    diagStep('drawSetup OK');
+  } catch (e) {
+    diagStep('ERR ' + (e && e.message ? e.message : String(e)));
+    if (e && e.stack) diagStep(String(e.stack).split('\n').slice(0, 4).join('\n'));
+  }
+}
 
 // ---------------------------------------------------------------------------
 // overlay helper: nodo appeso a document.body con classe "dadi-scrim strip-ov"
@@ -302,13 +329,17 @@ function renderList(box, who, sel, onChange) {
 }
 
 function drawSetup() {
+  diagStep('drawSetup START');
   initSel();
+  diagStep('initSel OK');
   const ov = openOv();
+  diagStep('openOv OK, ov in DOM: ' + (document.querySelector('.strip-ov') === ov));
   const head = mk('div', 'setHead');
   const h3 = mk('h3'); h3.appendChild(document.createTextNode('Cosa avete '));
   h3.appendChild(mk('b', null, 'addosso')); h3.appendChild(document.createTextNode('?'));
   add(head, h3, mk('div', 'sub', 'Spunta quello che indossate adesso. Scarpe e calzini contano 2 e si tolgono uno alla volta.'));
   ov.appendChild(head);
+  diagStep('head appended');
 
   const cols = mk('div', 'cols');
   const cardLui = mk('div', 'who-card'); const totLui = mk('div', 'tot', '0 capi'); const listLui = mk('div', 'list');
@@ -317,6 +348,7 @@ function drawSetup() {
   add(cardLei, mk('h4', null, '🧁 Lei'), totLei, listLei);
   add(cols, cardLui, cardLei);
   ov.appendChild(cols);
+  diagStep('cols appended');
 
   const eqNote = mk('div', 'eqNote', 'Consiglio: stesso numero di capi per una partita equilibrata.');
   ov.appendChild(eqNote);
@@ -335,6 +367,8 @@ function drawSetup() {
   go.onclick = () => { closeOv(); startGame(selLui, selLei); };
   ov.appendChild(go);
   refresh();
+  diagStep('refresh OK, ov display=' + getComputedStyle(ov).display
+    + ' opacity=' + getComputedStyle(ov).opacity + ' z=' + getComputedStyle(ov).zIndex);
 }
 
 function startGame(sLui, sLei) {
