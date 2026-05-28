@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Counter polaroid — dove esporlo</title>
+<style>
+  :root {
+    --bg: #1a0e0e;
+    --panel: #251515;
+    --panel2: #2e1818;
+    --line: #3a2020;
+    --fg: #f5e6d3;
+    --muted: #a89380;
+    --gold: #d4a857;
+    --red: #c44a3a;
+    --green: #4a7a5e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:#0a0506; color:var(--fg); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+  body { padding:24px 16px 80px; }
+  h1 { font-size:18px; margin:0 0 4px; font-weight:600; color:var(--fg); }
+  .sub { color:var(--muted); font-size:13px; margin:0 0 24px; max-width:760px; }
+
+  .row { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; }
+
+  .scenario { width:340px; }
+  .scenario h2 { font-size:14px; font-weight:600; color:var(--gold); margin:0 0 4px; }
+  .scenario .desc { color:var(--muted); font-size:12px; margin:0 0 12px; min-height:32px; }
+  .pro-con { font-size:11px; color:var(--muted); margin-top:8px; line-height:1.5; }
+  .pro-con .p { color:#a8c8a8; }
+  .pro-con .c { color:#c89898; }
+
+  /* Mobile frame */
+  .phone {
+    width:320px;
+    height:580px;
+    border-radius:32px;
+    background:var(--bg);
+    border:1px solid #2a1818;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+    overflow:hidden;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* iOS-style status bar */
+  .status {
+    height:28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 18px;
+    font-size:11px;
+    color:var(--muted);
+    background:rgba(0,0,0,0.2);
+    flex-shrink:0;
+  }
+
+  /* App topbar */
+  .topbar {
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    padding:10px 14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-shrink:0;
+  }
+  .topbar .brand { font-size:14px; font-weight:600; color:var(--gold); }
+  .topbar .avatar { width:28px; height:28px; border-radius:50%; background:#3a2020; display:flex; align-items:center; justify-content:center; font-size:14px; }
+
+  /* Badge polaroid in topbar */
+  .badge-polaroid {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:linear-gradient(135deg, #6b1f2a, #b8632c);
+    color:#fff;
+    padding:5px 10px;
+    border-radius:14px;
+    font-size:11px;
+    font-weight:600;
+    box-shadow:0 2px 6px rgba(0,0,0,0.3);
+    cursor:pointer;
+    transition:transform 0.15s;
+  }
+  .badge-polaroid:active { transform:scale(0.96); }
+  .badge-polaroid .dot {
+    width:6px; height:6px; border-radius:50%;
+    background:#ffe680;
+    box-shadow:0 0 6px rgba(255,230,128,0.8);
+  }
+
+  /* Content area */
+  .content { flex:1; padding:14px; overflow:auto; }
+  .content h3 { margin:0 0 10px; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; }
+
+  /* Hub Giochi: nav split */
+  .gruppo-lab { margin:14px 0 6px; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; }
+  .gioco-selettore {
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:8px;
+    display:flex;
+    gap:6px;
+    margin-bottom:8px;
+  }
+  .gioco-selettore button {
+    flex:1;
+    background:transparent;
+    border:none;
+    color:var(--fg);
+    padding:10px 4px;
+    font-size:13px;
+    border-radius:10px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+  }
+  .gioco-selettore button.on { background:#3a2020; }
+  .gioco-selettore button .ico { font-size:18px; }
+  .gioco-selettore button .lbl { font-size:11px; color:var(--muted); }
+  .gioco-selettore button.on .lbl { color:var(--fg); }
+
+  /* Card polaroid in hub */
+  .card-polaroid {
+    background:linear-gradient(135deg, #2e1818, #3a2018);
+    border:1px solid #5a3a2a;
+    border-radius:14px;
+    padding:14px;
+    margin:14px 0;
+    position:relative;
+    overflow:hidden;
+  }
+  .card-polaroid::before {
+    content:'';
+    position:absolute;
+    top:-30px; right:-20px;
+    width:80px; height:80px;
+    background:radial-gradient(circle, rgba(212,168,87,0.15), transparent 70%);
+  }
+  .card-polaroid .head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .card-polaroid .head .e { font-size:22px; }
+  .card-polaroid .head .t { font-size:13px; font-weight:600; }
+  .card-polaroid .cd { font-size:20px; font-weight:700; color:var(--gold); font-variant-numeric:tabular-nums; }
+  .card-polaroid .cd small { font-size:11px; color:var(--muted); font-weight:400; }
+  .card-polaroid .bar { height:4px; background:rgba(0,0,0,0.3); border-radius:2px; margin:8px 0 10px; overflow:hidden; }
+  .card-polaroid .bar .fill { height:100%; background:linear-gradient(90deg, var(--gold), #b8632c); width:65%; border-radius:2px; }
+  .card-polaroid button {
+    background:var(--gold);
+    color:#1a0e0e;
+    border:none;
+    padding:8px 14px;
+    border-radius:10px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+  /* Lista buoni */
+  .buoni-list { display:flex; flex-direction:column; gap:8px; }
+  .buono-item {
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .buono-item .e { font-size:22px; }
+  .buono-item .body { flex:1; }
+  .buono-item .t { font-size:13px; font-weight:600; }
+  .buono-item .s { font-size:11px; color:var(--muted); margin-top:2px; }
+  .buono-item.lampo .s { color:var(--gold); }
+  .buono-item.polaroid {
+    border-color:#b8632c;
+    background:linear-gradient(135deg, var(--panel), #2e1818);
+  }
+  .buono-item.polaroid .s { color:#ffb088; }
+  .buono-item .ttl-pill {
+    background:rgba(212,168,87,0.15);
+    border:1px solid var(--gold);
+    color:var(--gold);
+    padding:3px 8px;
+    border-radius:8px;
+    font-size:10px;
+    font-weight:700;
+  }
+
+  .desideri-list .item {
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:8px;
+    font-size:13px;
+  }
+
+  .footnote { margin-top:20px; font-size:11px; color:var(--muted); text-align:center; }
+</style>
+</head>
+<body>
+
+<h1>Counter polaroid — 3 collocazioni a confronto</h1>
+<p class="sub">Stessa polaroid (1 da inviare, scade tra 18h 24m), mostrata in tre posti diversi. Confronta visibilità, intrusività e coerenza con il resto dell'app.</p>
+
+<div class="row">
+
+  <!-- A: Badge topbar -->
+  <div class="scenario">
+    <h2>A · Badge sticky in topbar</h2>
+    <p class="desc">Pill persistente in alto, visibile da ogni sezione dell'app. Click → modale dettaglio.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Nostro Spazio</span>
+        <span class="badge-polaroid"><span class="dot"></span>📸 1 · 18h</span>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Hub</h3>
+        <div class="desideri-list">
+          <div class="item">🔥 Fantasia: serata mascherata</div>
+          <div class="item">💌 Desiderio in attesa</div>
+          <div class="item">🎟️ Buono lampo — 14h</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ visibile sempre, anche fuori dai Giochi</div>
+      <div class="p">+ basso costo cognitivo (è solo un badge)</div>
+      <div class="c">− occupa spazio topbar, scala male con N>2 obblighi</div>
+      <div class="c">− "altra cosa che lampeggia" — può diventare rumore</div>
+    </div>
+  </div>
+
+  <!-- B: Card in hub Giochi -->
+  <div class="scenario">
+    <h2>B · Card in hub Giochi</h2>
+    <p class="desc">Card visibile solo nella vista Giochi, sopra il nav split. Countdown grande + bottone "Invia ora".</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Giochi</span>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <div class="card-polaroid">
+          <div class="head"><span class="e">📸</span><span class="t">Polaroid in sospeso</span></div>
+          <div class="cd">18h 24m <small>residue</small></div>
+          <div class="bar"><div class="fill"></div></div>
+          <button>Invia ora</button>
+        </div>
+        <p class="gruppo-lab">A tempo</p>
+        <div class="gioco-selettore">
+          <button class="on"><span class="ico">🎡</span><span class="lbl">Ruota</span></button>
+          <button><span class="ico">🎰</span><span class="lbl">Slot</span></button>
+        </div>
+        <p class="gruppo-lab">Liberi</p>
+        <div class="gioco-selettore">
+          <button><span class="ico">🎲</span><span class="lbl">Yahtzutra</span></button>
+          <button><span class="ico">♠️</span><span class="lbl">Strip</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ contestuale: la polaroid arriva DALLA ruota</div>
+      <div class="p">+ countdown grande, CTA chiara</div>
+      <div class="c">− invisibile se non apri Giochi (puoi dimenticartene)</div>
+      <div class="c">− N>1 polaroid → la card si fa lunga</div>
+    </div>
+  </div>
+
+  <!-- C: Entry in Buoni con TTL -->
+  <div class="scenario">
+    <h2>C · Entry in lista Buoni con TTL</h2>
+    <p class="desc">La polaroid è un buono lampo speciale. Sta nella lista Buoni con countdown e pill TTL, come 🎟️ lampo.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Buoni</span>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>I tuoi buoni (3)</h3>
+        <div class="buoni-list">
+          <div class="buono-item polaroid">
+            <span class="e">📸</span>
+            <div class="body">
+              <div class="t">Polaroid osè</div>
+              <div class="s">Inviane una al partner</div>
+            </div>
+            <span class="ttl-pill">18h</span>
+          </div>
+          <div class="buono-item lampo">
+            <span class="e">🎟️</span>
+            <div class="body">
+              <div class="t">Cena romantica</div>
+              <div class="s">scade tra 14h</div>
+            </div>
+            <span class="ttl-pill">14h</span>
+          </div>
+          <div class="buono-item">
+            <span class="e">🎁</span>
+            <div class="body">
+              <div class="t">Massaggio 10 min</div>
+              <div class="s">senza scadenza</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ riusa la sezione che già esiste (Buoni)</div>
+      <div class="p">+ scala benissimo a N elementi</div>
+      <div class="p">+ pattern coerente con 🎟️ lampo già nella spec</div>
+      <div class="c">− meno "evento", meno spinta a inviare subito</div>
+      <div class="c">− niente promemoria attivi: solo se apri Buoni</div>
+    </div>
+  </div>
+
+</div>
+
+<p class="footnote">Si possono combinare. Es: <strong>A+C</strong> = badge topbar che linka alla card in Buoni. Oppure <strong>B+C</strong> = card nei Giochi + persistenza in Buoni.</p>
+
+</body>
+</html>

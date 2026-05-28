@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Polaroid chip · varianti 2</title>
+<style>
+  :root {
+    --bg: #160409;
+    --panel: #221013;
+    --panel2: #2c1418;
+    --line: #3a1d22;
+    --line2: #4a2630;
+    --fg: #f5e6d3;
+    --muted: #a89380;
+    --gold: #d4a857;
+    --gold-soft: #b8923f;
+    --rust: #b8632c;
+    --bord: #6b1f2a;
+    --wax: #8a1f24;
+    --wax-light: #c93a36;
+    --paper: #f4ead8;
+    --paper2: #ede1c8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin:0; padding:0;
+    background: radial-gradient(ellipse at top, #1f0a10 0%, #0a0306 70%);
+    color:var(--fg);
+    font-family: 'Georgia', serif;
+    min-height:100vh;
+  }
+  body { padding:36px 16px 80px; }
+  h1 {
+    font-size:22px; margin:0 0 6px;
+    font-weight:400; letter-spacing:0.02em;
+    color:var(--paper); font-style:italic;
+  }
+  .sub {
+    color:var(--muted); font-size:13px; margin:0 0 28px;
+    max-width:760px;
+    font-family:-apple-system,sans-serif;
+    line-height:1.5;
+  }
+  .row {
+    display:flex; gap:24px; flex-wrap:wrap;
+    justify-content:center;
+    align-items:flex-start;
+  }
+  .scenario { width:340px; }
+  .scenario .label {
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+    color:var(--gold);
+    margin:0 0 4px;
+    font-family:-apple-system,sans-serif;
+    font-weight:600;
+  }
+  .scenario h2 {
+    font-size:17px; font-weight:400; margin:0 0 6px;
+    color:var(--paper); font-style:italic;
+  }
+  .scenario .desc {
+    color:var(--muted); font-size:12px; margin:0 0 14px;
+    min-height:36px; line-height:1.5;
+    font-family:-apple-system,sans-serif;
+  }
+  .pro-con {
+    font-size:11px; color:var(--muted); margin-top:10px; line-height:1.6;
+    font-family:-apple-system,sans-serif;
+  }
+  .pro-con .p { color:#9cc09c; }
+  .pro-con .c { color:#c89898; }
+
+  .phone {
+    width:320px; height:520px;
+    border-radius:32px;
+    background:var(--bg);
+    border:1px solid #2a1014;
+    box-shadow:
+      0 12px 32px rgba(0,0,0,0.7),
+      0 0 0 6px #0a0306,
+      0 0 0 7px #1a0a0e;
+    overflow:hidden;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    font-family:-apple-system,sans-serif;
+  }
+  .status {
+    height:28px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 18px; font-size:11px; color:var(--muted);
+    background:rgba(0,0,0,0.25); flex-shrink:0;
+  }
+  .topbar {
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    padding:12px 14px;
+    display:flex; align-items:center; gap:10px;
+    flex-shrink:0;
+  }
+  .topbar .brand {
+    font-family:'Georgia',serif; font-style:italic;
+    font-size:16px; color:var(--gold); letter-spacing:0.02em;
+    flex:1;
+  }
+  .topbar .avatar {
+    width:30px; height:30px; border-radius:50%;
+    background:#3a2020; display:flex; align-items:center; justify-content:center;
+    font-size:15px;
+    border:1px solid var(--line2);
+  }
+  .content { flex:1; padding:16px 14px; overflow:auto; }
+  .content h3 {
+    margin:0 0 14px; font-size:11px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.16em; font-weight:600;
+  }
+  .desideri-list .item {
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:8px;
+    font-size:13px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .desideri-list .item .e { font-size:18px; }
+
+  /* ===== VISUAL D: BUSTA CON SIGILLO CERALACCA ===== */
+  .chip-busta {
+    position:relative;
+    width:42px; height:30px;
+    cursor:pointer;
+    transition:transform 0.15s;
+  }
+  .chip-busta:active { transform:scale(0.94); }
+  .chip-busta .env {
+    position:absolute; inset:0;
+    background: linear-gradient(180deg, var(--paper) 0%, var(--paper2) 100%);
+    border-radius:2px;
+    box-shadow:
+      0 3px 8px rgba(0,0,0,0.5),
+      0 0 0 1px rgba(0,0,0,0.18) inset;
+    overflow:hidden;
+  }
+  .chip-busta .env::before {
+    content:'';
+    position:absolute;
+    top:0; left:0; right:0; bottom:0;
+    background: linear-gradient(135deg, transparent 49.5%, rgba(0,0,0,0.18) 49.5%, rgba(0,0,0,0.18) 50.5%, transparent 50.5%),
+                linear-gradient(45deg, transparent 49.5%, rgba(0,0,0,0.18) 49.5%, rgba(0,0,0,0.18) 50.5%, transparent 50.5%);
+  }
+  .chip-busta .env::after {
+    content:'';
+    position:absolute;
+    top:-1px; left:50%;
+    width:0; height:0;
+    transform: translateX(-50%);
+    border-left: 21px solid transparent;
+    border-right: 21px solid transparent;
+    border-top: 16px solid var(--paper);
+    filter: brightness(0.92);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .chip-busta .wax {
+    position:absolute;
+    top: 8px; left: 50%;
+    transform: translateX(-50%);
+    width:16px; height:16px;
+    border-radius:50%;
+    background:
+      radial-gradient(circle at 35% 30%, var(--wax-light) 0%, var(--wax) 50%, #5a1418 100%);
+    box-shadow:
+      0 2px 4px rgba(0,0,0,0.5),
+      0 0 0 1px rgba(0,0,0,0.3) inset;
+    display:flex; align-items:center; justify-content:center;
+    font-size:8px; color:rgba(255,230,200,0.85);
+    font-family:'Georgia',serif; font-style:italic;
+    z-index:2;
+    /* drip illusion */
+  }
+  .chip-busta .wax::before {
+    content:'L';
+    line-height:1;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+  }
+  .chip-busta .wax::after {
+    content:'';
+    position:absolute;
+    bottom:-3px; left: 50%;
+    transform: translateX(-50%);
+    width:8px; height:6px;
+    background: var(--wax);
+    border-radius: 0 0 4px 4px;
+    clip-path: polygon(0 0, 100% 0, 75% 100%, 50% 60%, 25% 100%);
+  }
+  .chip-busta .cnt {
+    position:absolute;
+    top:-5px; right:-6px;
+    min-width:16px; height:16px;
+    border-radius:8px;
+    background: var(--gold);
+    color: var(--bg);
+    font-size:9px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 4px;
+    border: 2px solid var(--panel);
+    z-index:3;
+  }
+
+  /* ===== VISUAL E: FRANCOBOLLO DENTELLATO ===== */
+  .chip-stamp {
+    position:relative;
+    width:38px; height:44px;
+    cursor:pointer;
+    transition:transform 0.15s;
+  }
+  .chip-stamp:active { transform:scale(0.94); }
+  .chip-stamp .body {
+    position:absolute; inset:0;
+    background: var(--paper);
+    box-shadow:
+      0 3px 8px rgba(0,0,0,0.5),
+      0 0 0 1px rgba(0,0,0,0.18) inset;
+    /* perforated edge via radial gradients */
+    mask:
+      radial-gradient(circle at 50% 0,   transparent 2px, #000 2.5px) 0 0 / 6px 6px repeat-x,
+      radial-gradient(circle at 50% 100%, transparent 2px, #000 2.5px) 0 100% / 6px 6px repeat-x,
+      radial-gradient(circle at 0 50%,   transparent 2px, #000 2.5px) 0 0 / 6px 6px repeat-y,
+      radial-gradient(circle at 100% 50%, transparent 2px, #000 2.5px) 100% 0 / 6px 6px repeat-y,
+      linear-gradient(#000, #000);
+    mask-composite: intersect;
+    -webkit-mask:
+      radial-gradient(circle at 50% 0,   transparent 2px, #000 2.5px) 0 0 / 6px 6px repeat-x,
+      radial-gradient(circle at 50% 100%, transparent 2px, #000 2.5px) 0 100% / 6px 6px repeat-x,
+      radial-gradient(circle at 0 50%,   transparent 2px, #000 2.5px) 0 0 / 6px 6px repeat-y,
+      radial-gradient(circle at 100% 50%, transparent 2px, #000 2.5px) 100% 0 / 6px 6px repeat-y,
+      linear-gradient(#000, #000);
+    -webkit-mask-composite: source-in;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+  }
+  .chip-stamp .photo {
+    flex:1;
+    background:
+      radial-gradient(circle at 30% 30%, #c08c5e 0%, transparent 55%),
+      radial-gradient(circle at 70% 70%, #6b1f2a 0%, transparent 60%),
+      linear-gradient(135deg, #2a1014, #4a2630);
+    margin-bottom: 2px;
+  }
+  .chip-stamp .val {
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    font-size: 7px;
+    color: var(--bord);
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+  .chip-stamp .postmark {
+    position:absolute;
+    top: 6px; right: -4px;
+    width: 26px; height: 26px;
+    border-radius:50%;
+    border: 1.5px solid rgba(184,99,44,0.6);
+    background: transparent;
+    transform: rotate(-12deg);
+    display:flex; align-items:center; justify-content:center;
+    font-size: 8px;
+    font-family: 'Georgia', serif;
+    color: rgba(184,99,44,0.7);
+    z-index:3;
+    pointer-events:none;
+  }
+  .chip-stamp .postmark::before {
+    content:'';
+    position:absolute;
+    top: 50%; left: 0; right: 0;
+    height: 1.5px;
+    background: rgba(184,99,44,0.5);
+    transform: translateY(-50%);
+  }
+  .chip-stamp .postmark span {
+    background: var(--paper);
+    padding: 0 2px;
+    z-index:2;
+    font-weight: 700;
+    font-size:7px;
+    letter-spacing:0.08em;
+  }
+  .chip-stamp .cnt {
+    position:absolute;
+    top:-4px; left:-4px;
+    min-width:16px; height:16px;
+    border-radius:8px;
+    background: linear-gradient(135deg, #ff8a6b, #b8302a);
+    color: #fff;
+    font-size: 9px; font-weight: 800;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 4px;
+    border: 2px solid var(--panel);
+    box-shadow: 0 0 6px rgba(255,138,107,0.4);
+    z-index:4;
+  }
+
+  /* ===== VISUAL F: FILM STRIP (3 fotogrammi) ===== */
+  .chip-film {
+    position:relative;
+    width:48px; height:32px;
+    cursor:pointer;
+    transition:transform 0.15s;
+  }
+  .chip-film:active { transform:scale(0.94); }
+  .chip-film .strip-bg {
+    position:absolute; inset:0;
+    background: #1a0d0f;
+    border-radius:2px;
+    box-shadow:
+      0 3px 8px rgba(0,0,0,0.6),
+      0 0 0 1px rgba(212,168,87,0.18) inset;
+    overflow:hidden;
+    padding: 4px 3px;
+    display:flex;
+    gap: 2px;
+  }
+  /* sprocket holes */
+  .chip-film .strip-bg::before,
+  .chip-film .strip-bg::after {
+    content:'';
+    position:absolute;
+    left:0; right:0;
+    height: 3px;
+    background-image: radial-gradient(circle, var(--bg) 0.8px, transparent 1.2px);
+    background-size: 4px 3px;
+    background-repeat: repeat-x;
+  }
+  .chip-film .strip-bg::before { top: 0; }
+  .chip-film .strip-bg::after  { bottom: 0; }
+  .chip-film .frame {
+    flex:1;
+    background:
+      radial-gradient(circle at 50% 50%, #c08c5e 0%, #6b1f2a 60%, #2a1014 100%);
+    position:relative;
+    margin: 4px 0;
+  }
+  .chip-film .frame:nth-child(1) {
+    background:
+      radial-gradient(circle at 50% 50%, #c08c5e 0%, #6b1f2a 60%, #2a1014 100%);
+  }
+  .chip-film .frame:nth-child(2) {
+    background:
+      radial-gradient(circle at 40% 50%, #d4a857 0%, #8a4a2a 50%, #2a1014 100%);
+  }
+  .chip-film .frame:nth-child(3) {
+    background:
+      radial-gradient(circle at 60% 40%, #b8632c 0%, #4a2630 60%, #1a0a10 100%);
+    opacity: 0.55;
+    /* "in attesa" frame faded */
+  }
+  .chip-film .frame:nth-child(3)::after {
+    content: '?';
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    color: var(--gold);
+    font-family:'Georgia',serif; font-style:italic;
+    font-size: 10px;
+    opacity: 0.7;
+  }
+  .chip-film .cnt {
+    position:absolute;
+    top:-5px; right:-5px;
+    min-width:16px; height:16px;
+    border-radius:8px;
+    background: linear-gradient(135deg, #ff8a6b, #b8302a);
+    color: #fff;
+    font-size: 9px; font-weight: 800;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 4px;
+    border: 2px solid var(--panel);
+    box-shadow: 0 0 6px rgba(255,138,107,0.4);
+    z-index:3;
+  }
+  .chip-film .scan {
+    position:absolute;
+    top: 4px; bottom: 4px;
+    width: 2px;
+    background: linear-gradient(180deg, transparent, var(--gold), transparent);
+    box-shadow: 0 0 4px var(--gold);
+    left: 0;
+    animation: scan-move 3s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes scan-move {
+    0% { left: 4px; opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { left: calc(100% - 4px); opacity: 0; }
+  }
+
+  .footnote {
+    margin-top:32px; font-size:12px;
+    color:var(--muted); text-align:center;
+    font-family:-apple-system,sans-serif;
+    line-height:1.6;
+    max-width:760px;
+    margin-left:auto; margin-right:auto;
+  }
+  .footnote strong { color:var(--gold); font-weight:600; }
+  .divider {
+    width:80px; height:1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 28px auto 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Polaroid chip · altre 3</h1>
+<p class="sub">Tre metafore alternative: posta intima, francobollo da viaggio, pellicola in attesa. Tutti dataset uguali: 1 polaroid in sospeso.</p>
+
+<div class="row">
+
+  <!-- D: Busta con ceralacca -->
+  <div class="scenario">
+    <div class="label">Visual · D</div>
+    <h2>Busta + sigillo ceralacca</h2>
+    <p class="desc">Busta chiusa con ceralacca rosso-bordeaux che cola sotto. Metafora "lettera intima da spedire".</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="chip-busta">
+          <div class="env"></div>
+          <div class="wax"></div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+          <div class="item"><span class="e">🍷</span> Cena al buio</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ unico, identitario (ceralacca = brand visual)</div>
+      <div class="p">+ "sigillo" comunica esclusività</div>
+      <div class="c">− legge meno "foto", più "lettera"</div>
+      <div class="c">− complesso visivamente a 36px</div>
+    </div>
+  </div>
+
+  <!-- E: Francobollo dentellato -->
+  <div class="scenario">
+    <div class="label">Visual · E</div>
+    <h2>Francobollo dentellato</h2>
+    <p class="desc">Francobollo perforato con foto interna + timbro postale ruotato sopra. Vintage, da viaggio.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="chip-stamp">
+          <div class="body">
+            <div class="photo"></div>
+            <div class="val">noi</div>
+          </div>
+          <div class="postmark"><span>18h</span></div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+          <div class="item"><span class="e">🍷</span> Cena al buio</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ dettaglio incredibile in poco spazio</div>
+      <div class="p">+ TTL nel timbro = informazione gratis</div>
+      <div class="p">+ metafora postale coerente con "Spedisci"</div>
+      <div class="c">− sagoma irregolare, allinea male in topbar</div>
+    </div>
+  </div>
+
+  <!-- F: Film strip -->
+  <div class="scenario">
+    <div class="label">Visual · F</div>
+    <h2>Pellicola con scanner</h2>
+    <p class="desc">Mini striscia di 3 fotogrammi (1 svelato, 1 svelato, 1 misterioso). Linea oro che scorre = "in elaborazione".</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="chip-film">
+          <div class="strip-bg">
+            <div class="frame"></div>
+            <div class="frame"></div>
+            <div class="frame"></div>
+            <span class="scan"></span>
+          </div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+          <div class="item"><span class="e">🍷</span> Cena al buio</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ animazione sottile ma viva (scanner)</div>
+      <div class="p">+ "1/3 sviluppati" = senso di processo</div>
+      <div class="c">− troppo largo (48px) per la topbar</div>
+      <div class="c">− animazione perpetua può stancare</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+<p class="footnote">
+  Dimmi la tua tra <strong>A · B · C · D · E · F</strong> (i primi 3 sono nel file precedente).<br>
+  <strong>D</strong> ha la personalità più forte. <strong>E</strong> è il più ricco di dettagli (TTL incluso nel timbro). <strong>F</strong> è il più "vivo" ma occupa spazio.
+</p>
+
+</body>
+</html>

@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Polaroid · altre collocazioni</title>
+<style>
+  :root {
+    --bg: #160409;
+    --panel: #221013;
+    --panel2: #2c1418;
+    --line: #3a1d22;
+    --line2: #4a2630;
+    --fg: #f5e6d3;
+    --muted: #a89380;
+    --gold: #d4a857;
+    --gold-soft: #b8923f;
+    --red: #c44a3a;
+    --rust: #b8632c;
+    --bord: #6b1f2a;
+    --paper: #f4ead8;
+    --paper-shadow: rgba(0,0,0,0.55);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin:0; padding:0;
+    background: radial-gradient(ellipse at top, #1f0a10 0%, #0a0306 70%);
+    color:var(--fg);
+    font-family: 'Georgia', 'Cormorant Garamond', serif;
+    min-height:100vh;
+  }
+  body { padding:36px 16px 80px; }
+  h1 {
+    font-size:22px; margin:0 0 6px;
+    font-weight:400; letter-spacing:0.02em;
+    color:var(--paper);
+    font-style:italic;
+  }
+  .sub {
+    color:var(--muted); font-size:13px; margin:0 0 28px;
+    max-width:760px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    line-height:1.5;
+  }
+  .row {
+    display:flex; gap:24px; flex-wrap:wrap;
+    justify-content:center;
+    align-items:flex-start;
+  }
+
+  /* Scenario wrapper */
+  .scenario { width:340px; }
+  .scenario .label {
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.18em;
+    color:var(--gold);
+    margin:0 0 4px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-weight:600;
+  }
+  .scenario h2 {
+    font-size:18px; font-weight:400; margin:0 0 6px;
+    color:var(--paper); font-style:italic;
+  }
+  .scenario .desc {
+    color:var(--muted); font-size:12px; margin:0 0 14px;
+    min-height:36px; line-height:1.5;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  .pro-con {
+    font-size:11px; color:var(--muted); margin-top:10px; line-height:1.6;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  .pro-con .p { color:#9cc09c; }
+  .pro-con .c { color:#c89898; }
+
+  /* Mobile frame */
+  .phone {
+    width:320px;
+    height:600px;
+    border-radius:32px;
+    background:var(--bg);
+    border:1px solid #2a1014;
+    box-shadow:
+      0 12px 32px rgba(0,0,0,0.7),
+      0 0 0 6px #0a0306,
+      0 0 0 7px #1a0a0e;
+    overflow:hidden;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  .status {
+    height:28px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 18px; font-size:11px; color:var(--muted);
+    background:rgba(0,0,0,0.25); flex-shrink:0;
+  }
+  .topbar {
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    padding:12px 14px;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-shrink:0;
+  }
+  .topbar .brand {
+    font-family:'Georgia',serif; font-style:italic;
+    font-size:16px; color:var(--gold); letter-spacing:0.02em;
+  }
+  .topbar .avatar {
+    width:30px; height:30px; border-radius:50%;
+    background:#3a2020; display:flex; align-items:center; justify-content:center;
+    font-size:15px;
+    border:1px solid var(--line2);
+  }
+  .content { flex:1; padding:16px 14px; overflow:auto; position:relative; }
+  .content h3 {
+    margin:0 0 14px; font-size:11px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.16em; font-weight:600;
+  }
+
+  /* ========== POLAROID base ========== */
+  .polaroid {
+    background: var(--paper);
+    padding:8px 8px 24px;
+    box-shadow:
+      0 6px 14px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(0,0,0,0.1) inset;
+    position:relative;
+    color:#3a1d22;
+  }
+  .polaroid .photo {
+    background:
+      radial-gradient(circle at 30% 40%, #c08c5e 0%, transparent 50%),
+      radial-gradient(circle at 70% 60%, #6b1f2a 0%, transparent 60%),
+      linear-gradient(135deg, #2a1014, #4a2630);
+    aspect-ratio: 1 / 1;
+    position:relative;
+    overflow:hidden;
+  }
+  .polaroid .photo::after {
+    content:'';
+    position:absolute; inset:0;
+    background:
+      repeating-linear-gradient(
+        45deg,
+        transparent 0,
+        transparent 2px,
+        rgba(0,0,0,0.04) 2px,
+        rgba(0,0,0,0.04) 3px
+      );
+    mix-blend-mode:overlay;
+  }
+  .polaroid .photo .seal {
+    position:absolute; bottom:8px; right:8px;
+    width:22px; height:22px; border-radius:50%;
+    background:rgba(244,234,216,0.85);
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.3);
+  }
+  .polaroid .caption {
+    margin-top:6px;
+    font-family:'Caveat','Bradley Hand',cursive;
+    font-size:13px;
+    color:#3a1d22;
+    text-align:center;
+    line-height:1.2;
+  }
+  .polaroid .ttl {
+    position:absolute; bottom:4px; right:8px;
+    font-size:9px; letter-spacing:0.1em;
+    color:var(--bord);
+    font-family:-apple-system,sans-serif;
+    text-transform:uppercase;
+    font-weight:700;
+  }
+
+  /* ========== A: DESIDERI — polaroid appiccicata in cima ========== */
+  .desideri-pin {
+    margin: 6px 0 24px;
+    position:relative;
+    display:flex; justify-content:center;
+  }
+  .desideri-pin .polaroid {
+    width:140px;
+    transform: rotate(-3deg);
+    transform-origin: top center;
+    animation: gentle-sway 6s ease-in-out infinite;
+  }
+  @keyframes gentle-sway {
+    0%,100% { transform: rotate(-3deg); }
+    50% { transform: rotate(-1.5deg); }
+  }
+  .washi {
+    position:absolute;
+    width:60px; height:18px;
+    background: linear-gradient(180deg,
+      rgba(212,168,87,0.85) 0%,
+      rgba(184,99,44,0.85) 100%);
+    top:-6px; left:50%;
+    transform: translateX(-50%) rotate(-3deg);
+    z-index:2;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    border-left: 1px dashed rgba(0,0,0,0.15);
+    border-right: 1px dashed rgba(0,0,0,0.15);
+  }
+  .desideri-pin .label-pin {
+    position:absolute;
+    left: 50%;
+    bottom: -22px;
+    transform: translateX(-50%);
+    font-size:10px;
+    color:var(--gold);
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .desideri-pin .label-pin .urg { color:#ff9b6b; }
+  .desideri-list .item {
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:8px;
+    font-size:13px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .desideri-list .item .e { font-size:18px; }
+
+  /* ========== B: CALENDARIO — polaroid pinnata su un giorno ========== */
+  .cal-grid {
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap:4px;
+    margin-top:8px;
+  }
+  .cal-dow {
+    font-size:9px;
+    color:var(--muted);
+    text-align:center;
+    padding:4px 0;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px;
+    color:var(--fg);
+    position:relative;
+  }
+  .cal-day.muted { color:#5a4030; }
+  .cal-day.today {
+    background: linear-gradient(135deg, #3a1d22, #4a2630);
+    border-color: var(--gold);
+    color: var(--gold);
+    font-weight:700;
+  }
+  .cal-day.has-pol {
+    overflow:visible;
+  }
+  .cal-day.has-pol .polaroid {
+    position:absolute;
+    width: 70px;
+    top: -18px;
+    left: 50%;
+    transform: translate(-50%, 0) rotate(6deg);
+    z-index:3;
+    padding:4px 4px 16px;
+  }
+  .cal-day.has-pol .polaroid .photo { aspect-ratio: 1; }
+  .cal-day.has-pol .polaroid .ttl {
+    font-size:7px; bottom:2px; right:4px;
+  }
+  .cal-day.has-pol .pin {
+    position:absolute;
+    width:10px; height:10px;
+    border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, #ff8a6b, #b8302a);
+    top:-22px; left:50%;
+    transform: translateX(-50%);
+    z-index:4;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+  }
+  .cal-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:8px;
+  }
+  .cal-header .month {
+    font-family:'Georgia',serif; font-style:italic;
+    font-size:18px; color:var(--paper);
+  }
+  .cal-header .nav-arr {
+    color:var(--muted); font-size:14px;
+  }
+  .cal-legend {
+    margin-top:32px;
+    font-size:11px;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .cal-legend .dot {
+    width:8px; height:8px; border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, #ff8a6b, #b8302a);
+  }
+
+  /* ========== C: GALLERIA — frame fantasma "in attesa" ========== */
+  .gal-header {
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .gal-header h3 {
+    margin:0; font-family:'Georgia',serif; font-style:italic;
+    font-size:18px; color:var(--paper); text-transform:none; letter-spacing:0;
+  }
+  .gal-header .count { font-size:11px; color:var(--muted); }
+  .gal-grid {
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+  }
+  .gal-tile {
+    background: var(--paper);
+    padding:6px 6px 18px;
+    box-shadow:
+      0 4px 10px rgba(0,0,0,0.5),
+      0 0 0 1px rgba(0,0,0,0.08) inset;
+    position:relative;
+  }
+  .gal-tile .photo {
+    aspect-ratio:1;
+    background:
+      radial-gradient(circle at 30% 30%, #c08c5e 0%, transparent 55%),
+      radial-gradient(circle at 70% 70%, #6b1f2a 0%, transparent 60%),
+      linear-gradient(135deg, #2a1014, #4a2630);
+  }
+  .gal-tile.ghost {
+    background:
+      repeating-linear-gradient(
+        135deg,
+        rgba(244,234,216,0.18) 0,
+        rgba(244,234,216,0.18) 6px,
+        rgba(244,234,216,0.06) 6px,
+        rgba(244,234,216,0.06) 12px
+      );
+    border: 1.5px dashed rgba(244,234,216,0.4);
+    box-shadow: none;
+    padding:6px 6px 18px;
+    color:var(--paper);
+  }
+  .gal-tile.ghost .photo {
+    background:
+      repeating-linear-gradient(
+        45deg,
+        rgba(212,168,87,0.08) 0,
+        rgba(212,168,87,0.08) 4px,
+        transparent 4px,
+        transparent 8px
+      );
+    border: 1px dashed rgba(212,168,87,0.4);
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column;
+    gap:6px;
+    position:relative;
+  }
+  .gal-tile.ghost .icon-cam {
+    font-size:26px;
+    opacity:0.7;
+    filter: drop-shadow(0 0 10px rgba(212,168,87,0.35));
+    animation: pulse-cam 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse-cam {
+    0%,100% { opacity:0.6; transform:scale(1); }
+    50% { opacity:1; transform:scale(1.08); }
+  }
+  .gal-tile.ghost .countdown-pill {
+    background: rgba(0,0,0,0.5);
+    border:1px solid var(--gold);
+    color:var(--gold);
+    font-size:10px;
+    padding:3px 8px;
+    border-radius:10px;
+    font-weight:700;
+    letter-spacing:0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .gal-tile.ghost .caption {
+    margin-top:6px;
+    font-family:'Caveat','Bradley Hand',cursive;
+    font-size:13px;
+    color:var(--paper);
+    text-align:center;
+    opacity:0.85;
+  }
+
+  /* ========== D: MAPPA — pin polaroid pulsante ========== */
+  .map {
+    border-radius:12px;
+    overflow:hidden;
+    height: 360px;
+    background:
+      radial-gradient(ellipse at 20% 30%, #2a1820 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, #1a1020 0%, transparent 50%),
+      linear-gradient(180deg, #1a1015 0%, #0e0608 100%);
+    position:relative;
+    border:1px solid var(--line);
+  }
+  .map::before {
+    content:'';
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(212,168,87,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,168,87,0.06) 1px, transparent 1px);
+    background-size: 30px 30px;
+    opacity:0.6;
+  }
+  /* fake roads */
+  .road {
+    position:absolute;
+    background: rgba(212,168,87,0.12);
+    border-radius:1px;
+  }
+  .road.h1 { top:35%; left:0; width:100%; height:2px; transform: rotate(-3deg); }
+  .road.h2 { top:68%; left:0; width:100%; height:2px; transform: rotate(2deg); }
+  .road.v1 { top:0; left:30%; width:2px; height:100%; transform: rotate(5deg); }
+  .road.v2 { top:0; left:72%; width:2px; height:100%; transform: rotate(-4deg); }
+  /* misc pins */
+  .pin-mini {
+    position:absolute;
+    width:8px; height:8px;
+    border-radius:50%;
+    background: var(--gold-soft);
+    box-shadow: 0 0 4px rgba(212,168,87,0.6);
+  }
+  .pin-pol {
+    position:absolute;
+    top: 40%; left: 50%;
+    transform: translate(-50%, -100%);
+    z-index:5;
+  }
+  .pin-pol .pulse {
+    position:absolute;
+    bottom: -8px; left:50%;
+    transform: translateX(-50%);
+    width:18px; height:18px;
+    border-radius:50%;
+    background: rgba(255,180,128,0.5);
+    animation: pulse-ring 1.8s ease-out infinite;
+  }
+  @keyframes pulse-ring {
+    0% { transform: translateX(-50%) scale(0.5); opacity:0.9; }
+    100% { transform: translateX(-50%) scale(2.6); opacity:0; }
+  }
+  .pin-pol .stem {
+    position:absolute;
+    bottom: -8px; left:50%;
+    transform: translateX(-50%);
+    width:2px; height:14px;
+    background: var(--gold);
+  }
+  .pin-pol .polaroid {
+    width: 100px;
+    padding: 5px 5px 18px;
+    transform: rotate(-4deg);
+  }
+  .pin-pol .polaroid .photo { aspect-ratio:1; }
+  .pin-pol .polaroid .ttl { font-size:8px; }
+  .map-callout {
+    position:absolute;
+    bottom: 12px; left: 12px; right: 12px;
+    background: var(--paper);
+    color:#3a1d22;
+    border-radius:10px;
+    padding:10px 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .map-callout .pic {
+    width:30px; height:30px;
+    background:
+      linear-gradient(135deg, #6b1f2a, #b8632c);
+    border-radius:4px;
+    flex-shrink:0;
+    border:2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  }
+  .map-callout .info { flex:1; }
+  .map-callout .info .t { font-size:12px; font-weight:700; }
+  .map-callout .info .s { font-size:10px; color:var(--bord); margin-top:2px; }
+  .map-callout .cta {
+    background:var(--bord); color:#fff;
+    border:none;
+    padding:6px 10px; border-radius:6px;
+    font-size:11px; font-weight:700;
+    cursor:pointer;
+  }
+
+  /* ========== E: TOPBAR ricamato — camera-chip permanente ========== */
+  .topbar-pol {
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    padding:10px 14px;
+    display:flex; align-items:center; gap:10px;
+    flex-shrink:0;
+  }
+  .topbar-pol .brand {
+    font-family:'Georgia',serif; font-style:italic;
+    font-size:16px; color:var(--gold); letter-spacing:0.02em;
+    flex:1;
+  }
+  .cam-chip {
+    position:relative;
+    width:34px; height:34px;
+    border-radius:8px;
+    background: var(--paper);
+    box-shadow:
+      0 2px 6px rgba(0,0,0,0.4),
+      0 0 0 1px rgba(0,0,0,0.15) inset;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:transform 0.15s;
+  }
+  .cam-chip:active { transform:scale(0.94); }
+  .cam-chip .mini-photo {
+    width:22px; height:22px;
+    background:
+      radial-gradient(circle at 30% 30%, #c08c5e 0%, transparent 55%),
+      radial-gradient(circle at 70% 70%, #6b1f2a 0%, transparent 60%),
+      linear-gradient(135deg, #2a1014, #4a2630);
+    border-radius:2px;
+  }
+  .cam-chip .dot-cnt {
+    position:absolute;
+    top:-4px; right:-4px;
+    min-width:16px; height:16px;
+    border-radius:8px;
+    background: linear-gradient(135deg, #ff8a6b, #b8302a);
+    color:#fff;
+    font-size:9px;
+    font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 4px;
+    border: 2px solid var(--panel);
+    box-shadow: 0 0 6px rgba(255,138,107,0.5);
+  }
+  .cam-chip .ring {
+    position:absolute; inset:-3px;
+    border-radius:11px;
+    border:1px solid var(--gold);
+    opacity:0.55;
+    animation: ring-pulse 2s ease-in-out infinite;
+  }
+  @keyframes ring-pulse {
+    0%,100% { opacity:0.3; transform:scale(1); }
+    50% { opacity:0.7; transform:scale(1.06); }
+  }
+  /* peek preview */
+  .peek {
+    margin: 14px 0 18px;
+    background: var(--panel2);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:12px;
+  }
+  .peek .pol-mini {
+    width:38px; height:46px;
+    background:var(--paper);
+    padding:3px 3px 8px;
+    flex-shrink:0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    transform: rotate(-4deg);
+  }
+  .peek .pol-mini .ph {
+    width:32px; height:32px;
+    background:
+      radial-gradient(circle at 30% 30%, #c08c5e 0%, transparent 55%),
+      radial-gradient(circle at 70% 70%, #6b1f2a 0%, transparent 60%),
+      linear-gradient(135deg, #2a1014, #4a2630);
+  }
+  .peek .info { flex:1; }
+  .peek .info .t {
+    font-family:'Georgia',serif; font-style:italic;
+    font-size:13px; color:var(--paper);
+  }
+  .peek .info .s {
+    font-size:10px; color:var(--gold);
+    margin-top:2px;
+    letter-spacing:0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .peek .arr { color:var(--muted); font-size:14px; }
+
+  .map-card-header {
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .map-card-header h3 {
+    margin:0; font-family:'Georgia',serif; font-style:italic;
+    font-size:18px; color:var(--paper); text-transform:none; letter-spacing:0;
+  }
+  .map-card-header .filter {
+    font-size:11px; color:var(--muted);
+  }
+
+  .footnote {
+    margin-top:28px; font-size:12px;
+    color:var(--muted); text-align:center;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    line-height:1.6;
+  }
+  .footnote strong { color:var(--gold); font-weight:600; }
+
+  .divider {
+    width:80px; height:1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 24px auto 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Polaroid · altre collocazioni</h1>
+<p class="sub">In <em>Buoni</em> è ok (entry con TTL approvato). Qui 5 alternative per portarla anche in altre sezioni dell'app — ogni placement è nativo alla sua sezione, non un copia-incolla del badge.</p>
+
+<div class="row">
+
+  <!-- A: DESIDERI -->
+  <div class="scenario">
+    <div class="label">Sezione · Desideri</div>
+    <h2>Cartolina appesa in cima</h2>
+    <p class="desc">Polaroid con washi tape sopra alla lista desideri. Ondeggia piano, conta giù sotto.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-pin">
+          <div class="washi"></div>
+          <div class="polaroid">
+            <div class="photo"><span class="seal">📸</span></div>
+            <div class="caption">una per te</div>
+            <span class="ttl">18h 24m</span>
+          </div>
+          <div class="label-pin">scade in <span class="urg">18h 24m</span></div>
+        </div>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+          <div class="item"><span class="e">🍷</span> Cena al buio</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ massima visibilità (Desideri = home)</div>
+      <div class="p">+ feel fisico, "qualcosa da non scordare"</div>
+      <div class="c">− se vuoto, sparisce — niente costanza visiva</div>
+    </div>
+  </div>
+
+  <!-- B: CALENDARIO -->
+  <div class="scenario">
+    <div class="label">Sezione · Calendario</div>
+    <h2>Pinned al giorno</h2>
+    <p class="desc">Mini polaroid pinnata sul giorno di scadenza. Pin rosso visibile anche al colpo d'occhio.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Calendario</span>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <div class="cal-header">
+          <span class="nav-arr">‹</span>
+          <span class="month">maggio</span>
+          <span class="nav-arr">›</span>
+        </div>
+        <div class="cal-grid">
+          <span class="cal-dow">L</span><span class="cal-dow">M</span><span class="cal-dow">M</span>
+          <span class="cal-dow">G</span><span class="cal-dow">V</span><span class="cal-dow">S</span><span class="cal-dow">D</span>
+          <div class="cal-day muted">26</div><div class="cal-day muted">27</div>
+          <div class="cal-day today">28</div>
+          <div class="cal-day has-pol">
+            <span class="pin"></span>
+            <div class="polaroid">
+              <div class="photo"></div>
+              <span class="ttl">18h</span>
+            </div>
+            29
+          </div>
+          <div class="cal-day">30</div><div class="cal-day">31</div><div class="cal-day muted">1</div>
+          <div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div>
+          <div class="cal-day">5</div><div class="cal-day">6</div><div class="cal-day">7</div>
+          <div class="cal-day">8</div>
+          <div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day">11</div>
+          <div class="cal-day">12</div><div class="cal-day">13</div><div class="cal-day">14</div>
+          <div class="cal-day">15</div>
+        </div>
+        <div class="cal-legend">
+          <span class="dot"></span> polaroid in scadenza
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ unisce TTL + senso temporale</div>
+      <div class="p">+ vedi tutto il mese, capisci quando scade</div>
+      <div class="c">− visibile solo se entri in Calendario</div>
+    </div>
+  </div>
+
+  <!-- C: GALLERIA -->
+  <div class="scenario">
+    <div class="label">Sezione · Galleria</div>
+    <h2>Frame fantasma</h2>
+    <p class="desc">Tile vuoto a tratteggio in cima alla griglia: lo spazio della prossima polaroid è già lì, in attesa.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Galleria</span>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <div class="gal-header">
+          <h3>i nostri scatti</h3>
+          <span class="count">12 + 1 in attesa</span>
+        </div>
+        <div class="gal-grid">
+          <div class="gal-tile ghost">
+            <div class="photo">
+              <span class="icon-cam">📸</span>
+              <span class="countdown-pill">18h 24m</span>
+            </div>
+            <div class="caption">da spedire</div>
+          </div>
+          <div class="gal-tile"><div class="photo"></div></div>
+          <div class="gal-tile"><div class="photo"></div></div>
+          <div class="gal-tile"><div class="photo"></div></div>
+          <div class="gal-tile"><div class="photo"></div></div>
+          <div class="gal-tile"><div class="photo"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ coerentissimo con Galleria (è il suo posto naturale)</div>
+      <div class="p">+ frame in attesa = invito implicito a scattare</div>
+      <div class="c">− nascosto se non apri Galleria</div>
+    </div>
+  </div>
+
+  <!-- D: MAPPA -->
+  <div class="scenario">
+    <div class="label">Sezione · Mappa</div>
+    <h2>Pin foto pulsante</h2>
+    <p class="desc">Polaroid come pin sulla mappa nel posto richiesto (camera da letto / hotel / etc), con callout countdown.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Mappa</span>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <div class="map-card-header">
+          <h3>i nostri posti</h3>
+          <span class="filter">tutti ▾</span>
+        </div>
+        <div class="map">
+          <span class="road h1"></span>
+          <span class="road h2"></span>
+          <span class="road v1"></span>
+          <span class="road v2"></span>
+          <span class="pin-mini" style="top:22%; left:18%"></span>
+          <span class="pin-mini" style="top:55%; left:80%"></span>
+          <span class="pin-mini" style="top:78%; left:25%"></span>
+          <span class="pin-mini" style="top:30%; left:65%"></span>
+          <div class="pin-pol">
+            <div class="polaroid">
+              <div class="photo"></div>
+              <span class="ttl">18h</span>
+            </div>
+            <span class="stem"></span>
+            <span class="pulse"></span>
+          </div>
+          <div class="map-callout">
+            <div class="pic"></div>
+            <div class="info">
+              <div class="t">Polaroid · camera</div>
+              <div class="s">scade in 18h 24m</div>
+            </div>
+            <button class="cta">Spedisci</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ romantico, lega la richiesta a un luogo</div>
+      <div class="p">+ pulse = urgenza senza essere invasivo</div>
+      <div class="c">− funziona solo se la polaroid HA un luogo</div>
+    </div>
+  </div>
+
+  <!-- E: TOPBAR camera-chip -->
+  <div class="scenario">
+    <div class="label">Cross-section · Topbar</div>
+    <h2>Camera chip persistente</h2>
+    <p class="desc">Chip foto in topbar con contatore + anello pulsante. Visibile in ogni sezione, click → peek inline.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar-pol">
+        <span class="brand">Lussuria</span>
+        <div class="cam-chip">
+          <span class="mini-photo"></span>
+          <span class="ring"></span>
+          <span class="dot-cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="peek">
+          <div class="pol-mini"><div class="ph"></div></div>
+          <div class="info">
+            <div class="t">Una polaroid in sospeso</div>
+            <div class="s">scade in 18h 24m · tap per spedire</div>
+          </div>
+          <span class="arr">›</span>
+        </div>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ persistente ovunque, non solo in una sezione</div>
+      <div class="p">+ chip-paper coerente con metafora polaroid</div>
+      <div class="c">− scala male con N>2 promemoria (ruota, buoni, etc)</div>
+      <div class="c">− anello che pulsa può diventare rumore</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+<p class="footnote">
+  La <strong>D</strong> e la <strong>C</strong> sono molto specifiche del posto (mappa romantica, frame fantasma in galleria). La <strong>A</strong> è la più visibile perché Desideri è la prima vista. La <strong>B</strong> è la più sensata per il senso temporale. La <strong>E</strong> è l'unica cross-section.<br>
+  Combinazioni che funzionano: <strong>Buoni + E</strong> (chip ovunque, dettaglio in Buoni) · <strong>Buoni + A</strong> (presente in Desideri all'apertura, dettaglio in Buoni).
+</p>
+
+</body>
+</html>

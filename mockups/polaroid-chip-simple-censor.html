@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Polaroid · censura semplice</title>
+<style>
+  :root {
+    --bg: #160409;
+    --panel: #221013;
+    --line: #3a1d22;
+    --line2: #4a2630;
+    --fg: #f5e6d3;
+    --muted: #a89380;
+    --gold: #d4a857;
+    --paper: #f4ead8;
+    --paper2: #ede1c8;
+    --skin: #e8a890;
+    --skin-deep: #b87060;
+    --noir: #0a0608;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin:0; padding:0;
+    background: radial-gradient(ellipse at top, #1f0a10 0%, #0a0306 70%);
+    color:var(--fg);
+    font-family: 'Georgia', serif;
+    min-height:100vh;
+  }
+  body { padding:36px 16px 80px; }
+  h1 {
+    font-size:22px; margin:0 0 6px;
+    font-weight:400; letter-spacing:0.02em;
+    color:var(--paper); font-style:italic;
+  }
+  .sub {
+    color:var(--muted); font-size:13px; margin:0 0 28px;
+    max-width:760px;
+    font-family:-apple-system,sans-serif;
+    line-height:1.5;
+  }
+  .section-title {
+    font-family:-apple-system,sans-serif;
+    font-size:11px; color:var(--gold);
+    text-transform:uppercase; letter-spacing:0.2em;
+    font-weight:700;
+    margin: 36px 0 16px;
+    padding-left: 14px;
+    border-left: 2px solid var(--gold);
+  }
+  .row {
+    display:flex; gap:24px; flex-wrap:wrap;
+    justify-content:center;
+    align-items:flex-start;
+  }
+  .scenario { width:340px; }
+  .scenario .label {
+    font-size:11px; text-transform:uppercase;
+    letter-spacing:0.16em; color:var(--gold);
+    margin:0 0 4px;
+    font-family:-apple-system,sans-serif; font-weight:600;
+  }
+  .scenario h2 {
+    font-size:17px; font-weight:400; margin:0 0 6px;
+    color:var(--paper); font-style:italic;
+  }
+  .scenario .desc {
+    color:var(--muted); font-size:12px; margin:0 0 14px;
+    min-height:36px; line-height:1.5;
+    font-family:-apple-system,sans-serif;
+  }
+  .pro-con {
+    font-size:11px; color:var(--muted); margin-top:10px; line-height:1.6;
+    font-family:-apple-system,sans-serif;
+  }
+  .pro-con .p { color:#9cc09c; }
+  .pro-con .c { color:#c89898; }
+
+  .phone {
+    width:320px; height:420px;
+    border-radius:32px;
+    background:var(--bg);
+    border:1px solid #2a1014;
+    box-shadow:
+      0 12px 32px rgba(0,0,0,0.7),
+      0 0 0 6px #0a0306,
+      0 0 0 7px #1a0a0e;
+    overflow:hidden;
+    position:relative;
+    display:flex; flex-direction:column;
+    font-family:-apple-system,sans-serif;
+  }
+  .status {
+    height:28px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 18px; font-size:11px; color:var(--muted);
+    background:rgba(0,0,0,0.25); flex-shrink:0;
+  }
+  .topbar {
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    padding:12px 14px;
+    display:flex; align-items:center; gap:10px;
+    flex-shrink:0;
+  }
+  .topbar .brand {
+    font-family:'Georgia',serif; font-style:italic;
+    font-size:16px; color:var(--gold); letter-spacing:0.02em;
+    flex:1;
+  }
+  .topbar .avatar {
+    width:30px; height:30px; border-radius:50%;
+    background:#3a2020; display:flex; align-items:center; justify-content:center;
+    font-size:15px;
+    border:1px solid var(--line2);
+  }
+  .content { flex:1; padding:16px 14px; overflow:auto; }
+  .content h3 {
+    margin:0 0 14px; font-size:11px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.16em; font-weight:600;
+  }
+  .desideri-list .item {
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:8px;
+    font-size:13px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .desideri-list .item .e { font-size:18px; }
+
+  .zoom-row {
+    display:flex; gap:60px; justify-content:center; align-items:flex-end;
+    padding: 36px 20px 24px;
+    background: var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    margin: 12px auto 8px;
+    max-width: 680px;
+    flex-wrap:wrap;
+  }
+  .zoom-cell { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .zoom-cell .scaled { transform: scale(4); transform-origin: bottom center; }
+  .zoom-cell .lbl {
+    font-family:-apple-system,sans-serif;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.04em;
+    text-align:center;
+    margin-top: 50px;
+    max-width: 120px;
+  }
+  .zoom-cell .lbl strong { color: var(--gold); display:block; margin-bottom:2px; font-weight:600; }
+
+  /* === POLAROID MINIMA === */
+  .pol {
+    position:relative;
+    width:26px; height:32px;
+    cursor:pointer;
+    transition: transform 0.15s;
+  }
+  .pol:active { transform: scale(0.94); }
+  .pol .card {
+    position:absolute; inset:0;
+    background: var(--paper);
+    padding: 2px 2px 8px;
+    box-shadow:
+      0 3px 8px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(0,0,0,0.18) inset;
+  }
+  /* La foto: solo skin warm. Niente curve, niente shoulder, niente grain. */
+  .pol .ph {
+    width:100%; height:18px;
+    position:relative;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse at 50% 50%, var(--skin) 0%, var(--skin-deep) 70%, #6b3030 100%);
+  }
+  .pol .cnt {
+    position:absolute;
+    top:-4px; right:-4px;
+    min-width:13px; height:13px; border-radius:6.5px;
+    background: var(--gold); color: var(--bg);
+    font-size:8px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 3px;
+    border: 1.5px solid var(--panel);
+    z-index:6;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* === Variante 1: una barra centrale === */
+  .v1 .bar {
+    position:absolute;
+    top: 7px; left: 0; right: 0;
+    height: 5px;
+    background: var(--noir);
+  }
+
+  /* === Variante 2: due barre (eye + chest) === */
+  .v2 .bar-eye {
+    position:absolute;
+    top: 4px; left: 0; right: 0;
+    height: 3px;
+    background: var(--noir);
+  }
+  .v2 .bar-chest {
+    position:absolute;
+    top: 10px; left: 0; right: 0;
+    height: 4px;
+    background: var(--noir);
+  }
+
+  /* === Variante 3: barra diagonale === */
+  .v3 .bar {
+    position:absolute;
+    top: 6px; left: -4px; right: -4px;
+    height: 6px;
+    background: var(--noir);
+    transform: rotate(-12deg);
+  }
+
+  .footnote {
+    margin-top:32px; font-size:12px;
+    color:var(--muted); text-align:center;
+    font-family:-apple-system,sans-serif;
+    line-height:1.6;
+    max-width:760px;
+    margin-left:auto; margin-right:auto;
+  }
+  .footnote strong { color:var(--gold); font-weight:600; }
+  .divider {
+    width:80px; height:1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 24px auto 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Polaroid · censura semplice</h1>
+<p class="sub">Polaroid cream + foto skin + barra/e nera/e. Niente altro: niente grain, niente bollini, niente testi, niente curve disegnate.</p>
+
+<div class="section-title">Confronto · scala 4×</div>
+<div class="zoom-row">
+
+  <div class="zoom-cell">
+    <div class="scaled">
+      <div class="pol v1">
+        <div class="card">
+          <div class="ph">
+            <div class="bar"></div>
+          </div>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>1</strong>una barra centrale</div>
+  </div>
+
+  <div class="zoom-cell">
+    <div class="scaled">
+      <div class="pol v2">
+        <div class="card">
+          <div class="ph">
+            <div class="bar-eye"></div>
+            <div class="bar-chest"></div>
+          </div>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>2</strong>due barre</div>
+  </div>
+
+  <div class="zoom-cell">
+    <div class="scaled">
+      <div class="pol v3">
+        <div class="card">
+          <div class="ph">
+            <div class="bar"></div>
+          </div>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>3</strong>barra diagonale</div>
+  </div>
+
+</div>
+
+<div class="section-title">In topbar reale</div>
+
+<div class="row">
+
+  <div class="scenario">
+    <div class="label">Variante · 1</div>
+    <h2>Una barra centrale</h2>
+    <p class="desc">Una sola barra orizzontale spessa che copre il centro della foto. Massima pulizia.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol v1">
+          <div class="card">
+            <div class="ph"><div class="bar"></div></div>
+          </div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Variante · 2</div>
+    <h2>Due barre</h2>
+    <p class="desc">Barra occhi + barra petto. Pattern censura classico.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol v2">
+          <div class="card">
+            <div class="ph">
+              <div class="bar-eye"></div>
+              <div class="bar-chest"></div>
+            </div>
+          </div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Variante · 3</div>
+    <h2>Barra diagonale</h2>
+    <p class="desc">Una barra spessa ruotata -12° che esce dai bordi della foto. Più dinamica.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol v3">
+          <div class="card">
+            <div class="ph"><div class="bar"></div></div>
+          </div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+<p class="footnote">
+  Tutto il resto è uguale: polaroid carta cream + foto rosa-skin + contatore oro. L'unica differenza è la barra.
+</p>
+
+</body>
+</html>

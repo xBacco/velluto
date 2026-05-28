@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Polaroid censurata · v3</title>
+<style>
+  :root {
+    --bg: #160409;
+    --panel: #221013;
+    --panel2: #2c1418;
+    --line: #3a1d22;
+    --line2: #4a2630;
+    --fg: #f5e6d3;
+    --muted: #a89380;
+    --gold: #d4a857;
+    --rust: #b8632c;
+    --bord: #6b1f2a;
+    --hot: #d4203a;
+    --hot-light: #ff5575;
+    --paper: #f4ead8;
+    --paper2: #ede1c8;
+    --paper-warm: #f6d8c0;
+    --skin: #f0bc94;
+    --skin-deep: #b87060;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin:0; padding:0;
+    background: radial-gradient(ellipse at top, #1f0a10 0%, #0a0306 70%);
+    color:var(--fg);
+    font-family: 'Georgia', serif;
+    min-height:100vh;
+  }
+  body { padding:36px 16px 80px; }
+  h1 {
+    font-size:22px; margin:0 0 6px;
+    font-weight:400; letter-spacing:0.02em;
+    color:var(--paper); font-style:italic;
+  }
+  .sub {
+    color:var(--muted); font-size:13px; margin:0 0 28px;
+    max-width:760px;
+    font-family:-apple-system,sans-serif;
+    line-height:1.5;
+  }
+  .section-title {
+    font-family:-apple-system,sans-serif;
+    font-size:11px; color:var(--gold);
+    text-transform:uppercase; letter-spacing:0.2em;
+    font-weight:700;
+    margin: 40px 0 16px;
+    padding-left: 14px;
+    border-left: 2px solid var(--gold);
+  }
+  .row {
+    display:flex; gap:24px; flex-wrap:wrap;
+    justify-content:center;
+    align-items:flex-start;
+  }
+  .scenario { width:340px; }
+  .scenario .label {
+    font-size:11px; text-transform:uppercase;
+    letter-spacing:0.16em; color:var(--gold);
+    margin:0 0 4px;
+    font-family:-apple-system,sans-serif; font-weight:600;
+  }
+  .scenario h2 {
+    font-size:17px; font-weight:400; margin:0 0 6px;
+    color:var(--paper); font-style:italic;
+  }
+  .scenario .desc {
+    color:var(--muted); font-size:12px; margin:0 0 14px;
+    min-height:36px; line-height:1.5;
+    font-family:-apple-system,sans-serif;
+  }
+  .pro-con {
+    font-size:11px; color:var(--muted); margin-top:10px; line-height:1.6;
+    font-family:-apple-system,sans-serif;
+  }
+  .pro-con .p { color:#9cc09c; }
+  .pro-con .c { color:#c89898; }
+
+  .phone {
+    width:320px; height:440px;
+    border-radius:32px;
+    background:var(--bg);
+    border:1px solid #2a1014;
+    box-shadow:
+      0 12px 32px rgba(0,0,0,0.7),
+      0 0 0 6px #0a0306,
+      0 0 0 7px #1a0a0e;
+    overflow:hidden;
+    position:relative;
+    display:flex; flex-direction:column;
+    font-family:-apple-system,sans-serif;
+  }
+  .status {
+    height:28px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 18px; font-size:11px; color:var(--muted);
+    background:rgba(0,0,0,0.25); flex-shrink:0;
+  }
+  .topbar {
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    padding:12px 14px;
+    display:flex; align-items:center; gap:10px;
+    flex-shrink:0;
+  }
+  .topbar .brand {
+    font-family:'Georgia',serif; font-style:italic;
+    font-size:16px; color:var(--gold); letter-spacing:0.02em;
+    flex:1;
+  }
+  .topbar .avatar {
+    width:30px; height:30px; border-radius:50%;
+    background:#3a2020; display:flex; align-items:center; justify-content:center;
+    font-size:15px;
+    border:1px solid var(--line2);
+  }
+  .content { flex:1; padding:16px 14px; overflow:auto; }
+  .content h3 {
+    margin:0 0 14px; font-size:11px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.16em; font-weight:600;
+  }
+  .desideri-list .item {
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:8px;
+    font-size:13px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .desideri-list .item .e { font-size:18px; }
+
+  .zoom-row {
+    display:flex; gap:48px; justify-content:center; align-items:flex-end;
+    padding: 36px 20px 24px;
+    background: var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    margin: 12px auto 8px;
+    max-width: 760px;
+    flex-wrap:wrap;
+  }
+  .zoom-cell { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .zoom-cell .scaled-3 { transform: scale(3.2); transform-origin: bottom center; }
+  .zoom-cell .lbl {
+    font-family:-apple-system,sans-serif;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.04em;
+    text-align:center;
+    margin-top: 44px;
+    max-width: 120px;
+  }
+  .zoom-cell .lbl strong { color: var(--gold); display:block; margin-bottom:2px; font-weight:600; }
+
+  /* Polaroid base */
+  .pol {
+    position:relative;
+    width:26px; height:32px;
+    cursor:pointer;
+    transition: transform 0.15s;
+  }
+  .pol:active { transform: scale(0.94); }
+  .pol .card {
+    position:absolute; inset:0;
+    background: var(--paper);
+    padding: 2px 2px 8px;
+    box-shadow:
+      0 3px 8px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(0,0,0,0.18) inset;
+  }
+  .pol .ph {
+    width:100%; height:18px;
+    position:relative;
+    overflow:hidden;
+  }
+  .pol .body {
+    position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse 6px 4px at 38% 22%, var(--paper-warm) 0%, transparent 70%),
+      radial-gradient(ellipse 14px 18px at 55% 70%, var(--skin) 0%, var(--skin-deep) 35%, #6b3030 65%, #2a1014 100%),
+      linear-gradient(225deg, transparent 50%, rgba(0,0,0,0.45) 100%);
+  }
+  .pol .grain {
+    position:absolute; inset:0;
+    background-image: radial-gradient(circle, rgba(0,0,0,0.18) 0.5px, transparent 0.8px);
+    background-size: 2px 2px;
+    mix-blend-mode: overlay;
+    pointer-events:none;
+  }
+  .pol .cnt {
+    position:absolute;
+    top:-4px; right:-4px;
+    min-width:13px; height:13px; border-radius:6.5px;
+    background: var(--gold); color: var(--bg);
+    font-size:8px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 3px;
+    border: 1.5px solid var(--panel);
+    z-index:6;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ===================================================== */
+  /* VARIANT L · Angolo piegato (corner-flip tease)         */
+  /* ===================================================== */
+  /* La polaroid ha l'angolo in alto-destra piegato che mostra il retro
+     bianco. Sotto l'angolo si intravede un pezzo "scoperto". Tease analogico. */
+  .v-l .ph {
+    height: 22px; /* foto più alta perché c'è l'angolo */
+  }
+  /* "scoperto" hint: full body visible in a corner via gradient */
+  .v-l .ph .body {
+    background:
+      radial-gradient(ellipse 6px 4px at 38% 22%, var(--paper-warm) 0%, transparent 70%),
+      radial-gradient(ellipse 18px 22px at 60% 75%, var(--skin) 0%, var(--skin-deep) 30%, #8a4040 60%, #2a1014 100%),
+      linear-gradient(225deg, transparent 50%, rgba(0,0,0,0.45) 100%);
+  }
+  /* Dark "cover" over most of photo — leaves corner clear */
+  .v-l .cover {
+    position:absolute; inset:0;
+    background:
+      linear-gradient(135deg, #1a0a0e 0%, #2a1014 60%, #3a1d22 100%);
+    /* clip out the top-right triangle so the body shows through */
+    clip-path: polygon(0 0, 100% 0, 100% 30%, 70% 0, 0 0, 0 100%, 100% 100%, 100% 30%);
+    /* Actually simpler: hide cover under the "fold" triangle */
+    -webkit-mask: linear-gradient(225deg, transparent 0, transparent 6px, #000 6.5px);
+    mask: linear-gradient(225deg, transparent 0, transparent 6px, #000 6.5px);
+  }
+  /* Folded corner: white triangle in top-right */
+  .v-l .fold {
+    position:absolute;
+    top:0; right:0;
+    width: 11px; height: 11px;
+    background: linear-gradient(225deg, var(--paper2) 0%, var(--paper) 50%, #d8c89e 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    box-shadow:
+      -1px 1px 2px rgba(0,0,0,0.4);
+    z-index: 3;
+  }
+  .v-l .fold::after {
+    /* crease line */
+    content:'';
+    position:absolute;
+    top: 0; left: 0;
+    width: 16px; height: 1px;
+    background: rgba(0,0,0,0.25);
+    transform-origin: top left;
+    transform: rotate(45deg);
+  }
+  /* Small "intravedi" highlight along the fold edge */
+  .v-l .peek-glow {
+    position:absolute;
+    top: 0; right: 0;
+    width: 12px; height: 12px;
+    background: radial-gradient(circle at 30% 80%, rgba(240,188,148,0.5) 0%, transparent 60%);
+    z-index: 2;
+    pointer-events:none;
+  }
+
+  /* ===================================================== */
+  /* VARIANT M · Mosaico pixel                              */
+  /* ===================================================== */
+  /* La foto è pixelata (mosaico). Censura digital/Asian-AV style. */
+  .v-m .ph .body {
+    background:
+      radial-gradient(ellipse 6px 4px at 38% 22%, var(--paper-warm) 0%, transparent 70%),
+      radial-gradient(ellipse 14px 18px at 55% 70%, var(--skin) 0%, var(--skin-deep) 35%, #6b3030 65%, #2a1014 100%);
+  }
+  /* Mosaic overlay — pixel grid that "samples" the underlying body */
+  .v-m .mosaic {
+    position:absolute; inset:0;
+    background-image:
+      /* grid lines */
+      linear-gradient(rgba(0,0,0,0.55) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.55) 1px, transparent 1px);
+    background-size: 3px 3px;
+    background-position: 0 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+  /* Center area is more obscured (the "interesting" area) */
+  .v-m .mosaic-block {
+    position:absolute;
+    top: 4px; left: 7px;
+    width: 13px; height: 11px;
+    background:
+      /* averaged skin chunks — 4×3 pixel grid hand-painted */
+      linear-gradient(90deg,
+        #b87060 0 25%, #c88070 25% 50%, #8a5040 50% 75%, #604030 75% 100%);
+    background-image:
+      conic-gradient(
+        from 0deg at 50% 50%,
+        #b87060 0deg 90deg,
+        #c88070 90deg 180deg,
+        #8a5040 180deg 270deg,
+        #6b3030 270deg 360deg);
+    background-size: 100% 100%;
+    /* tile it with multiple solid blocks via box-shadows */
+    box-shadow:
+      -3px 0 0 #a05848,
+      3px 0 0 #c89070,
+      -3px 3px 0 #8a4030,
+      0 3px 0 #b06050,
+      3px 3px 0 #6b3030,
+      -3px -3px 0 #c87060,
+      0 -3px 0 #d49080,
+      3px -3px 0 #a06050;
+    /* clip to circle of interest */
+    border-radius: 1px;
+    z-index: 1;
+  }
+  /* a small grid mask to make pixels more visible */
+  .v-m .ph::after {
+    content:'';
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.4) 1px, transparent 1px);
+    background-size: 3px 3px;
+    z-index: 3;
+    pointer-events:none;
+  }
+
+  /* ===================================================== */
+  /* VARIANT N · Cuore sticker rosso                        */
+  /* ===================================================== */
+  .v-n .ph .body {
+    background:
+      radial-gradient(ellipse 6px 4px at 38% 22%, var(--paper-warm) 0%, transparent 70%),
+      radial-gradient(ellipse 14px 18px at 55% 70%, var(--skin) 0%, var(--skin-deep) 35%, #6b3030 65%, #2a1014 100%);
+  }
+  .v-n .heart {
+    position:absolute;
+    top: 4px; left: 50%;
+    transform: translateX(-50%) rotate(-8deg);
+    width: 14px; height: 13px;
+    z-index: 3;
+    /* heart via CSS */
+    background:
+      radial-gradient(circle at 30% 30%, var(--hot-light) 0%, var(--hot) 50%, #8a1224 100%);
+    clip-path: path('M7 12 C 1 8, 0 4, 0 3 A 3 3 0 0 1 7 3 A 3 3 0 0 1 14 3 C 14 4, 13 8, 7 12 Z');
+    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    /* highlight */
+  }
+  .v-n .heart::before {
+    content:'';
+    position:absolute;
+    top: 2px; left: 3px;
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    filter: blur(0.5px);
+  }
+  /* tiny "sticker" curl effect */
+  .v-n .heart::after {
+    content:'';
+    position:absolute;
+    bottom: -1px; right: -1px;
+    width: 4px; height: 3px;
+    background: rgba(0,0,0,0.35);
+    border-radius: 0 0 4px 0;
+    filter: blur(0.7px);
+    z-index: -1;
+  }
+
+  .footnote {
+    margin-top:32px; font-size:12px;
+    color:var(--muted); text-align:center;
+    font-family:-apple-system,sans-serif;
+    line-height:1.6;
+    max-width:760px;
+    margin-left:auto; margin-right:auto;
+  }
+  .footnote strong { color:var(--gold); font-weight:600; }
+  .divider {
+    width:80px; height:1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 24px auto 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Polaroid censurata · v3 (altre 3)</h1>
+<p class="sub">Tre approcci nuovi al "censurato", lontani da barre/tape/timbri: piegamento analogico, mosaico digitale, sticker cuore. Stessa scala 26×32.</p>
+
+<div class="section-title">Confronto · scala 3.2×</div>
+<div class="zoom-row">
+
+  <div class="zoom-cell">
+    <div class="scaled-3">
+      <div class="pol v-l">
+        <div class="card">
+          <div class="ph">
+            <div class="body"></div>
+            <div class="grain"></div>
+            <div class="peek-glow"></div>
+            <div class="fold"></div>
+          </div>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>L</strong>angolo piegato · intravedi</div>
+  </div>
+
+  <div class="zoom-cell">
+    <div class="scaled-3">
+      <div class="pol v-m">
+        <div class="card">
+          <div class="ph">
+            <div class="body"></div>
+            <div class="grain"></div>
+            <div class="mosaic-block"></div>
+          </div>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>M</strong>mosaico pixel · digitale</div>
+  </div>
+
+  <div class="zoom-cell">
+    <div class="scaled-3">
+      <div class="pol v-n">
+        <div class="card">
+          <div class="ph">
+            <div class="body"></div>
+            <div class="grain"></div>
+            <span class="heart"></span>
+          </div>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>N</strong>sticker cuore rosso</div>
+  </div>
+
+</div>
+
+<div class="section-title">In topbar reale</div>
+
+<div class="row">
+
+  <!-- L -->
+  <div class="scenario">
+    <div class="label">Visual · L</div>
+    <h2>Angolo piegato · tease</h2>
+    <p class="desc">Polaroid con angolo in alto-destra piegato: vedi il retro bianco + un peek di pelle nell'angolo. Censura "analogica" giocosa.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol v-l">
+          <div class="card">
+            <div class="ph">
+              <div class="body"></div>
+              <div class="grain"></div>
+              <div class="peek-glow"></div>
+              <div class="fold"></div>
+            </div>
+          </div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ playful, "tease" naturale</div>
+      <div class="p">+ unico, non ovvio</div>
+      <div class="c">− legge meno "censurato", più "stropicciato"</div>
+    </div>
+  </div>
+
+  <!-- M -->
+  <div class="scenario">
+    <div class="label">Visual · M</div>
+    <h2>Mosaico pixel</h2>
+    <p class="desc">Foto digitalmente pixelata su una zona centrale (8 blocchetti skin). Stile censura web / Japanese AV.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol v-m">
+          <div class="card">
+            <div class="ph">
+              <div class="body"></div>
+              <div class="grain"></div>
+              <div class="mosaic-block"></div>
+            </div>
+          </div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ codice "censura" iper-noto online</div>
+      <div class="p">+ niente testo, funziona a qualsiasi dimensione</div>
+      <div class="c">− cifra digital meno coerente con palette vintage</div>
+    </div>
+  </div>
+
+  <!-- N -->
+  <div class="scenario">
+    <div class="label">Visual · N</div>
+    <h2>Cuore sticker</h2>
+    <p class="desc">Cuore rosso adesivo (con ombretta sotto) ruotato di -8° copre il centro della foto. Censura affettuosa.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol v-n">
+          <div class="card">
+            <div class="ph">
+              <div class="body"></div>
+              <div class="grain"></div>
+              <span class="heart"></span>
+            </div>
+          </div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ tenero, da coppia (non vulgar)</div>
+      <div class="p">+ cuore rosso = forte richiamo visivo</div>
+      <div class="c">− legge "amore" più di "censurato"</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+<p class="footnote">
+  Tutte e tre lontane da bars/tape/timbri.<br>
+  <strong>L</strong> è la più originale (tease analogico). <strong>M</strong> la più immediata come "censura". <strong>N</strong> la più "noi due".
+</p>
+
+</body>
+</html>

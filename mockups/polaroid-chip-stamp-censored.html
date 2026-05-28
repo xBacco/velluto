@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Polaroid · timbro CENSORED</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #160409;
+    --panel: #221013;
+    --line: #3a1d22;
+    --line2: #4a2630;
+    --fg: #f5e6d3;
+    --muted: #a89380;
+    --gold: #d4a857;
+    --paper: #f4ead8;
+    --paper2: #ede1c8;
+    --skin: #e8a890;
+    --skin-deep: #b87060;
+    --noir: #0a0608;
+    --stamp-red: #c41a2c;
+    --stamp-red-deep: #8a0e1c;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin:0; padding:0;
+    background: radial-gradient(ellipse at top, #1f0a10 0%, #0a0306 70%);
+    color:var(--fg);
+    font-family: 'Georgia', serif;
+    min-height:100vh;
+  }
+  body { padding:36px 16px 80px; }
+  h1 {
+    font-size:22px; margin:0 0 6px;
+    font-weight:400; letter-spacing:0.02em;
+    color:var(--paper); font-style:italic;
+  }
+  .sub {
+    color:var(--muted); font-size:13px; margin:0 0 28px;
+    max-width:760px;
+    font-family:-apple-system,sans-serif;
+    line-height:1.5;
+  }
+  .section-title {
+    font-family:-apple-system,sans-serif;
+    font-size:11px; color:var(--gold);
+    text-transform:uppercase; letter-spacing:0.2em;
+    font-weight:700;
+    margin: 36px 0 16px;
+    padding-left: 14px;
+    border-left: 2px solid var(--gold);
+  }
+  .row {
+    display:flex; gap:24px; flex-wrap:wrap;
+    justify-content:center;
+    align-items:flex-start;
+  }
+  .scenario { width:340px; }
+  .scenario .label {
+    font-size:11px; text-transform:uppercase;
+    letter-spacing:0.16em; color:var(--gold);
+    margin:0 0 4px;
+    font-family:-apple-system,sans-serif; font-weight:600;
+  }
+  .scenario h2 {
+    font-size:17px; font-weight:400; margin:0 0 6px;
+    color:var(--paper); font-style:italic;
+  }
+  .scenario .desc {
+    color:var(--muted); font-size:12px; margin:0 0 14px;
+    min-height:36px; line-height:1.5;
+    font-family:-apple-system,sans-serif;
+  }
+  .pro-con {
+    font-size:11px; color:var(--muted); margin-top:10px; line-height:1.6;
+    font-family:-apple-system,sans-serif;
+  }
+  .pro-con .p { color:#9cc09c; }
+  .pro-con .c { color:#c89898; }
+
+  .phone {
+    width:320px; height:420px;
+    border-radius:32px;
+    background:var(--bg);
+    border:1px solid #2a1014;
+    box-shadow:
+      0 12px 32px rgba(0,0,0,0.7),
+      0 0 0 6px #0a0306,
+      0 0 0 7px #1a0a0e;
+    overflow:hidden;
+    position:relative;
+    display:flex; flex-direction:column;
+    font-family:-apple-system,sans-serif;
+  }
+  .status {
+    height:28px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 18px; font-size:11px; color:var(--muted);
+    background:rgba(0,0,0,0.25); flex-shrink:0;
+  }
+  .topbar {
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    padding:12px 14px;
+    display:flex; align-items:center; gap:10px;
+    flex-shrink:0;
+    overflow: visible;
+  }
+  .topbar .brand {
+    font-family:'Georgia',serif; font-style:italic;
+    font-size:16px; color:var(--gold); letter-spacing:0.02em;
+    flex:1;
+  }
+  .topbar .avatar {
+    width:30px; height:30px; border-radius:50%;
+    background:#3a2020; display:flex; align-items:center; justify-content:center;
+    font-size:15px;
+    border:1px solid var(--line2);
+  }
+  .content { flex:1; padding:16px 14px; overflow:auto; }
+  .content h3 {
+    margin:0 0 14px; font-size:11px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.16em; font-weight:600;
+  }
+  .desideri-list .item {
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:8px;
+    font-size:13px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .desideri-list .item .e { font-size:18px; }
+
+  .zoom-row {
+    display:flex; gap:64px; justify-content:center; align-items:flex-end;
+    padding: 50px 30px 28px;
+    background: var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    margin: 12px auto 8px;
+    max-width: 760px;
+    flex-wrap:wrap;
+  }
+  .zoom-cell { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .zoom-cell .scaled { transform: scale(4.5); transform-origin: bottom center; }
+  .zoom-cell .lbl {
+    font-family:-apple-system,sans-serif;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.04em;
+    text-align:center;
+    margin-top: 60px;
+    max-width: 130px;
+  }
+  .zoom-cell .lbl strong { color: var(--gold); display:block; margin-bottom:2px; font-weight:600; }
+
+  /* === POLAROID === */
+  .pol {
+    position:relative;
+    width:26px; height:32px;
+    cursor:pointer;
+    transition: transform 0.15s;
+    overflow: visible;
+  }
+  .pol:active { transform: scale(0.94); }
+  .pol .card {
+    position:absolute; inset:0;
+    background: var(--paper);
+    padding: 2px 2px 8px;
+    box-shadow:
+      0 3px 8px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(0,0,0,0.18) inset;
+  }
+  .pol .ph {
+    width:100%; height:18px;
+    position:relative;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse at 50% 50%, var(--skin) 0%, var(--skin-deep) 70%, #6b3030 100%);
+  }
+  .pol .cnt {
+    position:absolute;
+    top:-4px; right:-4px;
+    min-width:13px; height:13px; border-radius:6.5px;
+    background: var(--gold); color: var(--bg);
+    font-size:8px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 3px;
+    border: 1.5px solid var(--panel);
+    z-index:10;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* =====================================================
+     STAMP CENSORED — shared base
+     ===================================================== */
+  .stamp {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-12deg);
+    font-family: 'Anton', 'Impact', sans-serif;
+    color: var(--stamp-red);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    /* worn out effect: white speckles via mix-blend mask */
+    text-shadow:
+      0 0 0 var(--stamp-red);
+    /* irregular border with notches via clip-path */
+    z-index: 7;
+    pointer-events: none;
+  }
+  .stamp .txt {
+    font-family: 'Anton', 'Impact', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: var(--stamp-red);
+    position: relative;
+    z-index: 2;
+  }
+  /* Wear overlay using white radial dots over the stamp area */
+  .stamp::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 14% 30%, var(--paper) 0.4px, transparent 0.7px),
+      radial-gradient(circle at 38% 70%, var(--paper) 0.4px, transparent 0.7px),
+      radial-gradient(circle at 62% 20%, var(--paper) 0.4px, transparent 0.7px),
+      radial-gradient(circle at 80% 60%, var(--paper) 0.5px, transparent 0.8px),
+      radial-gradient(circle at 25% 80%, var(--paper) 0.3px, transparent 0.6px),
+      radial-gradient(circle at 50% 45%, var(--paper) 0.3px, transparent 0.6px);
+    background-size: 4px 4px, 5px 5px, 3px 3px, 6px 6px, 4px 4px, 3px 3px;
+    mix-blend-mode: lighten;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  /* =====================================================
+     V1 · stamp SCRITTO con doppia riga, esce dai bordi
+     ===================================================== */
+  .v1 .stamp {
+    /* esce dai bordi della polaroid */
+    top: 4px; left: -6px; right: -6px;
+    height: 16px;
+    flex-direction: column;
+    gap: 0;
+    /* irregular edges */
+    clip-path: polygon(
+      2% 8%, 8% 0%, 18% 12%, 28% 4%, 40% 14%, 52% 2%,
+      64% 10%, 76% 0%, 88% 12%, 96% 4%, 100% 30%,
+      96% 50%, 100% 70%, 94% 88%, 88% 100%,
+      78% 92%, 66% 100%, 54% 90%, 42% 100%,
+      30% 92%, 20% 100%, 10% 90%, 2% 100%, 0% 70%, 4% 50%, 0% 30%
+    );
+    background:
+      /* base red with subtle variation */
+      radial-gradient(ellipse at 30% 30%, var(--stamp-red) 0%, var(--stamp-red-deep) 100%);
+  }
+  .v1 .stamp .txt {
+    font-size: 6.5px;
+    color: var(--paper);
+    font-weight: 400;
+  }
+  .v1 .stamp .txt-line2 {
+    font-size: 4.5px;
+    color: var(--paper);
+    letter-spacing: 0.3em;
+    margin-top: 0.5px;
+  }
+  /* wear: holes in the red */
+  .v1 .stamp::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 12% 40%, var(--paper) 0.6px, transparent 1.0px),
+      radial-gradient(circle at 32% 70%, var(--paper) 0.5px, transparent 0.9px),
+      radial-gradient(circle at 60% 20%, var(--paper) 0.7px, transparent 1.1px),
+      radial-gradient(circle at 85% 60%, var(--paper) 0.5px, transparent 0.9px),
+      radial-gradient(circle at 48% 50%, var(--paper) 0.6px, transparent 1.0px),
+      radial-gradient(circle at 22% 25%, var(--paper) 0.4px, transparent 0.8px),
+      radial-gradient(circle at 75% 35%, var(--paper) 0.4px, transparent 0.8px),
+      radial-gradient(circle at 90% 85%, var(--paper) 0.5px, transparent 0.9px);
+    background-size: 7px 7px, 5px 5px, 8px 8px, 6px 6px, 4px 4px, 5px 5px, 4px 4px, 6px 6px;
+    pointer-events: none;
+    z-index: 4;
+    mix-blend-mode: lighten;
+  }
+  /* override after to be silent in v1 (we use ::before) */
+  .v1 .stamp::after { display: none; }
+
+  /* =====================================================
+     V2 · stamp CONTENUTO nella foto, una sola riga
+     ===================================================== */
+  .v2 .stamp {
+    top: 6px; left: 0; right: 0;
+    height: 8px;
+    transform: rotate(-10deg);
+    background: var(--stamp-red);
+    clip-path: polygon(
+      0% 30%, 6% 0%, 22% 18%, 38% 4%, 56% 16%, 72% 2%,
+      88% 14%, 100% 30%, 96% 60%, 100% 80%, 88% 100%,
+      72% 88%, 54% 100%, 36% 86%, 18% 100%, 4% 88%, 0% 70%
+    );
+  }
+  .v2 .stamp .txt {
+    font-size: 5px;
+    color: var(--paper);
+    letter-spacing: 0.15em;
+  }
+  .v2 .stamp::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 18% 50%, var(--paper) 0.5px, transparent 0.9px),
+      radial-gradient(circle at 45% 30%, var(--paper) 0.4px, transparent 0.8px),
+      radial-gradient(circle at 70% 70%, var(--paper) 0.5px, transparent 0.9px),
+      radial-gradient(circle at 88% 40%, var(--paper) 0.3px, transparent 0.7px);
+    background-size: 5px 5px, 4px 4px, 6px 6px, 4px 4px;
+    pointer-events: none;
+    z-index: 4;
+    mix-blend-mode: lighten;
+  }
+  .v2 .stamp::after { display: none; }
+
+  /* =====================================================
+     V3 · stamp ITALIAN "CENSURATO" + cornice doppia
+     ===================================================== */
+  .v3 .stamp {
+    top: 4px; left: -4px; right: -4px;
+    height: 11px;
+    transform: rotate(-14deg);
+    background: var(--stamp-red);
+    border: 0.5px solid var(--stamp-red-deep);
+    box-shadow:
+      0 0 0 0.7px var(--paper) inset,
+      0 0 0 1.4px var(--stamp-red) inset;
+    clip-path: polygon(
+      0% 20%, 8% 4%, 24% 14%, 42% 2%, 58% 16%, 76% 4%,
+      92% 14%, 100% 28%, 96% 50%, 100% 72%, 92% 92%, 78% 100%,
+      62% 88%, 44% 100%, 28% 88%, 12% 100%, 0% 80%, 4% 60%
+    );
+  }
+  .v3 .stamp .txt {
+    font-size: 5.5px;
+    color: var(--paper);
+    letter-spacing: 0.18em;
+  }
+  .v3 .stamp::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 14% 30%, var(--paper) 0.5px, transparent 0.9px),
+      radial-gradient(circle at 38% 70%, var(--paper) 0.4px, transparent 0.8px),
+      radial-gradient(circle at 62% 20%, var(--paper) 0.6px, transparent 1.0px),
+      radial-gradient(circle at 80% 60%, var(--paper) 0.4px, transparent 0.8px),
+      radial-gradient(circle at 25% 80%, var(--paper) 0.5px, transparent 0.9px);
+    background-size: 4px 4px, 5px 5px, 3px 3px, 6px 6px, 4px 4px;
+    pointer-events: none;
+    z-index: 4;
+    mix-blend-mode: lighten;
+  }
+  .v3 .stamp::after { display: none; }
+
+  .footnote {
+    margin-top:32px; font-size:12px;
+    color:var(--muted); text-align:center;
+    font-family:-apple-system,sans-serif;
+    line-height:1.6;
+    max-width:760px;
+    margin-left:auto; margin-right:auto;
+  }
+  .footnote strong { color:var(--gold); font-weight:600; }
+  .divider {
+    width:80px; height:1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 24px auto 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Polaroid · timbro CENSORED rosso</h1>
+<p class="sub">Riferimento: timbro inchiostro rosso ruotato, lettere bianche knocked-out, texture grunge con buchi bianchi. Tre variazioni di taglia e intensità.</p>
+
+<div class="section-title">Confronto · scala 4.5×</div>
+<div class="zoom-row">
+
+  <div class="zoom-cell">
+    <div class="scaled">
+      <div class="pol v1">
+        <div class="card">
+          <div class="ph"></div>
+        </div>
+        <div class="stamp">
+          <span class="txt">CENSORED</span>
+          <span class="txt txt-line2">X · 18 · X</span>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>1</strong>2 righe · esce dai bordi</div>
+  </div>
+
+  <div class="zoom-cell">
+    <div class="scaled">
+      <div class="pol v2">
+        <div class="card">
+          <div class="ph"></div>
+        </div>
+        <div class="stamp">
+          <span class="txt">CENSORED</span>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>2</strong>1 riga · dentro la foto</div>
+  </div>
+
+  <div class="zoom-cell">
+    <div class="scaled">
+      <div class="pol v3">
+        <div class="card">
+          <div class="ph"></div>
+        </div>
+        <div class="stamp">
+          <span class="txt">CENSURATO</span>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>3</strong>CENSURATO + cornice doppia</div>
+  </div>
+
+</div>
+
+<div class="section-title">In topbar reale</div>
+
+<div class="row">
+
+  <div class="scenario">
+    <div class="label">Variante · 1</div>
+    <h2>Esce dai bordi · 2 righe</h2>
+    <p class="desc">Timbro grande che sfora il bordo della polaroid (come il riferimento). 2 righe: CENSORED + X·18·X.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol v1">
+          <div class="card"><div class="ph"></div></div>
+          <div class="stamp">
+            <span class="txt">CENSORED</span>
+            <span class="txt txt-line2">X · 18 · X</span>
+          </div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ identicissimo al riferimento</div>
+      <div class="c">− sfora il polaroid, l'icona "rompe" la griglia</div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Variante · 2</div>
+    <h2>Contenuto · 1 riga</h2>
+    <p class="desc">Timbro più piccolo dentro la foto. Stessa estetica grunge ma niente sforamento.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol v2">
+          <div class="card"><div class="ph"></div></div>
+          <div class="stamp"><span class="txt">CENSORED</span></div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ pulito, sta dentro la polaroid</div>
+      <div class="c">− testo più piccolo, meno aggressivo</div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Variante · 3</div>
+    <h2>CENSURATO + cornice</h2>
+    <p class="desc">Versione italiana con cornice bianca knocked-out attorno (stile timbro ufficiale).</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol v3">
+          <div class="card"><div class="ph"></div></div>
+          <div class="stamp"><span class="txt">CENSURATO</span></div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ italiano, cornice = timbro ufficiale</div>
+      <div class="c">− "CENSURATO" è più lungo, lettere più piccole</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+<p class="footnote">
+  Font: <strong>Anton</strong> (Google Fonts, condensato bold). Buchi bianchi via radial-gradients con mix-blend-mode <em>lighten</em>. Bordi grunge via clip-path con notch irregolari.<br>
+  Mio voto: <strong>1</strong> — è quella che ricorda di più il riferimento (timbro grosso che sfora).
+</p>
+
+</body>
+</html>

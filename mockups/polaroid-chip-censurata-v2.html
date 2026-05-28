@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Polaroid censurata · refinement</title>
+<style>
+  :root {
+    --bg: #160409;
+    --panel: #221013;
+    --panel2: #2c1418;
+    --line: #3a1d22;
+    --line2: #4a2630;
+    --fg: #f5e6d3;
+    --muted: #a89380;
+    --gold: #d4a857;
+    --rust: #b8632c;
+    --bord: #6b1f2a;
+    --hot: #d4203a;
+    --hot-light: #ff5575;
+    --paper: #f4ead8;
+    --paper2: #ede1c8;
+    --skin: #f0bc94;
+    --skin-deep: #b87060;
+    --censor: #0a0608;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin:0; padding:0;
+    background: radial-gradient(ellipse at top, #1f0a10 0%, #0a0306 70%);
+    color:var(--fg);
+    font-family: 'Georgia', serif;
+    min-height:100vh;
+  }
+  body { padding:36px 16px 80px; }
+  h1 {
+    font-size:22px; margin:0 0 6px;
+    font-weight:400; letter-spacing:0.02em;
+    color:var(--paper); font-style:italic;
+  }
+  .sub {
+    color:var(--muted); font-size:13px; margin:0 0 28px;
+    max-width:760px;
+    font-family:-apple-system,sans-serif;
+    line-height:1.5;
+  }
+  .section-title {
+    font-family:-apple-system,sans-serif;
+    font-size:11px; color:var(--gold);
+    text-transform:uppercase; letter-spacing:0.2em;
+    font-weight:700;
+    margin: 40px 0 16px;
+    padding-left: 14px;
+    border-left: 2px solid var(--gold);
+  }
+  .row {
+    display:flex; gap:24px; flex-wrap:wrap;
+    justify-content:center;
+    align-items:flex-start;
+  }
+  .scenario { width:340px; }
+  .scenario .label {
+    font-size:11px; text-transform:uppercase;
+    letter-spacing:0.16em; color:var(--gold);
+    margin:0 0 4px;
+    font-family:-apple-system,sans-serif; font-weight:600;
+  }
+  .scenario h2 {
+    font-size:17px; font-weight:400; margin:0 0 6px;
+    color:var(--paper); font-style:italic;
+  }
+  .scenario .desc {
+    color:var(--muted); font-size:12px; margin:0 0 14px;
+    min-height:36px; line-height:1.5;
+    font-family:-apple-system,sans-serif;
+  }
+  .pro-con {
+    font-size:11px; color:var(--muted); margin-top:10px; line-height:1.6;
+    font-family:-apple-system,sans-serif;
+  }
+  .pro-con .p { color:#9cc09c; }
+  .pro-con .c { color:#c89898; }
+
+  .phone {
+    width:320px; height:440px;
+    border-radius:32px;
+    background:var(--bg);
+    border:1px solid #2a1014;
+    box-shadow:
+      0 12px 32px rgba(0,0,0,0.7),
+      0 0 0 6px #0a0306,
+      0 0 0 7px #1a0a0e;
+    overflow:hidden;
+    position:relative;
+    display:flex; flex-direction:column;
+    font-family:-apple-system,sans-serif;
+  }
+  .status {
+    height:28px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 18px; font-size:11px; color:var(--muted);
+    background:rgba(0,0,0,0.25); flex-shrink:0;
+  }
+  .topbar {
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    padding:12px 14px;
+    display:flex; align-items:center; gap:10px;
+    flex-shrink:0;
+  }
+  .topbar .brand {
+    font-family:'Georgia',serif; font-style:italic;
+    font-size:16px; color:var(--gold); letter-spacing:0.02em;
+    flex:1;
+  }
+  .topbar .avatar {
+    width:30px; height:30px; border-radius:50%;
+    background:#3a2020; display:flex; align-items:center; justify-content:center;
+    font-size:15px;
+    border:1px solid var(--line2);
+  }
+  .content { flex:1; padding:16px 14px; overflow:auto; }
+  .content h3 {
+    margin:0 0 14px; font-size:11px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.16em; font-weight:600;
+  }
+  .desideri-list .item {
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:8px;
+    font-size:13px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .desideri-list .item .e { font-size:18px; }
+
+  .zoom-row {
+    display:flex; gap:48px; justify-content:center; align-items:flex-end;
+    padding: 36px 20px 24px;
+    background: var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    margin: 12px auto 8px;
+    max-width: 760px;
+    flex-wrap:wrap;
+  }
+  .zoom-cell { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .zoom-cell .scaled-3 { transform: scale(3.2); transform-origin: bottom center; }
+  .zoom-cell .lbl {
+    font-family:-apple-system,sans-serif;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.04em;
+    text-align:center;
+    margin-top: 44px;
+    max-width: 110px;
+  }
+  .zoom-cell .lbl strong { color: var(--gold); display:block; margin-bottom:2px; font-weight:600; }
+
+  /* =================================================== */
+  /* Base polaroid carta cream                            */
+  /* =================================================== */
+  .pol-base {
+    position:relative;
+    width:26px; height:32px;
+    cursor:pointer;
+    transition: transform 0.15s;
+  }
+  .pol-base:active { transform: scale(0.94); }
+  .pol-base > .card {
+    position:absolute; inset:0;
+    background: var(--paper);
+    padding: 2px 2px 8px;
+    box-shadow:
+      0 3px 8px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(0,0,0,0.18) inset;
+  }
+  .pol-base .ph {
+    width:100%; height:18px;
+    position:relative;
+    overflow:hidden;
+  }
+  /* skin-suggestive body gradient (shoulder curve + decolleté hint) */
+  .pol-base .ph .body {
+    position:absolute; inset:0;
+    background:
+      /* highlight on shoulder */
+      radial-gradient(ellipse 8px 5px at 40% 25%, var(--paper-warm,#f6d8c0) 0%, transparent 65%),
+      /* warm skin curve, top-left to bottom-right */
+      radial-gradient(circle at 55% 55%, var(--skin) 0%, var(--skin-deep) 45%, #6b3030 75%, #2a1014 100%),
+      /* darker bottom-right corner = silhouette of waist */
+      linear-gradient(135deg, transparent 30%, rgba(20,8,12,0.35) 100%);
+  }
+  /* film grain */
+  .pol-base .ph .grain {
+    position:absolute; inset:0;
+    background-image:
+      radial-gradient(circle, rgba(0,0,0,0.18) 0.5px, transparent 0.8px);
+    background-size: 2px 2px;
+    mix-blend-mode: overlay;
+    pointer-events:none;
+  }
+  /* base shared counter */
+  .pol-base .cnt {
+    position:absolute;
+    top:-4px; right:-4px;
+    min-width:13px; height:13px; border-radius:6.5px;
+    background: var(--gold); color: var(--bg);
+    font-size:8px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 3px;
+    border: 1.5px solid var(--panel);
+    z-index:6;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ===================================================== */
+  /* VARIANT K1 · Pin-up silhouette + 2 bars cinematiche   */
+  /* ===================================================== */
+  .v-k1 .ph .body {
+    background:
+      /* shoulder highlight */
+      radial-gradient(ellipse 6px 4px at 35% 20%, #faddc0 0%, transparent 70%),
+      /* curve */
+      radial-gradient(ellipse 14px 18px at 55% 70%, var(--skin) 0%, var(--skin-deep) 35%, #6b3030 65%, #1a0810 100%),
+      /* shadow gradient bottom-left */
+      linear-gradient(225deg, transparent 50%, rgba(0,0,0,0.5) 100%);
+  }
+  .v-k1 .bar {
+    position:absolute;
+    background: var(--censor);
+    box-shadow:
+      0 0.5px 0 rgba(255,255,255,0.05) inset,
+      0 1px 1.5px rgba(0,0,0,0.55);
+  }
+  .v-k1 .bar.eye {
+    top: 5px; left: -1px; right: -1px;
+    height: 3px;
+    transform: rotate(-2deg);
+  }
+  .v-k1 .bar.chest {
+    top: 11px; left: 1px; right: 1px;
+    height: 4px;
+    transform: rotate(1.5deg);
+  }
+  /* 18+ red stamp */
+  .v-k1 .badge {
+    position:absolute;
+    bottom: 9px; right: 2px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--hot);
+    border: 1px solid var(--paper);
+    color: #fff;
+    font-size: 4.5px;
+    font-weight: 900;
+    font-family:-apple-system,sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    letter-spacing: -0.05em;
+    z-index: 4;
+  }
+
+  /* ===================================================== */
+  /* VARIANT K2 · Single diagonal CENSURATO stamp           */
+  /* ===================================================== */
+  .v-k2 .ph .body {
+    background:
+      radial-gradient(ellipse 6px 5px at 40% 30%, #f6d8c0 0%, transparent 70%),
+      radial-gradient(circle at 55% 60%, var(--skin) 0%, var(--skin-deep) 40%, #6b3030 75%, #2a1014 100%);
+  }
+  .v-k2 .stamp {
+    position:absolute;
+    top: 5px; left: -3px; right: -3px;
+    height: 7px;
+    background: linear-gradient(180deg, #d4203a 0%, #8a1224 100%);
+    transform: rotate(-12deg);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.5),
+      0 0 0 0.5px rgba(255,255,255,0.08) inset;
+    z-index: 4;
+  }
+  .v-k2 .stamp::before {
+    content: 'CENSURATO';
+    font-family: 'Georgia', serif;
+    font-weight: 900;
+    font-size: 3.5px;
+    letter-spacing: 0.18em;
+    color: rgba(255,235,210,0.95);
+    text-transform: uppercase;
+    text-shadow: 0 0.5px 0 rgba(0,0,0,0.4);
+  }
+  /* ink wear at edges */
+  .v-k2 .stamp::after {
+    content:'';
+    position:absolute; inset:0;
+    background-image:
+      radial-gradient(circle at 10% 30%, transparent 0.5px, rgba(0,0,0,0.2) 1px, transparent 1.3px),
+      radial-gradient(circle at 90% 70%, transparent 0.5px, rgba(0,0,0,0.2) 1px, transparent 1.3px);
+    opacity:0.7;
+  }
+
+  /* ===================================================== */
+  /* VARIANT K3 · Black tape strips (with peeling corners) */
+  /* ===================================================== */
+  .v-k3 .ph .body {
+    background:
+      radial-gradient(ellipse 6px 5px at 38% 22%, #f6d8c0 0%, transparent 70%),
+      radial-gradient(circle at 55% 65%, var(--skin) 0%, var(--skin-deep) 35%, #6b3030 70%, #2a1014 100%);
+  }
+  .v-k3 .tape {
+    position:absolute;
+    background: linear-gradient(180deg, #1a0a0e 0%, #050204 50%, #1a0a0e 100%);
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.6),
+      0 -0.5px 0 rgba(255,255,255,0.04) inset;
+  }
+  .v-k3 .tape.t1 {
+    top: 5px; left: -2px; width: 28px; height: 3.5px;
+    transform: rotate(-3deg);
+  }
+  .v-k3 .tape.t1::before,
+  .v-k3 .tape.t1::after {
+    content:'';
+    position:absolute;
+    top:0; bottom:0;
+    width: 2px;
+    background: inherit;
+    clip-path: polygon(0 30%, 100% 0, 100% 100%, 0 70%);
+  }
+  .v-k3 .tape.t1::before { left: -1px; }
+  .v-k3 .tape.t1::after { right: -1px; clip-path: polygon(0 0, 100% 30%, 100% 70%, 0 100%); }
+  .v-k3 .tape.t2 {
+    top: 11px; left: 1px; width: 24px; height: 4px;
+    transform: rotate(2deg);
+  }
+  .v-k3 .tape.t2::before,
+  .v-k3 .tape.t2::after {
+    content:'';
+    position:absolute;
+    top:0; bottom:0;
+    width: 2px;
+    background: inherit;
+  }
+  .v-k3 .tape.t2::before { left: -1px; clip-path: polygon(0 20%, 100% 0, 100% 100%, 0 80%); }
+  .v-k3 .tape.t2::after { right: -1px; clip-path: polygon(0 0, 100% 20%, 100% 80%, 0 100%); }
+  /* highlight strip on tape (specular) */
+  .v-k3 .tape::after {
+    /* override default — moved to ::before/::after above; using box-shadow instead */
+  }
+
+  /* ===================================================== */
+  /* VARIANT K4 · Label on polaroid bottom strip            */
+  /* ===================================================== */
+  .v-k4 .ph .body {
+    background:
+      radial-gradient(ellipse 6px 5px at 38% 22%, #f6d8c0 0%, transparent 70%),
+      radial-gradient(circle at 55% 65%, var(--skin) 0%, var(--skin-deep) 35%, #6b3030 70%, #2a1014 100%);
+  }
+  .v-k4 .bar {
+    position:absolute;
+    background: var(--censor);
+    box-shadow:
+      0 0.5px 0 rgba(255,255,255,0.05) inset,
+      0 1px 1.5px rgba(0,0,0,0.55);
+  }
+  .v-k4 .bar.eye {
+    top: 5px; left: -1px; right: -1px;
+    height: 3px;
+    transform: rotate(-2deg);
+  }
+  .v-k4 .bar.chest {
+    top: 11px; left: 1px; right: 1px;
+    height: 4px;
+    transform: rotate(1.5deg);
+  }
+  /* bottom polaroid label "CENSURATO" red ink stamp */
+  .v-k4 > .card::after {
+    content: 'VIETATO';
+    position:absolute;
+    bottom: 1px; left: 0; right: 0;
+    text-align: center;
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    font-weight: 900;
+    font-size: 4.5px;
+    letter-spacing: 0.22em;
+    color: var(--hot);
+    text-transform: uppercase;
+    opacity: 0.85;
+    text-shadow: 0 0.5px 0 rgba(0,0,0,0.2);
+  }
+
+  .footnote {
+    margin-top:32px; font-size:12px;
+    color:var(--muted); text-align:center;
+    font-family:-apple-system,sans-serif;
+    line-height:1.6;
+    max-width:760px;
+    margin-left:auto; margin-right:auto;
+  }
+  .footnote strong { color:var(--gold); font-weight:600; }
+  .divider {
+    width:80px; height:1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 24px auto 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Polaroid censurata · refinement</h1>
+<p class="sub">Quattro reinterpretazioni della "censurata" più rifinite: silhouette di corpo dietro, barre cinematiche, tape con angoli pelati, timbro rosso. Tutte a 26×32 (S4-ish), confronto 3.2× sopra + topbar reale sotto.</p>
+
+<div class="section-title">Confronto · scala 3.2×</div>
+<div class="zoom-row">
+
+  <div class="zoom-cell">
+    <div class="scaled-3">
+      <div class="pol-base v-k1">
+        <div class="card">
+          <div class="ph">
+            <div class="body"></div>
+            <div class="grain"></div>
+            <span class="bar eye"></span>
+            <span class="bar chest"></span>
+          </div>
+        </div>
+        <span class="badge">18</span>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>K1</strong>silhouette corpo + 2 bars + bollino 18</div>
+  </div>
+
+  <div class="zoom-cell">
+    <div class="scaled-3">
+      <div class="pol-base v-k2">
+        <div class="card">
+          <div class="ph">
+            <div class="body"></div>
+            <div class="grain"></div>
+            <div class="stamp"></div>
+          </div>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>K2</strong>timbro rosso diagonale CENSURATO</div>
+  </div>
+
+  <div class="zoom-cell">
+    <div class="scaled-3">
+      <div class="pol-base v-k3">
+        <div class="card">
+          <div class="ph">
+            <div class="body"></div>
+            <div class="grain"></div>
+            <span class="tape t1"></span>
+            <span class="tape t2"></span>
+          </div>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>K3</strong>tape nero con angoli pelati</div>
+  </div>
+
+  <div class="zoom-cell">
+    <div class="scaled-3">
+      <div class="pol-base v-k4">
+        <div class="card">
+          <div class="ph">
+            <div class="body"></div>
+            <div class="grain"></div>
+            <span class="bar eye"></span>
+            <span class="bar chest"></span>
+          </div>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>K4</strong>bars + label "VIETATO" rossa</div>
+  </div>
+
+</div>
+
+<div class="section-title">In topbar reale</div>
+
+<div class="row">
+
+  <div class="scenario">
+    <div class="label">Visual · K1</div>
+    <h2>Silhouette + 2 bars + bollino</h2>
+    <p class="desc">Corpo accennato dietro (shoulder + curva), barre nere cinematiche con tilt naturale, micro-bollino rosso "18".</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol-base v-k1">
+          <div class="card">
+            <div class="ph">
+              <div class="body"></div>
+              <div class="grain"></div>
+              <span class="bar eye"></span>
+              <span class="bar chest"></span>
+            </div>
+          </div>
+          <span class="badge">18</span>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ silhouette legge "corpo" anche a 26px</div>
+      <div class="p">+ bollino 18 = inequivocabile</div>
+      <div class="c">− 3 elementi visivi (bars + bollino + cnt) iniziano ad essere tanti</div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Visual · K2</div>
+    <h2>Timbro CENSURATO rosso</h2>
+    <p class="desc">Un solo elemento forte: striscia rossa ruotata -12° con scritta "CENSURATO" stampata sopra la foto.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol-base v-k2">
+          <div class="card">
+            <div class="ph">
+              <div class="body"></div>
+              <div class="grain"></div>
+              <div class="stamp"></div>
+            </div>
+          </div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ il rosso urla "vietato"</div>
+      <div class="p">+ pulito, un solo elemento</div>
+      <div class="c">− testo a 3.5px è al limite della leggibilità</div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Visual · K3</div>
+    <h2>Tape nero pelato</h2>
+    <p class="desc">Due strisce di tape (nastro adesivo nero) con bordi irregolari, angoli pelati. Feel "censurato a mano".</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol-base v-k3">
+          <div class="card">
+            <div class="ph">
+              <div class="body"></div>
+              <div class="grain"></div>
+              <span class="tape t1"></span>
+              <span class="tape t2"></span>
+            </div>
+          </div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ artigianale, sembra fatto a mano</div>
+      <div class="p">+ tape escono dal bordo = "wrap" naturale</div>
+      <div class="c">− simile a K1 nel concept (bars vs tape)</div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Visual · K4</div>
+    <h2>Bars + "VIETATO" sul bordo</h2>
+    <p class="desc">Stessi bars di K1 ma niente bollino — invece la striscia bianca sotto la foto porta "VIETATO" in rosso corsivo.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol-base v-k4">
+          <div class="card">
+            <div class="ph">
+              <div class="body"></div>
+              <div class="grain"></div>
+              <span class="bar eye"></span>
+              <span class="bar chest"></span>
+            </div>
+          </div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ il bordo bianco della polaroid lavora come label</div>
+      <div class="p">+ "VIETATO" italico = vintage, coerente con palette</div>
+      <div class="c">− testo a 4.5px è piccolo</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+<p class="footnote">
+  Tutte hanno la silhouette del corpo dietro (shoulder + curva + skin tones), film grain, e barre con drop-shadow per il rilievo.<br>
+  Mio voto: <strong>K1</strong> per chiarezza (silhouette + bars + 18), <strong>K4</strong> per eleganza (vintage italic sul bordo).
+</p>
+
+</body>
+</html>

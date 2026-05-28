@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Polaroid · varianti serratura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #160409;
+    --panel: #221013;
+    --line: #3a1d22;
+    --line2: #4a2630;
+    --fg: #f5e6d3;
+    --muted: #a89380;
+    --gold: #d4a857;
+    --gold-deep: #8a6720;
+    --gold-light: #f5deA0;
+    --gold-shadow: #5a4214;
+    --paper: #f4ead8;
+    --skin: #e8a890;
+    --skin-deep: #b87060;
+    --skin-shadow: #6b3030;
+    --bordeaux: #6b1f2a;
+    --bordeaux-deep: #3a0e14;
+    --noir: #0a0608;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin:0; padding:0;
+    background: radial-gradient(ellipse at top, #1f0a10 0%, #0a0306 70%);
+    color:var(--fg);
+    font-family: 'Georgia', serif;
+    min-height:100vh;
+  }
+  body { padding:36px 16px 80px; }
+  h1 {
+    font-size:22px; margin:0 0 6px;
+    font-weight:400; letter-spacing:0.02em;
+    color:var(--paper); font-style:italic;
+  }
+  .sub {
+    color:var(--muted); font-size:13px; margin:0 0 28px;
+    max-width:780px;
+    font-family:-apple-system,sans-serif;
+    line-height:1.55;
+  }
+  .sub b { color: var(--gold); font-weight: 600; }
+
+  .section-title {
+    font-family:-apple-system,sans-serif;
+    font-size:11px; color:var(--gold);
+    text-transform:uppercase; letter-spacing:0.22em;
+    font-weight:700;
+    margin: 40px 0 18px;
+    padding-left: 14px;
+    border-left: 2px solid var(--gold);
+  }
+  .row {
+    display:flex; gap:24px; flex-wrap:wrap;
+    justify-content:center;
+    align-items:flex-start;
+  }
+  .scenario { width:340px; }
+  .scenario .label {
+    font-size:11px; text-transform:uppercase;
+    letter-spacing:0.18em; color:var(--gold);
+    margin:0 0 4px;
+    font-family:-apple-system,sans-serif; font-weight:600;
+  }
+  .scenario h2 {
+    font-size:18px; font-weight:400; margin:0 0 6px;
+    color:var(--paper); font-style:italic;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+  .scenario .desc {
+    color:var(--muted); font-size:12.5px; margin:0 0 14px;
+    min-height:42px; line-height:1.55;
+    font-family:-apple-system,sans-serif;
+  }
+  .pro-con {
+    font-size:11px; color:var(--muted); margin-top:10px; line-height:1.7;
+    font-family:-apple-system,sans-serif;
+  }
+  .pro-con .p { color:#9cc09c; }
+  .pro-con .c { color:#c89898; }
+
+  .phone {
+    width:320px; height:380px;
+    border-radius:32px;
+    background:var(--bg);
+    border:1px solid #2a1014;
+    box-shadow:
+      0 12px 32px rgba(0,0,0,0.7),
+      0 0 0 6px #0a0306,
+      0 0 0 7px #1a0a0e;
+    overflow:hidden;
+    position:relative;
+    display:flex; flex-direction:column;
+    font-family:-apple-system,sans-serif;
+  }
+  .status {
+    height:28px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 18px; font-size:11px; color:var(--muted);
+    background:rgba(0,0,0,0.25); flex-shrink:0;
+  }
+  .topbar {
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    padding:12px 14px;
+    display:flex; align-items:center; gap:10px;
+    flex-shrink:0;
+    overflow: visible;
+  }
+  .topbar .brand {
+    font-family:'Cormorant Garamond','Georgia',serif; font-style:italic;
+    font-size:18px; color:var(--gold); letter-spacing:0.02em;
+    flex:1; font-weight: 500;
+  }
+  .topbar .avatar {
+    width:30px; height:30px; border-radius:50%;
+    background:#3a2020; display:flex; align-items:center; justify-content:center;
+    font-size:15px;
+    border:1px solid var(--line2);
+  }
+  .content { flex:1; padding:16px 14px; overflow:auto; }
+  .content h3 {
+    margin:0 0 14px; font-size:11px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.18em; font-weight:600;
+  }
+  .desideri-list .item {
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:8px;
+    font-size:13px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .desideri-list .item .e { font-size:18px; }
+
+  /* zoom strip */
+  .zoom-row {
+    display:flex; gap:64px; justify-content:center; align-items:flex-end;
+    padding: 80px 30px 36px;
+    background:
+      radial-gradient(ellipse at top, rgba(212,168,87,0.06), transparent 65%),
+      var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    margin: 12px auto 8px;
+    max-width: 760px;
+    flex-wrap:wrap;
+  }
+  .zoom-cell { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .zoom-cell .scaled { transform: scale(6); transform-origin: bottom center; }
+  .zoom-cell .lbl {
+    font-family:-apple-system,sans-serif;
+    font-size: 11.5px; color: var(--muted);
+    letter-spacing: 0.04em;
+    text-align:center;
+    margin-top: 84px;
+    max-width: 140px;
+    line-height: 1.5;
+  }
+  .zoom-cell .lbl strong { color: var(--gold); display:block; margin-bottom:3px; font-weight:700; font-size:12px; letter-spacing: 0.1em; }
+
+  /* =====================================================
+     POLAROID BASE
+     ===================================================== */
+  .pol {
+    position:relative;
+    width:26px; height:32px;
+    cursor:pointer;
+    transition: transform 0.15s;
+    overflow: visible;
+  }
+  .pol:active { transform: scale(0.94); }
+  .pol .card {
+    position:absolute; inset:0;
+    background: var(--paper);
+    padding: 2px 2px 8px;
+    box-shadow:
+      0 3px 8px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(0,0,0,0.18) inset;
+  }
+  .pol .ph {
+    width:100%; height:18px;
+    position:relative;
+    overflow:hidden;
+    /* sfondo scuro = "porta chiusa" */
+    background:
+      radial-gradient(ellipse at 50% 50%, var(--bordeaux-deep) 0%, var(--noir) 80%);
+  }
+  .pol .cnt {
+    position:absolute;
+    top:-4px; right:-4px;
+    min-width:13px; height:13px; border-radius:6.5px;
+    background: var(--gold); color: var(--bg);
+    font-size:8px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 3px;
+    border: 1.5px solid var(--panel);
+    z-index:10;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* =====================================================
+     V1 · KEYHOLE CLASSICO RAFFINATO
+     forma standard (cerchio + triangolo trapezoidale)
+     cornice oro semplice ma con highlight 3d
+     ===================================================== */
+  .v1 .key {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 9px; height: 12px;
+    z-index: 5;
+    pointer-events: none;
+  }
+  /* il buco con skin dentro */
+  .v1 .key .hole {
+    position: absolute; inset: 0;
+    background:
+      /* highlight in alto = luce che entra */
+      radial-gradient(ellipse at 50% 25%, rgba(255,220,200,0.6) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 40%, var(--skin) 0%, var(--skin-deep) 65%, var(--skin-shadow) 100%);
+    /* sagoma keyhole pulita: tondo sopra + svaso a campana sotto */
+    clip-path: polygon(
+      50% 4%, 62% 6%, 72% 14%, 78% 26%, 76% 38%, 70% 46%,
+      72% 58%, 76% 72%, 82% 88%, 84% 100%,
+      16% 100%, 18% 88%, 24% 72%, 28% 58%, 30% 46%,
+      24% 38%, 22% 26%, 28% 14%, 38% 6%
+    );
+    box-shadow: inset 0 0 1px rgba(0,0,0,0.6);
+  }
+  /* cornice oro = escutcheon */
+  .v1 .key::before {
+    content: '';
+    position: absolute;
+    top: -1.6px; left: -1.6px; right: -1.6px; bottom: -1.6px;
+    background:
+      /* highlight metallico in alto */
+      linear-gradient(155deg,
+        var(--gold-light) 0%,
+        var(--gold) 30%,
+        var(--gold-deep) 65%,
+        var(--gold-shadow) 100%);
+    clip-path: polygon(
+      50% 4%, 62% 6%, 72% 14%, 78% 26%, 76% 38%, 70% 46%,
+      72% 58%, 76% 72%, 82% 88%, 84% 100%,
+      16% 100%, 18% 88%, 24% 72%, 28% 58%, 30% 46%,
+      24% 38%, 22% 26%, 28% 14%, 38% 6%
+    );
+    z-index: -1;
+    filter: drop-shadow(0 1.2px 1.5px rgba(0,0,0,0.7));
+  }
+
+  /* =====================================================
+     V2 · KEYHOLE ORNATO VITTORIANO
+     cornice con volute/riccioli ai lati, forma più ricca
+     ===================================================== */
+  .v2 .key {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 13px; height: 13px;
+    z-index: 5;
+    pointer-events: none;
+  }
+  /* il buco (stessa sagoma del v1) */
+  .v2 .key .hole {
+    position: absolute;
+    top: 1px; left: 3.2px;
+    width: 6.6px; height: 11px;
+    background:
+      radial-gradient(ellipse at 50% 25%, rgba(255,220,200,0.6) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 40%, var(--skin) 0%, var(--skin-deep) 65%, var(--skin-shadow) 100%);
+    clip-path: polygon(
+      50% 4%, 62% 6%, 72% 14%, 78% 26%, 76% 38%, 70% 46%,
+      72% 58%, 76% 72%, 82% 88%, 84% 100%,
+      16% 100%, 18% 88%, 24% 72%, 28% 58%, 30% 46%,
+      24% 38%, 22% 26%, 28% 14%, 38% 6%
+    );
+    z-index: 2;
+    box-shadow: inset 0 0 1px rgba(0,0,0,0.6);
+  }
+  /* escutcheon ornato con volute laterali — sagoma a "rombo" allungato */
+  .v2 .key::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(155deg,
+        var(--gold-light) 0%,
+        var(--gold) 30%,
+        var(--gold-deep) 65%,
+        var(--gold-shadow) 100%);
+    clip-path: polygon(
+      50% 0%,
+      62% 3%, 70% 0%, 78% 6%, 76% 14%, 84% 16%, 90% 24%, 86% 32%,
+      94% 38%, 88% 48%, 96% 56%, 88% 64%, 92% 76%, 84% 84%, 88% 94%, 76% 92%,
+      70% 100%, 60% 96%, 50% 100%, 40% 96%, 30% 100%, 24% 92%, 12% 94%, 16% 84%,
+      8% 76%, 12% 64%, 4% 56%, 12% 48%, 6% 38%, 14% 32%, 10% 24%, 16% 16%,
+      24% 14%, 22% 6%, 30% 0%, 38% 3%
+    );
+    filter: drop-shadow(0 1.2px 1.5px rgba(0,0,0,0.7));
+    z-index: 1;
+  }
+  /* due pallini decorativi oro ai lati (rivetti) */
+  .v2 .key::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 14% 50%, var(--gold-light) 0.3px, var(--gold-deep) 0.7px, transparent 1px),
+      radial-gradient(circle at 86% 50%, var(--gold-light) 0.3px, var(--gold-deep) 0.7px, transparent 1px);
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  /* =====================================================
+     V3 · KEYHOLE A CUORE
+     buco a forma di cuore, cornice tonda morbida
+     ===================================================== */
+  .v3 .key {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 11px; height: 11px;
+    z-index: 5;
+    pointer-events: none;
+  }
+  /* il buco a cuore */
+  .v3 .key .hole {
+    position: absolute;
+    top: 1.5px; left: 2px;
+    width: 7px; height: 8px;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(255,220,200,0.6) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, var(--skin) 0%, var(--skin-deep) 65%, var(--skin-shadow) 100%);
+    /* sagoma cuore */
+    clip-path: polygon(
+      50% 100%,
+      8% 56%, 0% 34%, 4% 16%, 16% 4%, 30% 2%, 40% 8%, 50% 22%,
+      60% 8%, 70% 2%, 84% 4%, 96% 16%, 100% 34%, 92% 56%
+    );
+    z-index: 2;
+  }
+  /* cornice tonda con bordo decorativo */
+  .v3 .key::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(155deg,
+        var(--gold-light) 0%,
+        var(--gold) 30%,
+        var(--gold-deep) 65%,
+        var(--gold-shadow) 100%);
+    border-radius: 50%;
+    filter: drop-shadow(0 1.2px 1.5px rgba(0,0,0,0.7));
+    z-index: 1;
+  }
+  /* inner ring scuro per dare profondità (l'incavo) */
+  .v3 .key::after {
+    content: '';
+    position: absolute;
+    top: 1px; left: 1px; right: 1px; bottom: 1px;
+    background: var(--bordeaux-deep);
+    border-radius: 50%;
+    box-shadow:
+      inset 0 0.4px 0.5px rgba(0,0,0,0.7),
+      inset 0 -0.3px 0.4px rgba(255,220,150,0.2);
+    z-index: 1;
+  }
+
+  .footnote {
+    margin-top:36px; font-size:12px;
+    color:var(--muted); text-align:center;
+    font-family:-apple-system,sans-serif;
+    line-height:1.7;
+    max-width:780px;
+    margin-left:auto; margin-right:auto;
+  }
+  .footnote strong { color:var(--gold); font-weight:600; }
+  .divider {
+    width:80px; height:1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 28px auto 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Polaroid · varianti serratura</h1>
+<p class="sub">Stesso impianto: foto "porta chiusa" bordeaux/nera, skin che traspare dal buco, cornice oro. Cambiano forma del buco e ricchezza della cornice. Zoom <b>6×</b> sopra, topbar a dimensione reale sotto.</p>
+
+<div class="section-title">Confronto · scala 6×</div>
+<div class="zoom-row">
+
+  <div class="zoom-cell">
+    <div class="scaled">
+      <div class="pol v1">
+        <div class="card">
+          <div class="ph">
+            <div class="key">
+              <div class="hole"></div>
+            </div>
+          </div>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>1 · classico</strong>cornice liscia, buco standard</div>
+  </div>
+
+  <div class="zoom-cell">
+    <div class="scaled">
+      <div class="pol v2">
+        <div class="card">
+          <div class="ph">
+            <div class="key">
+              <div class="hole"></div>
+            </div>
+          </div>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>2 · ornato</strong>escutcheon vittoriano con volute</div>
+  </div>
+
+  <div class="zoom-cell">
+    <div class="scaled">
+      <div class="pol v3">
+        <div class="card">
+          <div class="ph">
+            <div class="key">
+              <div class="hole"></div>
+            </div>
+          </div>
+        </div>
+        <span class="cnt">1</span>
+      </div>
+    </div>
+    <div class="lbl"><strong>3 · a cuore</strong>buco-cuore, cornice tonda</div>
+  </div>
+
+</div>
+
+<div class="section-title">In topbar reale · dimensione finale</div>
+
+<div class="row">
+
+  <div class="scenario">
+    <div class="label">Variante · 1</div>
+    <h2>Keyhole classico</h2>
+    <p class="desc">Forma standard pulita. Massima leggibilità a 26×32 px: si vede sempre come "serratura".</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol v1">
+          <div class="card"><div class="ph"><div class="key"><div class="hole"></div></div></div></div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ icona universale, riconoscibile sempre</div>
+      <div class="p">+ cornice sottile = non ruba spazio alla skin dentro</div>
+      <div class="c">− il meno "decorativo" dei tre, il più asciutto</div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Variante · 2</div>
+    <h2>Keyhole ornato</h2>
+    <p class="desc">Escutcheon con volute ai lati, due rivetti oro. Più "antico/boudoir".</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol v2">
+          <div class="card"><div class="ph"><div class="key"><div class="hole"></div></div></div></div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ massima coerenza con theming "Lussuria" (antico, sensuale)</div>
+      <div class="p">+ la cornice riempie meglio la polaroid (sembra "completa")</div>
+      <div class="c">− le volute a 26 px possono perdersi → "polaroid con macchia oro"</div>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Variante · 3</div>
+    <h2>Keyhole a cuore</h2>
+    <p class="desc">Buco a forma di cuore, cornice tonda morbida. Più romantico, meno antico.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span>● ●●● 100%</span></div>
+      <div class="topbar">
+        <span class="brand">Lussuria</span>
+        <div class="pol v3">
+          <div class="card"><div class="ph"><div class="key"><div class="hole"></div></div></div></div>
+          <span class="cnt">1</span>
+        </div>
+        <span class="avatar">🐻</span>
+      </div>
+      <div class="content">
+        <h3>Desideri · noi</h3>
+        <div class="desideri-list">
+          <div class="item"><span class="e">🔥</span> Serata mascherata</div>
+          <div class="item"><span class="e">💌</span> Lettera sotto al cuscino</div>
+        </div>
+      </div>
+    </div>
+    <div class="pro-con">
+      <div class="p">+ forma cuore = subito "amore/intimità", non c'è dubbio</div>
+      <div class="p">+ tonda → leggibilissima anche a 26 px</div>
+      <div class="c">− vira più "romantico" che "osé"</div>
+      <div class="c">− cuore già usato per Desideri/Reazioni nell'app</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+<p class="footnote">
+  Tutti e 3 hanno: <strong>sfondo scuro</strong> al posto della skin piena, <strong>buco</strong> che mostra skin con un highlight di luce, <strong>cornice oro</strong> con drop-shadow.<br>
+  Mio voto: <strong>1 classico</strong> se vuoi che la chip resti pulita e si veda bene a 26 px. <strong>2 ornato</strong> se vuoi spingere sul mood antico/boudoir e accetti un po' di "rumore" a dimensione finale.
+</p>
+
+</body>
+</html>
