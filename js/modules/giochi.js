@@ -129,23 +129,38 @@ export function closeGameModal(opts) {
   document.dispatchEvent(new CustomEvent('giochi:tabs-refresh'));
 }
 
-// Swipe laterale (entrambe le direzioni) per chiudere. touch-action:pan-y sul
-// sheet lascia lo scroll verticale al browser; orizzontalmente cattura noi.
+// Swipe laterale (entrambe le direzioni) per chiudere. Vincoli:
+//  - solo da bordo (entro 24px dx/sx dello sheet) → swipe nel mezzo NON chiude
+//  - solo primary pointer → toccare con due dita non triggera
+//  - soglie alte (24px per partire, 160px o v>0.9 per committare) → un mini
+//    slide accidentale durante il gioco non annulla la partita
 function wireModalSwipe(sheet, overlay) {
   let start = null, dragging = false;
+  const cancelDrag = () => {
+    start = null; dragging = false;
+    sheet.classList.remove('swiping');
+    sheet.style.transform = '';
+    overlay.style.background = '';
+  };
   const onDown = e => {
     if (e.button !== undefined && e.button !== 0) return;
+    if (!e.isPrimary) { cancelDrag(); return; }      // 2-finger touch → ignora
     if (e.target.closest('button, input, textarea, select, .yz-scrim, .dadi-scrim, .strip-ov, .modal')) return;
+    const rect = sheet.getBoundingClientRect();
+    const fromL = e.clientX - rect.left < 24;
+    const fromR = rect.right - e.clientX < 24;
+    if (!fromL && !fromR) return;                    // edge-only: dentro non triggera
     start = { x: e.clientX, y: e.clientY, t: Date.now() };
     dragging = false;
   };
   const onMove = e => {
     if (!start) return;
+    if (!e.isPrimary) { cancelDrag(); return; }
     const dx = e.clientX - start.x;
     const dy = e.clientY - start.y;
     if (!dragging) {
-      if (Math.abs(dy) > 8 && Math.abs(dy) >= Math.abs(dx)) { start = null; return; }
-      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+      if (Math.abs(dy) > 12 && Math.abs(dy) >= Math.abs(dx)) { start = null; return; }
+      if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.4) {
         dragging = true;
         sheet.classList.add('swiping');
         try { sheet.setPointerCapture(e.pointerId); } catch (_) {}
@@ -165,7 +180,7 @@ function wireModalSwipe(sheet, overlay) {
     start = null; dragging = false;
     sheet.classList.remove('swiping');
     if (!wasDragging) { sheet.style.transform = ''; overlay.style.background = ''; return; }
-    if (Math.abs(dx) > 100 || v > 0.55) {
+    if (Math.abs(dx) > 160 || v > 0.9) {
       sheet.style.transform = 'translateX(' + (dx > 0 ? '110%' : '-110%') + ')';
       overlay.style.opacity = '0';
       setTimeout(() => closeGameModal(), 260);
