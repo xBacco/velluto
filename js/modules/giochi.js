@@ -6,6 +6,7 @@ import { listDadiFacce, seedDadiFacce, updateDadiFaccia } from '../store.js';
 import { renderRuota, openEditorRuota } from './ruota.js';
 import { renderStrip, hasActiveGame as stripHasActiveGame } from './strip.js';
 import { renderYahtzutra, hasActiveGame as yzHasActiveGame } from './yahtzutra.js';
+import { attachSwipeBack } from '../lib/swipe-back.js';
 
 let giocoCorrente = 'dadi';   // 'dadi' | 'ruota'
 let ctx = null;          // { client, me, panel }
@@ -121,7 +122,7 @@ export function openGameModal(title, mount, onClose) {
   document.body.appendChild(overlay);
   document.body.classList.add('game-modal-open');
   requestAnimationFrame(() => overlay.classList.add('show'));
-  wireModalSwipe(sheet, overlay);
+  wireModalSwipe(sheet);
   modalEl = overlay;
   modalCloseHandler = onClose;
   mount(body);
@@ -145,70 +146,12 @@ export function closeGameModal(opts) {
   document.dispatchEvent(new CustomEvent('giochi:tabs-refresh'));
 }
 
-// Swipe laterale (entrambe le direzioni) per chiudere. Vincoli:
-//  - solo da bordo (entro 24px dx/sx dello sheet) → swipe nel mezzo NON chiude
-//  - solo primary pointer → toccare con due dita non triggera
-//  - soglie alte (24px per partire, 160px o v>0.9 per committare) → un mini
-//    slide accidentale durante il gioco non annulla la partita
-function wireModalSwipe(sheet, overlay) {
-  let start = null, dragging = false;
-  const cancelDrag = () => {
-    start = null; dragging = false;
-    sheet.classList.remove('swiping');
-    sheet.style.transform = '';
-    overlay.style.background = '';
-  };
-  const onDown = e => {
-    if (e.button !== undefined && e.button !== 0) return;
-    if (!e.isPrimary) { cancelDrag(); return; }      // 2-finger touch → ignora
-    if (e.target.closest('button, input, textarea, select, .yz-scrim, .dadi-scrim, .strip-ov, .modal')) return;
-    const rect = sheet.getBoundingClientRect();
-    const fromL = e.clientX - rect.left < 24;
-    const fromR = rect.right - e.clientX < 24;
-    if (!fromL && !fromR) return;                    // edge-only: dentro non triggera
-    start = { x: e.clientX, y: e.clientY, t: Date.now() };
-    dragging = false;
-  };
-  const onMove = e => {
-    if (!start) return;
-    if (!e.isPrimary) { cancelDrag(); return; }
-    const dx = e.clientX - start.x;
-    const dy = e.clientY - start.y;
-    if (!dragging) {
-      if (Math.abs(dy) > 12 && Math.abs(dy) >= Math.abs(dx)) { start = null; return; }
-      if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-        dragging = true;
-        sheet.classList.add('swiping');
-        try { sheet.setPointerCapture(e.pointerId); } catch (_) {}
-      } else { return; }
-    }
-    e.preventDefault();
-    sheet.style.transform = 'translateX(' + dx + 'px)';
-    const alpha = Math.max(.25, .72 - Math.abs(dx) / 650);
-    overlay.style.background = 'rgba(8,2,4,' + alpha + ')';
-  };
-  const onUp = e => {
-    if (!start) return;
-    const dx = e.clientX - start.x;
-    const dt = Math.max(1, Date.now() - start.t);
-    const v = Math.abs(dx) / dt;
-    const wasDragging = dragging;
-    start = null; dragging = false;
-    sheet.classList.remove('swiping');
-    if (!wasDragging) { sheet.style.transform = ''; overlay.style.background = ''; return; }
-    if (Math.abs(dx) > 160 || v > 0.9) {
-      sheet.style.transform = 'translateX(' + (dx > 0 ? '110%' : '-110%') + ')';
-      overlay.style.opacity = '0';
-      setTimeout(() => closeGameModal(), 260);
-    } else {
-      sheet.style.transform = '';
-      overlay.style.background = '';
-    }
-  };
-  sheet.addEventListener('pointerdown', onDown);
-  sheet.addEventListener('pointermove', onMove, { passive: false });
-  sheet.addEventListener('pointerup', onUp);
-  sheet.addEventListener('pointercancel', onUp);
+// Swipe laterale per chiudere il game modal. Delega a attachSwipeBack la
+// gesture detection (edge 40px, soglia 25% width o velocità > 0.9). La
+// chiusura specifica (sheet slide-out + blur dissolve dello scrim) resta
+// in closeGameModal().
+function wireModalSwipe(sheet) {
+  attachSwipeBack(sheet, () => closeGameModal());
 }
 
 async function montaGiocoCorrente() {
