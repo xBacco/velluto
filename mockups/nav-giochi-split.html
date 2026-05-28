@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="utf-8"><title>Nav giochi — split</title>
+<style>
+:root{--gold:#d4a86c;--gold-soft:#e9c98f;--cream:#f3d9b0;}
+*{box-sizing:border-box;}
+body{margin:0;background:#1c0610;font-family:Georgia,serif;color:var(--cream);padding:20px;}
+h1{font-size:14px;color:var(--gold);letter-spacing:.15em;text-transform:uppercase;font-weight:normal;margin:0 0 6px;}
+.intro{font-size:13px;color:#b9908f;margin:0 0 18px;}
+.frame{max-width:420px;margin:0 auto 36px;background:#0d0307;border:1px solid rgba(212,168,108,.16);border-radius:18px;padding:22px 16px;}
+.title{font-family:Georgia;font-size:18px;color:var(--gold);margin:0 0 14px;}
+
+/* ===== Variante A: due dock separati con label ===== */
+.va-grouplab{font-family:Arial;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);opacity:.7;margin:0 8px 5px;}
+.va-dock{display:flex;gap:6px;background:rgba(13,3,7,.7);border:1px solid rgba(212,168,108,.18);border-radius:16px;padding:6px;margin-bottom:14px;}
+.va-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+  border:1px solid transparent;background:transparent;color:rgba(243,217,176,.55);
+  border-radius:12px;padding:11px 6px;cursor:pointer;
+  font-family:Arial;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+  transition:all .35s cubic-bezier(.34,1.15,.4,1);}
+.va-tab .ico{font-size:17px;}
+.va-tab.on{flex:2.3;color:var(--gold);background:linear-gradient(180deg,rgba(212,168,108,.22),rgba(212,168,108,.06));border-color:rgba(212,168,108,.5);}
+.va-tab.on .lab{display:inline;}
+.va-tab .lab{display:none;}
+.va-tab.on .lab{display:inline;}
+
+/* ===== Variante B: un dock con divisore visibile ===== */
+.vb-dock{display:flex;align-items:stretch;gap:6px;background:rgba(13,3,7,.7);border:1px solid rgba(212,168,108,.18);border-radius:18px;padding:6px;margin-bottom:8px;}
+.vb-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+  border:1px solid transparent;background:transparent;color:rgba(243,217,176,.55);
+  border-radius:13px;padding:11px 6px;cursor:pointer;
+  font-family:Arial;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+  transition:all .35s cubic-bezier(.34,1.15,.4,1);}
+.vb-tab .ico{font-size:17px;}
+.vb-tab.on{flex:2.3;color:var(--gold);background:linear-gradient(180deg,rgba(212,168,108,.22),rgba(212,168,108,.06));border-color:rgba(212,168,108,.5);}
+.vb-tab .lab{display:none;}
+.vb-tab.on .lab{display:inline;}
+.vb-div{width:1px;background:linear-gradient(180deg,transparent 0,rgba(212,168,108,.4) 30%,rgba(212,168,108,.4) 70%,transparent 100%);margin:4px 2px;flex:0 0 1px;}
+.vb-cap{display:flex;justify-content:space-between;font-family:Arial;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);opacity:.55;padding:0 10px;}
+
+/* ===== Variante C: supergroup pill (toggle in alto) + dock del gruppo ===== */
+.vc-pill{display:inline-flex;gap:4px;background:rgba(13,3,7,.7);border:1px solid rgba(212,168,108,.2);border-radius:24px;padding:4px;margin:0 auto 12px;}
+.vc-pillwrap{text-align:center;}
+.vc-pillbtn{font-family:Arial;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:rgba(243,217,176,.55);background:transparent;border:none;border-radius:20px;padding:9px 18px;cursor:pointer;transition:all .25s;}
+.vc-pillbtn.on{color:#3a0c1c;background:linear-gradient(180deg,var(--gold-soft),var(--gold));font-weight:600;}
+.vc-dock{display:flex;gap:8px;background:rgba(13,3,7,.7);border:1px solid rgba(212,168,108,.18);border-radius:16px;padding:6px;}
+.vc-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  border:1px solid transparent;background:transparent;color:rgba(243,217,176,.55);
+  border-radius:12px;padding:14px 6px;cursor:pointer;
+  font-family:Arial;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  transition:all .3s;}
+.vc-tab .ico{font-size:22px;}
+.vc-tab.on{color:var(--gold);background:linear-gradient(180deg,rgba(212,168,108,.22),rgba(212,168,108,.06));border-color:rgba(212,168,108,.5);}
+
+.note{font-size:11px;color:#8a6f6a;font-style:italic;margin:8px 0 0;padding:0 8px;}
+</style></head>
+<body>
+<h1>Nav giochi — 3 varianti di split (a tempo / liberi)</h1>
+<p class="intro">Slot &amp; Ruota = "a tempo" (economia rationata). Strip &amp; Yahtzutra = "liberi" (gioca quando vuoi). 4 giochi, 2 gruppi.</p>
+
+<!-- ============ VARIANTE A ============ -->
+<div class="frame">
+  <p class="title">Variante A — Due dock separati con etichetta</p>
+  <p class="va-grouplab">Giochi a tempo</p>
+  <div class="va-dock">
+    <button class="va-tab on"><span class="ico">🎡</span><span class="lab">Ruota</span></button>
+    <button class="va-tab"><span class="ico">🎰</span><span class="lab">Slot</span></button>
+  </div>
+  <p class="va-grouplab">Giochi liberi</p>
+  <div class="va-dock">
+    <button class="va-tab"><span class="ico">♠️</span><span class="lab">Strip</span></button>
+    <button class="va-tab"><span class="ico">🎲</span><span class="lab">Yahtzutra</span></button>
+  </div>
+  <p class="note">Più verticale ma la separazione è massima. Le etichette dei gruppi rendono la gerarchia esplicita.</p>
+</div>
+
+<!-- ============ VARIANTE B ============ -->
+<div class="frame">
+  <p class="title">Variante B — Un dock unico con divisore al centro</p>
+  <p class="va-grouplab" style="margin:0 8px 6px;display:flex;justify-content:space-between;"><span>A tempo</span><span style="opacity:.55;">Liberi</span></p>
+  <div class="vb-dock">
+    <button class="vb-tab on"><span class="ico">🎡</span><span class="lab">Ruota</span></button>
+    <button class="vb-tab"><span class="ico">🎰</span><span class="lab">Slot</span></button>
+    <div class="vb-div"></div>
+    <button class="vb-tab"><span class="ico">♠️</span><span class="lab">Strip</span></button>
+    <button class="vb-tab"><span class="ico">🎲</span><span class="lab">Yahtzutra</span></button>
+  </div>
+  <p class="note">Compatto, una sola riga come oggi. Il divisore verticale separa i due gruppi con un colpo d'occhio.</p>
+</div>
+
+<!-- ============ VARIANTE C ============ -->
+<div class="frame">
+  <p class="title">Variante C — Pillola "supergruppo" in alto + dock con solo 2 tab</p>
+  <div class="vc-pillwrap">
+    <div class="vc-pill">
+      <button class="vc-pillbtn on">A tempo</button>
+      <button class="vc-pillbtn">Liberi</button>
+    </div>
+  </div>
+  <div class="vc-dock">
+    <button class="vc-tab on"><span class="ico">🎡</span>Ruota</button>
+    <button class="vc-tab"><span class="ico">🎰</span>Slot</button>
+  </div>
+  <p class="note">Due tap per arrivare a un gioco "libero", ma ogni gruppo respira: solo 2 tab grandi alla volta, emoji big, intenzione chiarissima.</p>
+</div>
+
+</body></html>
