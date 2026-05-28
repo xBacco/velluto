@@ -5,6 +5,9 @@ import { logout } from '../auth.js';
 import { isLockEnabled, setPin, disableLock, isPinValid, getPudica, setPudica,
          bioSupported, isBioEnabled, enableBio, disableBio } from '../lib/lock.js';
 import { tipiDefaultRows } from '../lib/logic.js';
+import { renderSlotEditorInto } from './giochi.js';
+import { renderRuotaEditorInto } from './ruota.js';
+import { renderYahtzutraEditorInto } from './yahtzutra.js';
 
 const EMOJI = ['🐻','🧁','🦊','🦋','🐰','🐱','🐺','🦌','🌹','🍑','🔥','💋','🍒','🌙','⭐','🥃','🍫','🐝','🦢','🕯️','🍓','💎'];
 
@@ -347,4 +350,56 @@ function openCambiaPassword() {
 function showInstall() {
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
   toast(ios ? 'Condividi → "Aggiungi a Home"' : 'Menu del browser → "Installa app"');
+}
+
+// ===== Contenuti dei giochi: hub a tab dentro Impostazioni =====
+// Pattern push-to-side analogo a openSvuota: sostituisce il contenuto di
+// setBody con header + tab strip + container editor. Non chiude il foglio.
+const CG_TABS = [
+  { key: 'slot',  em: '🎰', nm: 'Slot',      render: renderSlotEditorInto },
+  { key: 'ruota', em: '🎡', nm: 'Ruota',     render: renderRuotaEditorInto },
+  { key: 'yz',    em: '🎲', nm: 'Yahtzutra', render: renderYahtzutraEditorInto },
+];
+
+function openContenutiGiochi() {
+  const body = document.getElementById('setBody'); clear(body);
+
+  // Header con back
+  const head = mk('div', 'set-sec');
+  const back = mk('button', 'set-back', '‹ Indietro'); back.onclick = renderMain;
+  add(head, back); add(body, head);
+  add(body, mk('div', 'set-sec-t', 'Contenuti giochi'));
+
+  // Tab strip + indicator
+  const tabsWrap = mk('div', 'cg-tabs-wrap');
+  const tabs = mk('div', 'cg-tabs');
+  const tabButtons = [];
+  CG_TABS.forEach((t, idx) => {
+    const b = mk('button', 'cg-tab' + (idx === 0 ? ' on' : ''));
+    add(b, mk('span', 'em', t.em), mk('span', 'nm', t.nm));
+    b.onclick = () => activate(idx);
+    tabs.appendChild(b);
+    tabButtons.push(b);
+  });
+  const indicator = mk('div', 'cg-indicator');
+  add(tabsWrap, tabs, indicator);
+  add(body, tabsWrap);
+
+  // Pane per l'editor attivo
+  const pane = mk('div', 'cg-pane');
+  add(body, pane);
+
+  async function activate(idx) {
+    tabButtons.forEach((b, i) => b.classList.toggle('on', i === idx));
+    indicator.style.left = (idx * (100 / CG_TABS.length)) + '%';
+    pane.scrollTop = 0;
+    try {
+      await CG_TABS[idx].render(pane, { client: CTX.client, me: CTX.me });
+    } catch (e) {
+      clear(pane);
+      add(pane, mk('p', 'muted', 'Errore caricamento editor: ' + e.message));
+    }
+  }
+
+  activate(0);   // monta Slot all'apertura
 }
