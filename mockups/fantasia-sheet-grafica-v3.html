@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup · Sheet "Nuova fantasia" — 3 varianti cartolina (v3)</title>
+<style>
+  :root{
+    --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+    --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a;
+    --spin:cubic-bezier(.17,.67,.18,1);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;
+    background:linear-gradient(170deg,#0a0205,#150410);padding:28px 16px 80px;}
+
+  .pagehd{text-align:center;max-width:980px;margin:0 auto 26px;}
+  .pagehd h1{margin:0 0 8px;font-size:22px;color:var(--gold-soft);font-weight:normal;letter-spacing:.5px;}
+  .pagehd p{margin:0;font-family:Arial;font-size:13px;color:#9d8478;line-height:1.6;}
+
+  .grid{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;align-items:flex-start;}
+  .item{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .vtag{font-family:Arial;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);}
+  .vtitle{font-size:18px;color:var(--gold-soft);}
+  .vsub{font-family:Arial;font-size:11.5px;color:#9d8478;max-width:320px;text-align:center;line-height:1.5;}
+
+  .phone{width:340px;height:720px;position:relative;
+    border:9px solid #0a0205;border-radius:38px;overflow:hidden;
+    box-shadow:0 24px 56px rgba(0,0,0,.6),0 0 0 1px rgba(212,168,108,.18);
+    background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+               linear-gradient(170deg,var(--bg),var(--bg2));}
+
+  .ptop{position:absolute;top:0;left:0;right:0;height:46px;padding:10px 16px 0;
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:Arial;font-size:10.5px;color:#a87e6a;letter-spacing:.5px;z-index:5;pointer-events:none;}
+
+  .page{position:absolute;inset:46px 0 70px;padding:6px 16px 14px;overflow:auto;display:flex;flex-direction:column;
+    transition:filter .35s;}
+  .phone.sheet-open .page{filter:blur(2px) brightness(.55);}
+  .page::-webkit-scrollbar{width:6px;}
+  .page::-webkit-scrollbar-thumb{background:rgba(212,168,108,.2);border-radius:3px;}
+
+  .ptitle{font-size:22px;color:var(--gold-soft);margin:8px 2px 4px;font-weight:normal;letter-spacing:.4px;}
+  .psub{font-family:Arial;font-size:11.5px;color:#9d8478;margin:0 2px 14px;line-height:1.5;}
+
+  .card{background:rgba(122,21,51,.16);border:1px solid rgba(212,168,108,.18);
+    border-radius:13px;padding:11px 13px;margin-bottom:8px;font-family:Georgia;
+    font-size:14px;line-height:1.4;color:var(--cream);}
+
+  .pnav{position:absolute;bottom:0;left:0;right:0;height:54px;
+    background:linear-gradient(180deg,rgba(8,2,5,.7),rgba(8,2,5,.95));
+    border-top:1px solid rgba(212,168,108,.15);display:flex;justify-content:space-around;align-items:center;
+    font-family:Arial;font-size:10px;color:#a87e6a;z-index:6;}
+  .pnav .nb{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.7;}
+  .pnav .nb.on{color:var(--gold-soft);opacity:1;}
+  .pnav .nb .e{font-size:16px;line-height:1;}
+
+  .fab{position:absolute;right:14px;bottom:66px;width:54px;height:54px;border-radius:50%;
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#11040a;
+    border:0;font-size:28px;font-weight:bold;cursor:pointer;z-index:7;
+    box-shadow:0 8px 20px rgba(0,0,0,.45),0 0 0 1px rgba(8,2,5,.4);line-height:1;}
+
+  .scrim{position:absolute;inset:0;background:rgba(8,2,5,.55);backdrop-filter:blur(3px);
+    opacity:0;pointer-events:none;transition:opacity .3s;z-index:10;}
+  .scrim.on{opacity:1;pointer-events:auto;}
+
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:11;
+    transform:translateY(110%);transition:transform .42s var(--spin);}
+  .sheet.on{transform:translateY(0);}
+  .grab{width:42px;height:4px;background:rgba(212,168,108,.4);border-radius:3px;margin:0 auto 12px;}
+
+  /* common card-like text */
+  .ta-common{width:100%;background:transparent;border:0;outline:none;resize:none;padding:0;
+    font-family:Georgia,"Times New Roman",serif;line-height:1.5;}
+
+  /* common chip */
+  .chip{font-family:Arial;font-size:11px;color:#a87e6a;
+    background:transparent;border:1px solid rgba(212,168,108,.3);
+    border-radius:6px;padding:5px 9px;cursor:pointer;letter-spacing:.4px;
+    user-select:none;-webkit-user-select:none;text-transform:lowercase;}
+  .chip.on{background:rgba(212,168,108,.18);color:var(--gold-soft);border-color:var(--gold);}
+
+  /* common action bar */
+  .acts{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .cancel{font-family:Arial;font-size:12.5px;color:#7a6155;cursor:pointer;
+    background:none;border:0;padding:9px 12px;letter-spacing:.3px;}
+  .send{font-family:Georgia;font-style:italic;font-size:13.5px;color:#3a2405;
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));border:0;
+    padding:11px 22px 11px 18px;border-radius:999px;cursor:pointer;letter-spacing:.4px;font-weight:bold;
+    box-shadow:0 4px 14px rgba(212,168,108,.25);display:inline-flex;align-items:center;gap:7px;}
+  .send::after{content:'→';font-style:normal;font-weight:bold;font-size:16px;}
+  .send:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+
+  /* ============ VARIANTE V — CARTOLINA VELLUTO (on-brand) ============ */
+  .v-sheet{padding:14px 14px 22px;
+    background:linear-gradient(180deg,#220715,#100308);
+    border-radius:24px 24px 0 0;
+    box-shadow:0 -8px 32px rgba(0,0,0,.6);position:relative;}
+  .v-x{position:absolute;top:8px;right:14px;font-size:18px;color:#9c7f88;cursor:pointer;
+    background:transparent;border:0;padding:4px;z-index:2;}
+  .v-card{position:relative;background:
+    repeating-linear-gradient(45deg,rgba(212,168,108,.04) 0 14px,transparent 14px 28px),
+    radial-gradient(110% 80% at 10% 0%,#3d0e1f,#1d0710 75%);
+    color:var(--cream);border-radius:10px;padding:18px 16px 16px;
+    border:1px solid rgba(212,168,108,.3);
+    box-shadow:0 14px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(212,168,108,.15);
+    display:grid;grid-template-columns:1fr 80px;gap:14px;}
+  .v-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;
+    background:repeating-linear-gradient(90deg,transparent 0 10px,rgba(212,168,108,.22) 10px 20px);
+    border-radius:10px 10px 0 0;opacity:.5;}
+  .v-left{display:flex;flex-direction:column;gap:8px;}
+  .v-meta{font-family:Arial;font-size:9.5px;color:var(--gold);letter-spacing:1.4px;text-transform:uppercase;
+    border-bottom:1px solid rgba(212,168,108,.22);padding-bottom:6px;display:flex;justify-content:space-between;opacity:.85;}
+  .v-ta{font-size:15px;color:var(--cream);min-height:84px;}
+  .v-ta::placeholder{color:#7a6155;font-style:italic;}
+  .v-stamp{font-family:Georgia;font-size:11px;color:var(--gold);
+    border:1.5px solid var(--gold);text-align:center;padding:5px 4px;
+    border-radius:4px;line-height:1.2;letter-spacing:.5px;text-transform:uppercase;
+    transform:rotate(4deg);height:fit-content;
+    background:radial-gradient(circle at 30% 25%,#3d0e1f,#1d0710);
+    box-shadow:0 2px 6px rgba(0,0,0,.5);}
+  .v-stamp .emo{font-size:22px;display:block;margin-bottom:2px;filter:drop-shadow(0 0 6px rgba(212,168,108,.4));}
+  .v-stamps-lbl{font-family:Arial;font-size:9.5px;color:#7a6155;letter-spacing:1.3px;
+    text-transform:uppercase;margin:14px 0 6px;}
+  .v-stamps{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;}
+
+  /* ============ VARIANTE W — CARTOLINA PIEGHEVOLE FRONT/BACK ============ */
+  .w-sheet{padding:14px 14px 18px;
+    background:linear-gradient(180deg,#220715,#100308);
+    border-radius:24px 24px 0 0;
+    box-shadow:0 -8px 32px rgba(0,0,0,.6);position:relative;}
+  .w-x{position:absolute;top:8px;right:14px;font-size:18px;color:#9c7f88;cursor:pointer;
+    background:transparent;border:0;padding:4px;z-index:2;}
+  .w-flipwrap{perspective:1400px;height:300px;margin:6px 0 10px;}
+  .w-flip{position:relative;width:100%;height:100%;transform-style:preserve-3d;
+    transition:transform .65s var(--spin);}
+  .w-flip.flipped{transform:rotateY(180deg);}
+  .w-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+    border-radius:10px;padding:18px 16px;
+    box-shadow:0 14px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(212,168,108,.15);
+    background:
+      repeating-linear-gradient(45deg,rgba(212,168,108,.04) 0 14px,transparent 14px 28px),
+      radial-gradient(110% 80% at 10% 0%,#3d0e1f,#1d0710 75%);
+    border:1px solid rgba(212,168,108,.3);
+    overflow:hidden;display:flex;flex-direction:column;}
+  .w-face::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;
+    background:repeating-linear-gradient(90deg,transparent 0 10px,rgba(212,168,108,.22) 10px 20px);
+    opacity:.5;}
+  .w-back{transform:rotateY(180deg);
+    background:
+      repeating-linear-gradient(0deg,rgba(212,168,108,.04) 0 14px,transparent 14px 28px),
+      radial-gradient(110% 80% at 90% 0%,#3d0e1f,#1d0710 75%);}
+  .w-face-hd{font-family:Arial;font-size:9.5px;color:var(--gold);letter-spacing:1.4px;text-transform:uppercase;
+    border-bottom:1px solid rgba(212,168,108,.22);padding-bottom:6px;display:flex;justify-content:space-between;
+    margin-bottom:10px;opacity:.85;}
+  .w-ta{font-size:15px;color:var(--cream);flex:1;min-height:0;}
+  .w-ta::placeholder{color:#7a6155;font-style:italic;}
+  .w-back-grid{display:grid;grid-template-columns:1fr 86px;gap:12px;height:100%;align-items:start;}
+  .w-back-left{display:flex;flex-direction:column;gap:8px;}
+  .w-addr-lbl{font-family:Arial;font-size:9.5px;color:var(--gold);letter-spacing:1.3px;
+    text-transform:uppercase;margin-bottom:2px;opacity:.85;}
+  .w-addr{display:flex;flex-direction:column;gap:5px;}
+  .w-addr div{border-bottom:1px solid rgba(212,168,108,.2);height:18px;
+    font-family:Georgia;font-style:italic;font-size:13px;color:#a87e6a;padding-left:2px;}
+  .w-tag-lbl{font-family:Arial;font-size:9.5px;color:#7a6155;letter-spacing:1.2px;
+    text-transform:uppercase;margin:12px 0 6px;}
+  .w-tags{display:flex;flex-wrap:wrap;gap:5px;}
+  .w-stamp{font-family:Georgia;font-size:10.5px;color:var(--gold);
+    border:1.5px solid var(--gold);text-align:center;padding:5px 4px;
+    border-radius:4px;line-height:1.2;letter-spacing:.5px;text-transform:uppercase;
+    background:radial-gradient(circle at 30% 25%,#3d0e1f,#1d0710);
+    box-shadow:0 2px 6px rgba(0,0,0,.5);transform:rotate(2deg);height:fit-content;}
+  .w-stamp .emo{font-size:24px;display:block;margin-bottom:2px;
+    filter:drop-shadow(0 0 6px rgba(212,168,108,.4));}
+  .w-flipbtn{font-family:Arial;font-size:11.5px;color:var(--gold-soft);
+    background:transparent;border:1px solid rgba(212,168,108,.35);
+    border-radius:999px;padding:6px 14px;cursor:pointer;letter-spacing:.5px;
+    text-transform:uppercase;}
+  .w-flipbtn:hover{background:rgba(212,168,108,.1);}
+  .w-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+
+  /* ============ VARIANTE X — CARTOLINA PERFORATA (francobollo gigante) ============ */
+  .x-sheet{padding:18px 14px 22px;
+    background:radial-gradient(120% 70% at 50% 0%,rgba(122,21,51,.32),transparent 70%),
+               linear-gradient(180deg,#1c0612,#0c0307);
+    border-radius:24px 24px 0 0;
+    box-shadow:0 -8px 32px rgba(0,0,0,.6);position:relative;}
+  .x-x{position:absolute;top:8px;right:14px;font-size:18px;color:#9c7f88;cursor:pointer;
+    background:transparent;border:0;padding:4px;z-index:3;}
+  /* Perforated border around the WHOLE card via radial-gradients on each side.
+     Background tile produces semicircular cut-outs.                                */
+  .x-perf{position:relative;padding:14px;
+    background:radial-gradient(circle at 10px 50%,#160409 6px,transparent 7px) repeat-y left,
+               radial-gradient(circle at calc(100% - 10px) 50%,#160409 6px,transparent 7px) repeat-y right,
+               radial-gradient(circle at 50% 10px,#160409 6px,transparent 7px) repeat-x top,
+               radial-gradient(circle at 50% calc(100% - 10px),#160409 6px,transparent 7px) repeat-x bottom,
+               linear-gradient(180deg,#f0d8a8,#dcb87a);
+    background-size:20px 20px,20px 20px,20px 20px,20px 20px,100% 100%;
+    background-color:#160409;
+    border-radius:6px;}
+  .x-inner{background:
+      repeating-linear-gradient(135deg,rgba(122,80,30,.06) 0 14px,transparent 14px 28px),
+      linear-gradient(180deg,#f0d8a8,#e2c186);
+    border:1px solid rgba(122,80,30,.35);border-radius:3px;
+    padding:18px 16px 16px;color:#3a2405;
+    display:grid;grid-template-columns:1fr 78px;gap:14px;
+    box-shadow:inset 0 0 24px rgba(122,80,30,.18);}
+  .x-left{display:flex;flex-direction:column;gap:8px;}
+  .x-meta{font-family:Arial;font-size:9.5px;color:#7a5028;letter-spacing:1.4px;text-transform:uppercase;
+    border-bottom:1px solid rgba(122,80,30,.3);padding-bottom:5px;display:flex;justify-content:space-between;}
+  .x-ta{font-size:14.5px;color:#3a2405;min-height:80px;}
+  .x-ta::placeholder{color:rgba(58,36,5,.45);font-style:italic;}
+  .x-stamp{font-family:Georgia;font-size:10.5px;color:#7a1226;
+    border:2px solid #7a1226;text-align:center;padding:5px 4px;
+    border-radius:4px;line-height:1.2;letter-spacing:.5px;text-transform:uppercase;
+    transform:rotate(3deg);height:fit-content;
+    background:rgba(255,255,255,.22);}
+  .x-stamp .emo{font-size:20px;display:block;margin-bottom:2px;}
+  .x-stamps-lbl{font-family:Arial;font-size:9.5px;color:#7a6155;letter-spacing:1.3px;
+    text-transform:uppercase;margin:14px 0 6px;}
+  .x-stamps{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;}
+</style>
+</head>
+<body>
+
+<div class="pagehd">
+  <h1>Sheet "Nuova fantasia" · 3 varianti cartolina (v3)</h1>
+  <p>Stile cartolina confermato. Qui 3 declinazioni diverse: velluto on-brand,
+    pieghevole front/back, e perforata stile francobollo gigante.</p>
+</div>
+
+<div class="grid">
+
+  <!-- ============================================================
+       VARIANTE V — VELLUTO ON-BRAND
+       Stessa anatomia di S, ma palette del progetto (vinaccia+oro).
+       ============================================================ -->
+  <div class="item">
+    <div class="vtag">Variante V</div>
+    <div class="vtitle">Cartolina velluto · on-brand</div>
+    <div class="vsub">Cartolina vinaccia scura + scritta crema, francobollo
+      dorato bordato oro con 🔥 glow. Coerente con la palette del resto dell'app
+      (no carta sabbia chiara). Layout identico a S.</div>
+
+    <div class="phone" id="phoneV">
+      <div class="ptop"><span>9:41</span><span>●●●</span></div>
+      <div class="page">
+        <h2 class="ptitle">🔥 Fantasie</h2>
+        <p class="psub">Bacheca delle cose da provare.</p>
+        <div class="card">Una cena al buio</div>
+        <div class="card">Weekend in baita</div>
+        <div class="card">Provare quel posto fuori città</div>
+      </div>
+      <div class="pnav">
+        <div class="nb on"><span class="e">🔥</span>Fantasie</div>
+        <div class="nb"><span class="e">🎲</span>Giochi</div>
+        <div class="nb"><span class="e">📅</span>Esperienze</div>
+        <div class="nb"><span class="e">🗺️</span>Mappa</div>
+        <div class="nb"><span class="e">🎟️</span>Buoni</div>
+      </div>
+      <button class="fab" id="vFab">＋</button>
+
+      <div class="scrim" id="vScrim"></div>
+      <div class="sheet" id="vSheet">
+        <div class="v-sheet">
+          <div class="grab"></div>
+          <button class="v-x" id="vX">✕</button>
+          <div class="v-card">
+            <div class="v-left">
+              <div class="v-meta"><span>Dal cuore di chi scrive</span><span>oggi</span></div>
+              <textarea class="ta-common v-ta" id="vTa" placeholder="Cara/o noi due, vorrei provare…"></textarea>
+            </div>
+            <div class="v-stamp"><span class="emo">🔥</span>fantasia</div>
+          </div>
+          <div class="v-stamps-lbl">Timbri · opzionali</div>
+          <div class="v-stamps" id="vStamps">
+            <div class="chip">intimità</div>
+            <div class="chip">sera</div>
+            <div class="chip">weekend</div>
+            <div class="chip">viaggio</div>
+            <div class="chip">sorpresa</div>
+          </div>
+          <div class="acts">
+            <button class="cancel" id="vCancel">Annulla</button>
+            <button class="send" id="vAdd" disabled>Spedisci</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       VARIANTE W — PIEGHEVOLE FRONT/BACK
+       Tap "✉ retro" → la cartolina si gira. Retro = stamp + righe + tag.
+       ============================================================ -->
+  <div class="item">
+    <div class="vtag">Variante W</div>
+    <div class="vtitle">Cartolina pieghevole · front/back</div>
+    <div class="vsub">Davanti: solo il testo, niente distrazioni. Tap "retro"
+      → si gira in 3D, dietro c'è il francobollo, le righe "destinatario" e
+      i timbri categoria. Più immersivo, separa scrittura da metadati.</div>
+
+    <div class="phone" id="phoneW">
+      <div class="ptop"><span>9:41</span><span>●●●</span></div>
+      <div class="page">
+        <h2 class="ptitle">🔥 Fantasie</h2>
+        <p class="psub">Bacheca delle cose da provare.</p>
+        <div class="card">Una cena al buio</div>
+        <div class="card">Weekend in baita</div>
+        <div class="card">Provare quel posto fuori città</div>
+      </div>
+      <div class="pnav">
+        <div class="nb on"><span class="e">🔥</span>Fantasie</div>
+        <div class="nb"><span class="e">🎲</span>Giochi</div>
+        <div class="nb"><span class="e">📅</span>Esperienze</div>
+        <div class="nb"><span class="e">🗺️</span>Mappa</div>
+        <div class="nb"><span class="e">🎟️</span>Buoni</div>
+      </div>
+      <button class="fab" id="wFab">＋</button>
+
+      <div class="scrim" id="wScrim"></div>
+      <div class="sheet" id="wSheet">
+        <div class="w-sheet">
+          <div class="grab"></div>
+          <button class="w-x" id="wX">✕</button>
+          <div class="w-flipwrap">
+            <div class="w-flip" id="wFlip">
+              <!-- FRONT -->
+              <div class="w-face">
+                <div class="w-face-hd"><span>Fronte · scrivi</span><span>oggi</span></div>
+                <textarea class="ta-common w-ta" id="wTa" placeholder="Cara/o noi due, vorrei provare…"></textarea>
+              </div>
+              <!-- BACK -->
+              <div class="w-face w-back">
+                <div class="w-face-hd"><span>Retro · destinatario &amp; timbri</span><span>noi due</span></div>
+                <div class="w-back-grid">
+                  <div class="w-back-left">
+                    <div class="w-addr-lbl">A · da realizzare entro</div>
+                    <div class="w-addr"><div>noi due</div><div>una sera vicina</div></div>
+                    <div class="w-tag-lbl">Timbri</div>
+                    <div class="w-tags" id="wTags">
+                      <div class="chip">intimità</div>
+                      <div class="chip">sera</div>
+                      <div class="chip">weekend</div>
+                      <div class="chip">viaggio</div>
+                    </div>
+                  </div>
+                  <div class="w-stamp"><span class="emo">🔥</span>fantasia</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="w-bottom">
+            <button class="w-flipbtn" id="wFlipBtn">✉ retro</button>
+            <div style="display:flex;gap:8px;">
+              <button class="cancel" id="wCancel">Annulla</button>
+              <button class="send" id="wAdd" disabled>Spedisci</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       VARIANTE X — PERFORATA (FRANCOBOLLO GIGANTE)
+       Bordi a "perforazione" sui 4 lati: la sheet È un francobollo.
+       ============================================================ -->
+  <div class="item">
+    <div class="vtag">Variante X</div>
+    <div class="vtitle">Cartolina perforata · stamp gigante</div>
+    <div class="vsub">L'intera sheet ha i bordi perforati come un francobollo
+      vero (semicerchi cavi sui 4 lati). Sopra ci scrivi sopra. Il "francobollo"
+      dentro diventa secondario. Effetto oggetto fisico forte.</div>
+
+    <div class="phone" id="phoneX">
+      <div class="ptop"><span>9:41</span><span>●●●</span></div>
+      <div class="page">
+        <h2 class="ptitle">🔥 Fantasie</h2>
+        <p class="psub">Bacheca delle cose da provare.</p>
+        <div class="card">Una cena al buio</div>
+        <div class="card">Weekend in baita</div>
+        <div class="card">Provare quel posto fuori città</div>
+      </div>
+      <div class="pnav">
+        <div class="nb on"><span class="e">🔥</span>Fantasie</div>
+        <div class="nb"><span class="e">🎲</span>Giochi</div>
+        <div class="nb"><span class="e">📅</span>Esperienze</div>
+        <div class="nb"><span class="e">🗺️</span>Mappa</div>
+        <div class="nb"><span class="e">🎟️</span>Buoni</div>
+      </div>
+      <button class="fab" id="xFab">＋</button>
+
+      <div class="scrim" id="xScrim"></div>
+      <div class="sheet" id="xSheet">
+        <div class="x-sheet">
+          <div class="grab"></div>
+          <button class="x-x" id="xX">✕</button>
+          <div class="x-perf">
+            <div class="x-inner">
+              <div class="x-left">
+                <div class="x-meta"><span>Cartolina · 1 fantasia</span><span>oggi</span></div>
+                <textarea class="ta-common x-ta" id="xTa" placeholder="Cara/o noi due, vorrei provare…"></textarea>
+              </div>
+              <div class="x-stamp"><span class="emo">🔥</span>fantasia</div>
+            </div>
+          </div>
+          <div class="x-stamps-lbl">Timbri · opzionali</div>
+          <div class="x-stamps" id="xStamps">
+            <div class="chip">intimità</div>
+            <div class="chip">sera</div>
+            <div class="chip">weekend</div>
+            <div class="chip">viaggio</div>
+            <div class="chip">sorpresa</div>
+          </div>
+          <div class="acts">
+            <button class="cancel" id="xCancel">Annulla</button>
+            <button class="send" id="xAdd" disabled>Spedisci</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function bindSheet({fab, scrim, sheet, phone, x, cancel, ta, add}){
+  function open(){
+    scrim.classList.add('on'); sheet.classList.add('on');
+    phone.classList.add('sheet-open');
+    setTimeout(()=>ta&&ta.focus(),320);
+  }
+  function close(){
+    scrim.classList.remove('on'); sheet.classList.remove('on');
+    phone.classList.remove('sheet-open');
+    if(ta)ta.blur();
+  }
+  fab.addEventListener('click',open);
+  scrim.addEventListener('click',close);
+  if(x)x.addEventListener('click',close);
+  if(cancel)cancel.addEventListener('click',close);
+  if(add)add.addEventListener('click',()=>{
+    if(add.disabled)return;
+    const orig=add.textContent;
+    add.textContent='✓'; add.disabled=true;
+    setTimeout(()=>{ ta.value=''; add.textContent=orig; close(); },650);
+  });
+  if(ta)ta.addEventListener('input',()=>{ if(add)add.disabled=!ta.value.trim(); });
+}
+
+function bindChips(container, exclusive=true){
+  container.querySelectorAll('.chip').forEach(c=>{
+    c.addEventListener('click',()=>{
+      if(exclusive){
+        const wasOn=c.classList.contains('on');
+        container.querySelectorAll('.chip.on').forEach(o=>o.classList.remove('on'));
+        if(!wasOn)c.classList.add('on');
+      } else {
+        c.classList.toggle('on');
+      }
+    });
+  });
+}
+
+/* V */
+bindSheet({
+  fab:document.getElementById('vFab'),
+  scrim:document.getElementById('vScrim'),
+  sheet:document.getElementById('vSheet'),
+  phone:document.getElementById('phoneV'),
+  x:document.getElementById('vX'),
+  cancel:document.getElementById('vCancel'),
+  ta:document.getElementById('vTa'),
+  add:document.getElementById('vAdd'),
+});
+bindChips(document.getElementById('vStamps'));
+
+/* W — con flip front/back */
+bindSheet({
+  fab:document.getElementById('wFab'),
+  scrim:document.getElementById('wScrim'),
+  sheet:document.getElementById('wSheet'),
+  phone:document.getElementById('phoneW'),
+  x:document.getElementById('wX'),
+  cancel:document.getElementById('wCancel'),
+  ta:document.getElementById('wTa'),
+  add:document.getElementById('wAdd'),
+});
+bindChips(document.getElementById('wTags'));
+const wFlip=document.getElementById('wFlip');
+const wFlipBtn=document.getElementById('wFlipBtn');
+wFlipBtn.addEventListener('click',()=>{
+  wFlip.classList.toggle('flipped');
+  wFlipBtn.textContent=wFlip.classList.contains('flipped')?'✎ fronte':'✉ retro';
+});
+
+/* X */
+bindSheet({
+  fab:document.getElementById('xFab'),
+  scrim:document.getElementById('xScrim'),
+  sheet:document.getElementById('xSheet'),
+  phone:document.getElementById('phoneX'),
+  x:document.getElementById('xX'),
+  cancel:document.getElementById('xCancel'),
+  ta:document.getElementById('xTa'),
+  add:document.getElementById('xAdd'),
+});
+bindChips(document.getElementById('xStamps'));
+</script>
+
+</body>
+</html>
