@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup · Nuova fantasia — 3 varianti minimal (v4)</title>
+<style>
+  :root{
+    --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+    --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a;
+    --spin:cubic-bezier(.17,.67,.18,1);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;
+    background:linear-gradient(170deg,#0a0205,#150410);padding:28px 16px 80px;}
+
+  .pagehd{text-align:center;max-width:980px;margin:0 auto 30px;}
+  .pagehd h1{margin:0 0 8px;font-size:22px;color:var(--gold-soft);font-weight:normal;letter-spacing:.5px;}
+  .pagehd p{margin:0;font-family:Arial;font-size:13px;color:#9d8478;line-height:1.6;}
+
+  .grid{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;align-items:flex-start;}
+  .item{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .vtag{font-family:Arial;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);}
+  .vtitle{font-size:18px;color:var(--gold-soft);}
+  .vsub{font-family:Arial;font-size:11.5px;color:#9d8478;max-width:320px;text-align:center;line-height:1.5;}
+
+  /* PHONE */
+  .phone{width:340px;height:720px;position:relative;
+    border:9px solid #0a0205;border-radius:38px;overflow:hidden;
+    box-shadow:0 24px 56px rgba(0,0,0,.6),0 0 0 1px rgba(212,168,108,.18);
+    background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+               linear-gradient(170deg,var(--bg),var(--bg2));}
+
+  .ptop{position:absolute;top:0;left:0;right:0;height:46px;padding:10px 16px 0;
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:Arial;font-size:10.5px;color:#a87e6a;letter-spacing:.5px;
+    z-index:5;}
+
+  .page{position:absolute;inset:46px 0 70px;padding:6px 16px 14px;overflow:auto;display:flex;flex-direction:column;}
+  .page::-webkit-scrollbar{width:6px;}
+  .page::-webkit-scrollbar-thumb{background:rgba(212,168,108,.2);border-radius:3px;}
+
+  .ptitle{font-size:22px;color:var(--gold-soft);margin:8px 2px 4px;font-weight:normal;letter-spacing:.4px;}
+  .psub{font-family:Arial;font-size:11.5px;color:#9d8478;margin:0 2px 14px;line-height:1.5;}
+
+  .card{background:rgba(122,21,51,.16);border:1px solid rgba(212,168,108,.18);
+    border-radius:13px;padding:11px 13px;margin-bottom:8px;font-family:Georgia;
+    font-size:14px;line-height:1.4;color:var(--cream);position:relative;}
+  .card .meta{font-family:Arial;font-size:10px;color:#7a6155;margin-top:5px;letter-spacing:.4px;}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}
+  .card.new{animation:slideIn .35s ease;border-color:var(--gold);
+    box-shadow:0 0 0 1px rgba(212,168,108,.25);}
+
+  /* nav bar mock in fondo */
+  .pnav{position:absolute;bottom:0;left:0;right:0;height:54px;
+    background:linear-gradient(180deg,rgba(8,2,5,.7),rgba(8,2,5,.95));
+    border-top:1px solid rgba(212,168,108,.15);display:flex;justify-content:space-around;align-items:center;
+    font-family:Arial;font-size:10px;color:#a87e6a;z-index:6;}
+  .pnav .nb{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.7;cursor:pointer;
+    padding:6px 8px;border-radius:10px;user-select:none;-webkit-user-select:none;transition:background .2s;}
+  .pnav .nb.on{color:var(--gold-soft);opacity:1;}
+  .pnav .nb .e{font-size:16px;line-height:1;}
+
+  /* ============ VARIANTE J — VOICE MEMO ============ */
+  .j-mic-wrap{position:absolute;left:0;right:0;bottom:80px;display:flex;flex-direction:column;
+    align-items:center;gap:14px;z-index:5;pointer-events:none;}
+  .j-hint{font-family:Arial;font-size:11px;color:#a87e6a;letter-spacing:.6px;text-transform:uppercase;
+    opacity:.85;transition:opacity .25s;text-align:center;}
+  .j-mic{width:78px;height:78px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#f0e0b8,var(--gold) 60%, #8a6b3a 110%);
+    border:0;cursor:pointer;color:#11040a;font-size:34px;line-height:1;
+    box-shadow:0 14px 28px rgba(0,0,0,.5),0 0 0 2px rgba(8,2,5,.4),
+      inset 0 -3px 6px rgba(0,0,0,.25),inset 0 2px 3px rgba(255,255,255,.45);
+    pointer-events:auto;user-select:none;-webkit-user-select:none;
+    transition:transform .25s var(--spin), box-shadow .25s;}
+  .j-mic:active{transform:scale(.96);}
+  .j-mic.rec{transform:scale(1.18);
+    background:radial-gradient(circle at 35% 30%,#ff9ab2,#c2557a 60%, #6a1a35 110%);
+    box-shadow:0 0 0 6px rgba(194,85,122,.18),0 0 0 14px rgba(194,85,122,.08),
+      0 14px 28px rgba(0,0,0,.5),inset 0 -3px 6px rgba(0,0,0,.25);
+    animation:pulseRec 1.1s ease-in-out infinite;}
+  @keyframes pulseRec{
+    0%,100%{box-shadow:0 0 0 6px rgba(194,85,122,.18),0 0 0 14px rgba(194,85,122,.08),
+      0 14px 28px rgba(0,0,0,.5);}
+    50%{box-shadow:0 0 0 10px rgba(194,85,122,.10),0 0 0 22px rgba(194,85,122,.04),
+      0 14px 28px rgba(0,0,0,.5);}
+  }
+
+  .j-overlay{position:absolute;inset:46px 0 70px;
+    background:linear-gradient(180deg,rgba(8,2,5,.92),rgba(20,4,12,.96));
+    backdrop-filter:blur(4px);
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+    padding:30px 20px 110px;
+    opacity:0;pointer-events:none;transition:opacity .3s;z-index:4;}
+  .j-overlay.on{opacity:1;pointer-events:auto;}
+  .j-trans{font-family:Georgia;font-size:18px;color:var(--cream);text-align:center;
+    line-height:1.45;min-height:90px;max-width:280px;margin-bottom:auto;margin-top:60px;
+    font-style:italic;letter-spacing:.2px;}
+  .j-trans .cursor{display:inline-block;width:2px;height:18px;background:var(--gold);
+    margin-left:2px;vertical-align:-3px;animation:blink 1s steps(2) infinite;}
+  @keyframes blink{50%{opacity:0;}}
+  .j-wave{display:flex;align-items:center;justify-content:center;gap:3px;height:42px;
+    margin-bottom:22px;}
+  .j-wave .b{width:3px;background:linear-gradient(180deg,var(--gold-soft),var(--gold));
+    border-radius:2px;transition:height .12s ease;height:6px;}
+  .j-time{font-family:Arial;font-size:14px;color:var(--gold);letter-spacing:1px;
+    margin-bottom:18px;}
+
+  /* ============ VARIANTE K — SPOTLIGHT PULL-DOWN ============ */
+  .k-handle{position:absolute;top:46px;left:50%;transform:translateX(-50%);
+    width:48px;height:5px;border-radius:3px;background:rgba(212,168,108,.18);
+    z-index:7;pointer-events:none;transition:opacity .25s;}
+  .k-pulldown{position:absolute;left:0;right:0;top:0;
+    background:linear-gradient(180deg,rgba(20,4,12,.95) 0%,rgba(20,4,12,.6) 80%,transparent);
+    backdrop-filter:blur(8px);
+    padding:54px 18px 20px;
+    transform:translateY(-100%);transition:transform .42s var(--spin);
+    z-index:8;}
+  .k-pulldown.on{transform:translateY(0);}
+  .k-search{display:flex;align-items:center;gap:10px;
+    background:rgba(243,217,176,.08);border:1px solid rgba(212,168,108,.32);
+    border-radius:14px;padding:12px 14px;margin-bottom:14px;
+    box-shadow:0 4px 18px rgba(0,0,0,.4);}
+  .k-search .ic{font-size:16px;color:var(--gold);opacity:.7;}
+  .k-search input{flex:1;background:transparent;border:0;outline:none;
+    font-family:Georgia;font-size:15px;color:var(--cream);padding:2px 0;}
+  .k-search input::placeholder{color:#7a6155;font-style:italic;}
+  .k-search .esc{font-family:Arial;font-size:10px;color:#7a6155;
+    border:1px solid rgba(212,168,108,.25);border-radius:5px;
+    padding:2px 6px;letter-spacing:.4px;text-transform:uppercase;}
+  .k-recents-lbl{font-family:Arial;font-size:10px;color:#7a6155;
+    letter-spacing:1px;text-transform:uppercase;margin:6px 4px 6px;}
+  .k-rec{font-family:Georgia;font-size:14px;color:#a87e6a;
+    padding:8px 4px;border-bottom:1px solid rgba(212,168,108,.08);}
+  .k-rec:last-child{border-bottom:0;}
+
+  .k-scrim{position:absolute;inset:0;background:rgba(0,0,0,.4);
+    opacity:0;pointer-events:none;transition:opacity .3s;z-index:7;}
+  .k-scrim.on{opacity:1;pointer-events:auto;}
+
+  .k-arrow{position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    font-family:Arial;font-size:10px;color:#7a6155;letter-spacing:.5px;
+    pointer-events:none;opacity:.7;}
+
+  .k-toast{position:absolute;top:88px;left:50%;transform:translateX(-50%);
+    background:rgba(40,12,16,.94);border:1px solid var(--gold);color:var(--gold-soft);
+    font-family:Arial;font-size:12px;padding:8px 16px;border-radius:18px;
+    pointer-events:none;opacity:0;transition:opacity .3s, transform .3s;
+    box-shadow:0 6px 18px rgba(0,0,0,.5);z-index:10;}
+  .k-toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ============ VARIANTE L — LONG-PRESS TAB NAV ============ */
+  .l-tab{position:relative;}
+  .l-tab .ring{position:absolute;inset:0;border-radius:10px;
+    background:radial-gradient(circle,rgba(212,168,108,.35),rgba(212,168,108,0) 70%);
+    opacity:0;transition:opacity .15s;pointer-events:none;}
+  .l-tab.holding .ring{opacity:1;}
+  .l-tab .progress{position:absolute;left:50%;top:-3px;transform:translateX(-50%);
+    width:36px;height:36px;border-radius:50%;
+    background:conic-gradient(var(--gold) 0%, transparent 0%);
+    opacity:0;pointer-events:none;}
+  .l-tab.holding .progress{opacity:.85;}
+
+  .l-pop{position:absolute;bottom:64px;left:50%;transform:translateX(-50%) scale(.7);
+    transform-origin:50% 100%;width:300px;
+    background:linear-gradient(180deg,#2a0813,#160409);
+    border:1px solid var(--gold);border-radius:18px;padding:12px 14px 14px;
+    box-shadow:0 18px 38px rgba(0,0,0,.6),0 0 0 4px rgba(8,2,5,.55);
+    opacity:0;pointer-events:none;transition:all .3s var(--spin);z-index:9;}
+  .l-pop.on{opacity:1;pointer-events:auto;transform:translateX(-50%) scale(1);}
+  .l-pop::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(45deg);
+    width:14px;height:14px;background:#160409;
+    border-right:1px solid var(--gold);border-bottom:1px solid var(--gold);}
+  .l-pop-lbl{font-family:Arial;font-size:10px;color:var(--gold);letter-spacing:1.2px;
+    text-transform:uppercase;margin-bottom:6px;}
+  .l-pop input{width:100%;background:rgba(8,2,5,.6);border:1px solid rgba(212,168,108,.2);
+    border-radius:11px;padding:11px 13px;outline:none;
+    font-family:Georgia;font-size:14.5px;color:var(--cream);}
+  .l-pop input::placeholder{color:#7a6155;font-style:italic;}
+  .l-pop input:focus{border-color:var(--gold);}
+  .l-pop .row{display:flex;gap:8px;margin-top:9px;}
+  .l-pop .row button{flex:1;font-family:Arial;font-size:12px;border:0;border-radius:10px;
+    padding:9px;cursor:pointer;letter-spacing:.3px;}
+  .l-pop .btn-add{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#11040a;
+    font-weight:bold;}
+  .l-pop .btn-add:disabled{opacity:.4;cursor:not-allowed;}
+  .l-pop .btn-x{background:transparent;border:1px solid rgba(212,168,108,.25)!important;color:#a87e6a;}
+
+  .l-scrim{position:absolute;inset:0;background:rgba(0,0,0,.45);
+    opacity:0;pointer-events:none;transition:opacity .25s;z-index:7;}
+  .l-scrim.on{opacity:1;pointer-events:auto;}
+
+  .l-toast{position:absolute;top:88px;left:50%;transform:translateX(-50%);
+    background:rgba(40,12,16,.94);border:1px solid var(--gold);color:var(--gold-soft);
+    font-family:Arial;font-size:12px;padding:8px 16px;border-radius:18px;
+    pointer-events:none;opacity:0;transition:opacity .3s;
+    box-shadow:0 6px 18px rgba(0,0,0,.5);z-index:11;}
+  .l-toast.on{opacity:1;}
+
+  .l-hint-tip{position:absolute;bottom:115px;left:50%;transform:translateX(-50%);
+    font-family:Arial;font-size:10.5px;color:#7a6155;letter-spacing:.4px;
+    text-align:center;line-height:1.5;background:rgba(8,2,5,.6);
+    padding:5px 10px;border-radius:10px;border:1px dashed rgba(212,168,108,.18);
+    pointer-events:none;}
+</style>
+</head>
+<body>
+
+<div class="pagehd">
+  <h1>Nuova fantasia · 3 mockup minimal (v4)</h1>
+  <p>Continua sulla linea "scriviamole, non dimentichiamole" — altre 3 idee diverse da G/H/I.
+    L'attrito è ridotto cambiando il <em>gesto</em> o il <em>canale</em> di input.</p>
+</div>
+
+<div class="grid">
+
+  <!-- ============================================================
+       VARIANTE J — VOICE MEMO
+       Hold-to-record. Trascrizione live mock.
+       ============================================================ -->
+  <div class="item">
+    <div class="vtag">Variante J</div>
+    <div class="vtitle">Voice memo · hold-to-record</div>
+    <div class="vsub">Tieni premuto sul microfono → registri. Trascrizione automatica
+      (mock). Rilasci → salvata. Scrivere è troppo lavoro, dirla a voce è istantaneo.</div>
+
+    <div class="phone" id="phoneJ">
+      <div class="ptop"><span>9:41</span><span>●●●</span></div>
+      <div class="page">
+        <h2 class="ptitle">🔥 Fantasie</h2>
+        <p class="psub">Tieni premuto il mic e dilla.</p>
+        <div id="jList">
+          <div class="card">Una cena al buio<div class="meta">3 giorni fa</div></div>
+          <div class="card">Weekend in baita<div class="meta">1 sett fa</div></div>
+          <div class="card">Provare quel posto fuori città<div class="meta">2 sett fa</div></div>
+        </div>
+      </div>
+
+      <div class="j-overlay" id="jOver">
+        <div class="j-trans" id="jTrans"></div>
+        <div class="j-wave" id="jWave">
+          <div class="b"></div><div class="b"></div><div class="b"></div><div class="b"></div>
+          <div class="b"></div><div class="b"></div><div class="b"></div><div class="b"></div>
+          <div class="b"></div><div class="b"></div><div class="b"></div><div class="b"></div>
+          <div class="b"></div><div class="b"></div><div class="b"></div><div class="b"></div>
+          <div class="b"></div><div class="b"></div><div class="b"></div><div class="b"></div>
+          <div class="b"></div><div class="b"></div><div class="b"></div><div class="b"></div>
+        </div>
+        <div class="j-time" id="jTime">00:00</div>
+      </div>
+
+      <div class="j-mic-wrap">
+        <div class="j-hint" id="jHint">Tieni premuto per dirla</div>
+        <button class="j-mic" id="jMic">🎙</button>
+      </div>
+
+      <div class="pnav">
+        <div class="nb on"><span class="e">🔥</span>Fantasie</div>
+        <div class="nb"><span class="e">🎲</span>Giochi</div>
+        <div class="nb"><span class="e">📅</span>Esperienze</div>
+        <div class="nb"><span class="e">🗺️</span>Mappa</div>
+        <div class="nb"><span class="e">🎟️</span>Buoni</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       VARIANTE K — SPOTLIGHT PULL-DOWN
+       Swipe-down dall'alto = input universale (stile iOS Spotlight).
+       ============================================================ -->
+  <div class="item">
+    <div class="vtag">Variante K</div>
+    <div class="vtitle">Pull-down · Spotlight</div>
+    <div class="vsub">Trascina giù dall'alto della pagina (o tocca l'handle) → appare
+      un input volante stile Spotlight. Funziona da qualsiasi tab. Sparisce di nuovo.</div>
+
+    <div class="phone" id="phoneK">
+      <div class="ptop"><span>9:41</span><span>●●●</span></div>
+      <div class="k-arrow">▼ trascina giù</div>
+      <div class="k-handle" id="kHandle"></div>
+      <div class="page" id="kPage">
+        <h2 class="ptitle">🔥 Fantasie</h2>
+        <p class="psub">Bacheca delle cose da provare.</p>
+        <div class="card">Una cena al buio<div class="meta">3 giorni fa</div></div>
+        <div class="card">Weekend in baita<div class="meta">1 sett fa</div></div>
+        <div class="card">Provare quel posto fuori città<div class="meta">2 sett fa</div></div>
+        <div class="card">Notte di pioggia<div class="meta">3 sett fa</div></div>
+        <div class="card">Quel ristorante in collina<div class="meta">1 mese fa</div></div>
+      </div>
+
+      <div class="k-scrim" id="kScrim"></div>
+      <div class="k-pulldown" id="kPull">
+        <div class="k-search">
+          <span class="ic">🔥</span>
+          <input id="kInp" placeholder="Aggiungi una fantasia…">
+          <span class="esc">esc</span>
+        </div>
+        <div class="k-recents-lbl">Ultime</div>
+        <div class="k-rec">Una cena al buio</div>
+        <div class="k-rec">Weekend in baita</div>
+        <div class="k-rec">Provare quel posto fuori città</div>
+      </div>
+
+      <div class="k-toast" id="kToast">✓ Aggiunta</div>
+
+      <div class="pnav">
+        <div class="nb on"><span class="e">🔥</span>Fantasie</div>
+        <div class="nb"><span class="e">🎲</span>Giochi</div>
+        <div class="nb"><span class="e">📅</span>Esperienze</div>
+        <div class="nb"><span class="e">🗺️</span>Mappa</div>
+        <div class="nb"><span class="e">🎟️</span>Buoni</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       VARIANTE L — LONG-PRESS SUL TAB NAV
+       Tieni premuto su 🔥 nella nav bar = popover input rapido.
+       ============================================================ -->
+  <div class="item">
+    <div class="vtag">Variante L</div>
+    <div class="vtitle">Long-press tab Fantasie</div>
+    <div class="vsub">Tieni premuto 0.5s sull'icona 🔥 nella nav bar → si apre un
+      popover con un mini-input. Funziona da qualsiasi tab. Zero FAB, zero modal.</div>
+
+    <div class="phone" id="phoneL">
+      <div class="ptop"><span>9:41</span><span>●●●</span></div>
+      <div class="page">
+        <h2 class="ptitle">🎲 Giochi</h2>
+        <p class="psub">Stai navigando un'altra tab.</p>
+        <div class="card" style="background:rgba(122,21,51,.08);">
+          (esempio: sei sulla pagina <em>Giochi</em> e ti viene un'idea per una fantasia.
+          Tieni premuto 🔥 in basso → puoi salvarla senza cambiare tab.)
+        </div>
+      </div>
+
+      <div class="l-hint-tip">↓ tieni premuto su 🔥</div>
+
+      <div class="l-scrim" id="lScrim"></div>
+      <div class="l-pop" id="lPop">
+        <div class="l-pop-lbl">🔥 Nuova fantasia</div>
+        <input id="lInp" placeholder="Scrivi velocemente…">
+        <div class="row">
+          <button class="btn-x" id="lX">Annulla</button>
+          <button class="btn-add" id="lAdd" disabled>Aggiungi</button>
+        </div>
+      </div>
+
+      <div class="l-toast" id="lToast">✓ Aggiunta a Fantasie</div>
+
+      <div class="pnav">
+        <div class="nb"><span class="e">🎲</span>Giochi</div>
+        <div class="nb"><span class="e">📅</span>Esperienze</div>
+        <div class="nb l-tab" id="lTab">
+          <div class="ring"></div>
+          <div class="progress" id="lProg"></div>
+          <span class="e">🔥</span>Fantasie
+        </div>
+        <div class="nb"><span class="e">🗺️</span>Mappa</div>
+        <div class="nb"><span class="e">🎟️</span>Buoni</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =========================  VARIANTE J — VOICE MEMO  ========================= */
+const jMic=document.getElementById('jMic');
+const jOver=document.getElementById('jOver');
+const jTrans=document.getElementById('jTrans');
+const jWave=document.getElementById('jWave');
+const jTime=document.getElementById('jTime');
+const jHint=document.getElementById('jHint');
+const jList=document.getElementById('jList');
+
+const FAKE_PHRASES=[
+  "Una sera in cui ci raccontiamo tutte le cose…",
+  "Un weekend in cui spegniamo i telefoni e basta",
+  "Quella domenica di pioggia in cui restiamo a letto",
+  "Un picnic notturno sotto le stelle",
+  "La prima cosa folle che pensi appena svegli"
+];
+let jRecording=false, jStart=0, jTimer=null, jTypeTimer=null, jWaveTimer=null, jPhraseIx=0;
+
+function jPickPhrase(){ const p=FAKE_PHRASES[jPhraseIx%FAKE_PHRASES.length]; jPhraseIx++; return p; }
+function jFmt(ms){
+  const s=Math.floor(ms/1000); const m=Math.floor(s/60); const r=s%60;
+  return String(m).padStart(2,'0')+":"+String(r).padStart(2,'0');
+}
+function jAnimateWave(){
+  const bars=jWave.querySelectorAll('.b');
+  bars.forEach(b=>{ b.style.height=(6+Math.random()*34)+'px'; });
+}
+function jResetTrans(){
+  jTrans.textContent='';
+  const t=document.createTextNode('');
+  const c=document.createElement('span'); c.className='cursor';
+  jTrans.appendChild(t); jTrans.appendChild(c);
+  return t;
+}
+function jStartRec(e){
+  if(e&&e.preventDefault)e.preventDefault();
+  if(jRecording)return;
+  jRecording=true;
+  jStart=Date.now();
+  jMic.classList.add('rec');
+  jOver.classList.add('on');
+  jHint.textContent='registrando…';
+  const tNode=jResetTrans();
+  const phrase=jPickPhrase();
+  let i=0;
+  jTypeTimer=setInterval(()=>{
+    i++;
+    if(i>phrase.length){ clearInterval(jTypeTimer); jTypeTimer=null; return; }
+    tNode.nodeValue=phrase.slice(0,i);
+  },55);
+  jTimer=setInterval(()=>{ jTime.textContent=jFmt(Date.now()-jStart); },100);
+  jWaveTimer=setInterval(jAnimateWave,90);
+  jMic._phrase=phrase;
+}
+function jEndRec(e){
+  if(e&&e.preventDefault)e.preventDefault();
+  if(!jRecording)return;
+  jRecording=false;
+  jMic.classList.remove('rec');
+  jOver.classList.remove('on');
+  clearInterval(jTimer); clearInterval(jWaveTimer); clearInterval(jTypeTimer);
+  jTimer=jWaveTimer=jTypeTimer=null;
+  const dur=Date.now()-jStart;
+  jHint.textContent='Tieni premuto per dirla';
+  jTime.textContent='00:00';
+  if(dur<350){ jTrans.textContent=''; return; }
+  // crea card
+  const c=document.createElement('div');
+  c.className='card new';
+  c.appendChild(document.createTextNode(jMic._phrase));
+  const m=document.createElement('div'); m.className='meta'; m.textContent='ora · 🎙 '+jFmt(dur);
+  c.appendChild(m);
+  jList.insertBefore(c,jList.firstChild);
+  setTimeout(()=>c.classList.remove('new'),400);
+  jTrans.textContent='';
+}
+jMic.addEventListener('mousedown',jStartRec);
+jMic.addEventListener('touchstart',jStartRec,{passive:false});
+document.addEventListener('mouseup',jEndRec);
+document.addEventListener('touchend',jEndRec);
+jMic.addEventListener('mouseleave',e=>{ if(jRecording)jEndRec(e); });
+
+
+/* =========================  VARIANTE K — SPOTLIGHT PULL-DOWN  ========================= */
+const kPage=document.getElementById('kPage');
+const kPull=document.getElementById('kPull');
+const kScrim=document.getElementById('kScrim');
+const kInp=document.getElementById('kInp');
+const kToast=document.getElementById('kToast');
+const kHandle=document.getElementById('kHandle');
+
+let kDragY0=null;
+
+function kOpen(){
+  kPull.classList.add('on');
+  kScrim.classList.add('on');
+  setTimeout(()=>kInp.focus(),250);
+}
+function kClose(){
+  kPull.classList.remove('on');
+  kScrim.classList.remove('on');
+  kInp.blur();
+  kInp.value='';
+}
+kScrim.onclick=kClose;
+kHandle.style.pointerEvents='auto';
+kHandle.style.cursor='ns-resize';
+kHandle.onclick=kOpen;
+
+// drag down from top of page area to open
+function kPageDown(ev){
+  const t=ev.touches?ev.touches[0]:ev;
+  if(kPage.scrollTop>0)return;
+  kDragY0=t.clientY;
+}
+function kPageMove(ev){
+  if(kDragY0==null)return;
+  const t=ev.touches?ev.touches[0]:ev;
+  const dy=t.clientY-kDragY0;
+  if(dy>50){ kOpen(); kDragY0=null; }
+}
+function kPageUp(){ kDragY0=null; }
+kPage.addEventListener('mousedown',kPageDown);
+kPage.addEventListener('mousemove',kPageMove);
+kPage.addEventListener('mouseup',kPageUp);
+kPage.addEventListener('touchstart',kPageDown,{passive:true});
+kPage.addEventListener('touchmove',kPageMove,{passive:true});
+kPage.addEventListener('touchend',kPageUp);
+
+kInp.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&kInp.value.trim()){
+    kClose();
+    kToast.classList.add('on');
+    setTimeout(()=>kToast.classList.remove('on'),1200);
+  } else if(e.key==='Escape'){ kClose(); }
+});
+
+
+/* =========================  VARIANTE L — LONG-PRESS TAB NAV  ========================= */
+const lTab=document.getElementById('lTab');
+const lProg=document.getElementById('lProg');
+const lPop=document.getElementById('lPop');
+const lScrim=document.getElementById('lScrim');
+const lInp=document.getElementById('lInp');
+const lAdd=document.getElementById('lAdd');
+const lX=document.getElementById('lX');
+const lToast=document.getElementById('lToast');
+
+let lTimer=null, lProgTimer=null, lStartT=0;
+const LONG=500;
+
+function lDown(ev){
+  if(ev&&ev.preventDefault&&ev.cancelable)ev.preventDefault();
+  if(lPop.classList.contains('on'))return;
+  lStartT=Date.now();
+  lTab.classList.add('holding');
+  // anima progress conic-gradient
+  lProgTimer=setInterval(()=>{
+    const pct=Math.min(100,(Date.now()-lStartT)/LONG*100);
+    lProg.style.background=`conic-gradient(var(--gold) ${pct}%, transparent 0%)`;
+  },20);
+  lTimer=setTimeout(()=>{
+    lOpen();
+    lUp();
+  },LONG);
+}
+function lUp(){
+  lTab.classList.remove('holding');
+  clearTimeout(lTimer); clearInterval(lProgTimer);
+  lTimer=lProgTimer=null;
+  lProg.style.background='conic-gradient(var(--gold) 0%, transparent 0%)';
+}
+function lOpen(){
+  lPop.classList.add('on');
+  lScrim.classList.add('on');
+  setTimeout(()=>lInp.focus(),250);
+}
+function lClose(){
+  lPop.classList.remove('on');
+  lScrim.classList.remove('on');
+  lInp.value=''; lAdd.disabled=true; lInp.blur();
+}
+function lSubmit(){
+  if(!lInp.value.trim())return;
+  lClose();
+  lToast.classList.add('on');
+  setTimeout(()=>lToast.classList.remove('on'),1200);
+}
+lTab.addEventListener('mousedown',lDown);
+lTab.addEventListener('touchstart',lDown,{passive:false});
+document.addEventListener('mouseup',()=>{ if(lTimer||lProgTimer)lUp(); });
+document.addEventListener('touchend',()=>{ if(lTimer||lProgTimer)lUp(); });
+lTab.addEventListener('mouseleave',lUp);
+lScrim.onclick=lClose;
+lX.onclick=lClose;
+lInp.addEventListener('input',()=>{ lAdd.disabled=!lInp.value.trim(); });
+lInp.addEventListener('keydown',e=>{
+  if(e.key==='Enter')lSubmit();
+  if(e.key==='Escape')lClose();
+});
+lAdd.onclick=lSubmit;
+
+// tap normale (non long-press) sul tab L: niente, in mockup non navighiamo
+lTab.onclick=(e)=>{ e.preventDefault(); };
+</script>
+
+</body>
+</html>
