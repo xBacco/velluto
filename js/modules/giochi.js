@@ -5,6 +5,7 @@ import {
 import { listDadiFacce, seedDadiFacce, updateDadiFaccia } from '../store.js';
 import { renderRuota, openEditorRuota } from './ruota.js';
 import { renderStrip } from './strip.js';
+import { renderYahtzutra } from './yahtzutra.js';
 
 let giocoCorrente = 'dadi';   // 'dadi' | 'ruota'
 let ctx = null;          // { client, me, panel }
@@ -45,7 +46,7 @@ export async function renderGiochi(context) {
 function drawSelettore() {
   const p = ctx.panel; clear(p);
   const sel = mk('div', 'gioco-selettore');
-  for (const [k, lbl] of [['dadi', '🎲 Dadi'], ['ruota', '🎡 Ruota'], ['strip', '♠️ Strip Poker']]) {
+  for (const [k, lbl] of [['dadi', '🎲 Dadi'], ['ruota', '🎡 Ruota'], ['yz', '🎲 Yahtzutra'], ['strip', '♠️ Strip']]) {
     const b = mk('button', 'gioco-tab' + (giocoCorrente === k ? ' on' : ''), lbl);
     b.onclick = () => { giocoCorrente = k; renderGiochi(ctx); };
     sel.appendChild(b);
@@ -60,6 +61,8 @@ async function montaGiocoCorrente() {
     await renderRuota({ client: ctx.client, me: ctx.me, panel: host });
   } else if (giocoCorrente === 'strip') {
     await renderStrip({ client: ctx.client, me: ctx.me, panel: host });
+  } else if (giocoCorrente === 'yz') {
+    await renderYahtzutra({ client: ctx.client, me: ctx.me, panel: host });
   } else {
     await montaDadi(host);
   }
