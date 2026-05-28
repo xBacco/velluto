@@ -1090,6 +1090,18 @@ body.pudica [data-spicy].revealed{filter:none;}
 .yz-handle .close{position:absolute;top:0;right:6px;color:var(--gold);font-size:18px;cursor:pointer;padding:4px 8px;touch-action:auto;}
 .yz-table.dragging{transition:none !important;}
 
+/* Peek: la plancia si abbassa lasciando visibile solo l'handle; lo scrim
+   diventa trasparente e non blocca, così la scheda dietro è interagibile.
+   Tap o drag-up sull'handle → riespande (vedi wireDragToClose). */
+.yz-scrim.peek{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;
+  pointer-events:none;transition:background .3s,opacity .3s;}
+.yz-scrim.peek .yz-table{pointer-events:auto;
+  transform:translateY(calc(100% - 60px));
+  box-shadow:0 -8px 28px rgba(0,0,0,.6);}
+.yz-table.peek .yz-handle{cursor:pointer;}
+.yz-table.peek .yz-handle .line{background:var(--gold);width:64px;}
+.yz-table.peek .yz-handle .close{display:none;}
+
 .yz-tiri{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#c79;text-align:center;margin:0 0 6px;letter-spacing:.04em;}
 .yz-felt{position:relative;width:100%;height:200px;border-radius:18px;
   background:radial-gradient(125% 80% at 50% 28%,#5c1226,#1a050d 82%);

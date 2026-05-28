@@ -361,16 +361,19 @@ function closeTable() {
   renderStrip();
 }
 
-// Drag handle del tavolo: trascina giù → chiude il tavolo dadi (la scheda
-// del gioco resta visibile dietro). Soglia 90px o velocità > 0.5 px/ms.
-// touch-action: none in CSS sull'handle impedisce lo scroll della pagina.
+// Drag handle del tavolo: trascina giù → minimizza la plancia a un peek in
+// basso (solo handle visibile, scheda accessibile dietro). Tap o trascina su
+// dal peek → riespande. La X esplicita resta per chiudere del tutto.
+// Soglia 90px o velocità > 0.5 px/ms. touch-action:none in CSS sull'handle.
 function wireDragToClose(handle, sheet, scrim) {
   let start = null;
   let moved = false;
+  let startedPeek = false;
   const onDown = e => {
     if (e.button !== undefined && e.button !== 0) return;
     start = { y: e.clientY, t: Date.now() };
     moved = false;
+    startedPeek = sheet.classList.contains('peek');
     sheet.classList.add('dragging');
     try { handle.setPointerCapture(e.pointerId); } catch (_) { /* webkit older */ }
   };
@@ -378,23 +381,44 @@ function wireDragToClose(handle, sheet, scrim) {
     if (!start) return;
     const dy = e.clientY - start.y;
     if (Math.abs(dy) > 6) moved = true;
-    const ty = Math.max(0, dy);
-    sheet.style.transform = 'translateY(' + ty + 'px)';
+    if (startedPeek) {
+      const ty = Math.min(0, dy);
+      sheet.style.transform = 'translateY(calc(100% - 60px + ' + ty + 'px))';
+    } else {
+      const ty = Math.max(0, dy);
+      sheet.style.transform = 'translateY(' + ty + 'px)';
+    }
   };
   const onUp = e => {
     if (!start) return;
     const dy = e.clientY - start.y;
     const dt = Math.max(1, Date.now() - start.t);
-    const v = dy / dt;
+    const v = Math.abs(dy) / dt;
     sheet.classList.remove('dragging');
     sheet.style.transform = '';
     const wasMoved = moved;
+    const wasPeek = startedPeek;
     start = null;
-    if (!wasMoved) return;
-    if (dy > 90 || v > 0.5) {
-      sheet.style.transform = 'translateY(100%)';
-      scrim.style.opacity = '0';
-      setTimeout(closeTable, 300);
+    if (!wasMoved) {
+      // tap sull'handle in peek → riespande
+      if (wasPeek) {
+        sheet.classList.remove('peek');
+        scrim.classList.remove('peek');
+      }
+      return;
+    }
+    if (wasPeek) {
+      // dal peek, drag-up sufficiente → riespande
+      if (dy < -60 || (dy < 0 && v > 0.5)) {
+        sheet.classList.remove('peek');
+        scrim.classList.remove('peek');
+      }
+    } else {
+      // espanso, drag-down sufficiente → minimizza a peek (NO close)
+      if (dy > 90 || (dy > 0 && v > 0.5)) {
+        sheet.classList.add('peek');
+        scrim.classList.add('peek');
+      }
     }
   };
   handle.addEventListener('pointerdown', onDown);

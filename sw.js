@@ -1,4 +1,4 @@
-const CACHE = 'lussuria-v7';
+const CACHE = 'lussuria-v8';
 const SHELL = ['./', './index.html', './styles.css', './js/app.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
