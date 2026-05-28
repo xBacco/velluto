@@ -1444,21 +1444,25 @@ body.pudica [data-spicy].revealed{filter:none;}
   touch-action:pan-y;}
 .game-modal.show .game-modal-sheet{transform:translateX(0);}
 .game-modal-sheet.swiping{transition:none;}
-.game-modal-topbar{display:flex;align-items:center;justify-content:space-between;
-  padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 12px 18px;
-  background:linear-gradient(180deg,rgba(0,0,0,.32),rgba(0,0,0,0));
+.game-modal-topbar{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:10px;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 12px 16px;
+  background:linear-gradient(180deg,rgba(20,4,8,.92) 0%,rgba(20,4,8,.55) 70%,rgba(20,4,8,0) 100%);
   border-bottom:1px solid rgba(212,168,108,.18);
   flex:0 0 auto;}
 .gmt-title{font-family:Georgia,"Times New Roman",serif;
   font-size:20px;letter-spacing:.04em;color:var(--gold,#d4a86c);
-  font-weight:500;display:flex;align-items:center;gap:8px;}
-.gmt-arrow{appearance:none;border:0;cursor:pointer;
-  background:rgba(212,168,108,.12);color:var(--gold,#d4a86c);
-  border:1px solid rgba(212,168,108,.28);border-radius:50%;
-  width:38px;height:38px;font-size:20px;line-height:1;
-  display:flex;align-items:center;justify-content:center;
-  transition:transform .15s,background .15s;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
-.gmt-arrow:active{transform:scale(.92);background:rgba(212,168,108,.28);}
+  font-weight:500;text-align:center;justify-self:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gmt-spacer{width:40px;height:40px;}
+.gmt-arrow{appearance:none;cursor:pointer;padding:0;margin:0;
+  background:rgba(212,168,108,.14);color:var(--gold,#d4a86c);
+  border:1px solid rgba(212,168,108,.34);border-radius:50%;
+  width:40px;height:40px;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:transform .15s,background .15s,border-color .15s;
+  box-shadow:0 2px 10px rgba(0,0,0,.35);}
+.gmt-arrow svg{width:20px;height:20px;display:block;}
+.gmt-arrow:active{transform:scale(.92);background:rgba(212,168,108,.3);border-color:rgba(212,168,108,.55);}
 .game-modal-edge{position:absolute;right:0;top:50%;transform:translateY(-50%);
   width:5px;height:88px;border-radius:5px 0 0 5px;
   background:linear-gradient(180deg,transparent 0%,var(--gold,#d4a86c) 50%,transparent 100%);
@@ -1467,6 +1471,12 @@ body.pudica [data-spicy].revealed{filter:none;}
   padding:14px 16px calc(28px + env(safe-area-inset-bottom,0px));
   -webkit-overflow-scrolling:touch;}
 .game-modal-body .ptitle{display:none;}
+/* Con il modal di gioco aperto, gli scrim interni (plancia dadi, sac/pass/zoom,
+   strip overlay) partono sotto la topbar: la freccia di uscita resta sempre
+   accessibile, anche con la plancia sollevata. */
+body.game-modal-open .yz-scrim,
+body.game-modal-open .dadi-scrim,
+body.game-modal-open .strip-ov{top:calc(env(safe-area-inset-top,0px) + 66px);}
 
 /* Badge pulsante sul tab quando c'è una partita in corso */
 .gioco-tab{position:relative;}
