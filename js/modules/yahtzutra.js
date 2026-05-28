@@ -295,8 +295,11 @@ function openTable() {
   handle.appendChild(mk('div', 'txt', '🎲 Tavolo · ' + players[currentPlayer].avatar + ' ' + players[currentPlayer].nome));
   const close = mk('span', 'close', '✕');
   close.onclick = closeTable;
+  // evita che il pointerdown sulla X faccia partire il drag
+  close.addEventListener('pointerdown', e => e.stopPropagation());
   handle.appendChild(close);
   sheet.appendChild(handle);
+  wireDragToClose(handle, sheet, scrim);
 
   sheet.appendChild(mk('p', 'yz-tiri', 'Tiro 1 di 3'));
   const felt = mk('div', 'yz-felt');
@@ -327,6 +330,50 @@ function openTable() {
 
 function closeTable() {
   if (tableScrim) { tableScrim.remove(); tableScrim = null; }
+}
+
+// Drag handle: trascina giù → chiude. Soglia 90px o velocità > 0.5 px/ms.
+// touch-action:none sul handle (in CSS) impedisce lo scroll della pagina sotto
+// e fa sì che i pointermove arrivino tutti qui.
+function wireDragToClose(handle, sheet, scrim) {
+  let start = null;
+  let moved = false;
+  const onDown = e => {
+    if (e.button !== undefined && e.button !== 0) return;
+    start = { y: e.clientY, t: Date.now() };
+    moved = false;
+    sheet.classList.add('dragging');
+    try { handle.setPointerCapture(e.pointerId); } catch (_) { /* webkit older */ }
+  };
+  const onMove = e => {
+    if (!start) return;
+    const dy = e.clientY - start.y;
+    if (Math.abs(dy) > 6) moved = true;
+    // permetti solo trascinamento verso il basso (no overscroll verso l'alto)
+    const ty = Math.max(0, dy);
+    sheet.style.transform = 'translateY(' + ty + 'px)';
+  };
+  const onUp = e => {
+    if (!start) return;
+    const dy = e.clientY - start.y;
+    const dt = Math.max(1, Date.now() - start.t);
+    const v = dy / dt;
+    sheet.classList.remove('dragging');
+    sheet.style.transform = '';
+    const wasMoved = moved;
+    start = null;
+    if (!wasMoved) return; // tap secco sull'handle: niente azione, la X chiude
+    if (dy > 90 || v > 0.5) {
+      // animazione di uscita: scala il sheet giù, poi chiudi
+      sheet.style.transform = 'translateY(100%)';
+      scrim.style.opacity = '0';
+      setTimeout(closeTable, 300);
+    }
+  };
+  handle.addEventListener('pointerdown', onDown);
+  handle.addEventListener('pointermove', onMove);
+  handle.addEventListener('pointerup', onUp);
+  handle.addEventListener('pointercancel', onUp);
 }
 
 function renderStage(animate) {
