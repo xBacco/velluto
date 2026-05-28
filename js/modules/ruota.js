@@ -226,11 +226,26 @@ function apriSceltaSegreto() {
 }
 
 // ---- editor contenuti (stesso pattern dei Dadi) ----
+// Monta l'editor dei contenuti Ruota dentro a `host`.
+// Usato sia dal FAB + in pagina Giochi (via openEditorRuota) sia dall'hub
+// "Contenuti dei giochi" in Impostazioni. onSaved: callback opzionale.
+// La Ruota salva on-blur (rigaEditor) — onSaved è qui per uniformità API.
+export async function renderRuotaEditorInto(host, context, onSaved) {
+  if (!ctx || ctx.client !== context.client) ctx = context;
+  if (!state) state = {};                                       // hub Impostazioni può aprire l'editor senza essere passato per renderRuota
+  state.cont = await listRuotaContenuti(ctx.client, ctx.me.couple_id);
+
+  clear(host);
+  add(host, mk('p', 'muted', 'Proposte piccanti (🔥) e buoni a sorpresa (🎁). Modificabili in qualsiasi momento.'));
+  sezioneEditor(host, 'piccante', '🔥 Proposte piccanti');
+  sezioneEditor(host, 'buono', '🎁 Buoni a sorpresa');
+
+  if (onSaved) host._onSaved = onSaved;
+}
+
 export function openEditorRuota() {
-  openSheet('Modifica i contenuti della Ruota', s => {
-    add(s, mk('p', 'muted', 'Proposte piccanti (🔥) e buoni a sorpresa (🎁). Modificabili in qualsiasi momento.'));
-    sezioneEditor(s, 'piccante', '🔥 Proposte piccanti');
-    sezioneEditor(s, 'buono', '🎁 Buoni a sorpresa');
+  openSheet('Modifica i contenuti della Ruota', async s => {
+    await renderRuotaEditorInto(s, ctx);
   });
 }
 
@@ -281,8 +296,14 @@ function rigaEditor(it, categoria) {
   return row;
 }
 
-async function refreshEditor(sheet) {
-  state.cont = await listRuotaContenuti(ctx.client, ctx.me.couple_id);
-  const modal = sheet.closest('.modal'); if (modal) modal.remove();
-  openEditorRuota();
+async function refreshEditor(host) {
+  // Se siamo dentro un modal (FAB +), chiudilo e riapri il sheet.
+  // Se siamo inline (hub Impostazioni), re-renderizza nello stesso host.
+  const modal = host.closest && host.closest('.modal');
+  if (modal) {
+    modal.remove();
+    openEditorRuota();
+  } else {
+    await renderRuotaEditorInto(host, ctx);
+  }
 }
