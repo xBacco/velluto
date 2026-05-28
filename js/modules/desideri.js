@@ -18,7 +18,7 @@ export async function renderDesideri(context) {
 
 function draw() {
   const p = ctx.panel; clear(p);
-  add(p, mk('h2', 'ptitle', '🔥 Desideri & fantasie'),
+  add(p, mk('h2', 'ptitle', '🔥 Fantasie'),
          mk('p', 'psub', 'Bacheca delle cose da provare. Spuntale quando le realizzate insieme.'));
   const f = mk('div', 'filters');
   for (const [k, l] of [['tutti','Tutti'],['da_provare','Da provare'],['realizzato','Realizzati'],['mine','Scritti da me']]) {
@@ -28,7 +28,7 @@ function draw() {
   }
   p.appendChild(f);
   const list = filterDesideri(rows, { tipo: fil, me: ctx.me.id });
-  if (!list.length) { p.appendChild(mk('div', 'empty', 'Ancora niente qui.\nTocca ＋ per aggiungere un desiderio.')); return; }
+  if (!list.length) { p.appendChild(mk('div', 'empty', 'Ancora niente qui.\nTocca ＋ per aggiungere una fantasia.')); return; }
   for (const d of list) p.appendChild(cardOf(d));
 }
 
@@ -66,7 +66,7 @@ function cardOf(d) {
 }
 
 function openAdd() {
-  openSheet('Nuovo desiderio', s => {
+  openSheet('Nuova fantasia', s => {
     const testo = mk('textarea'); testo.placeholder = 'Cosa vorreste provare…';
     const cat = mk('input'); cat.placeholder = 'Categoria (facoltativa)';
     const b = mk('button', 'btn', 'Aggiungi alla bacheca'); b.style.width = '100%'; b.style.marginTop = '6px';
@@ -78,7 +78,7 @@ function openAdd() {
         await renderDesideri(ctx);
       } catch (e) { toast('Errore salvataggio: ' + e.message, 'err'); }
     };
-    add(s, mk('label', 'lbl', 'Desiderio'), testo, mk('label', 'lbl', 'Categoria'), cat, b);
+    add(s, mk('label', 'lbl', 'Fantasia'), testo, mk('label', 'lbl', 'Categoria'), cat, b);
   });
 }
 

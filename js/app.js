@@ -11,7 +11,7 @@ import { renderMappa } from './modules/mappa.js';
 import { isLockEnabled, verifyPin, getPudica, isBioEnabled, bioSupported, unlockBio } from './lib/lock.js';
 
 const TABS = [
-  ['desideri', '🔥', 'Desideri'],
+  ['desideri', '🔥', 'Fantasie'],
   ['giochi', '🎲', 'Giochi'],
   ['calendario', '📅', 'Esperienze'],
   ['mappa', '🗺️', 'Mappa'],

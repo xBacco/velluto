@@ -217,7 +217,7 @@ function renderPersonalizza() {
 
 // ===== Dati: Svuota sezioni =====
 const WIPES = [
-  ['🔥', 'Desideri & fantasie', 'desideri',  wipeDesideri],
+  ['🔥', 'Fantasie', 'desideri',  wipeDesideri],
   ['📅', 'Esperienze',          'esperienze', wipeEsperienze],
   ['🎟️', 'Buoni',                'buoni',     wipeBuoni],
   ['🎲', 'Giochi',               'giochi',    wipeGiochi],
