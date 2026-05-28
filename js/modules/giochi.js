@@ -14,17 +14,7 @@ let facce = null;        // { az:[6], co:[6], lu:[6] } dal DB
 let attivi = { az: true, co: true, lu: true };
 let wired = false;
 let busy = false;
-let pendingContenuti = false;   // editor Ruota da aprire dopo il prossimo renderGiochi
 const reels = {};        // dado -> { wrap, strip }
-
-// Listener globale: l'opzione "Contenuti giochi" nelle Impostazioni emette `giochi:contenuti`
-// dopo `goto giochi`. Se la tab Giochi non è ancora stata renderizzata, segnamo pendingContenuti
-// e lo consumiamo alla fine del prossimo renderGiochi.
-document.addEventListener('giochi:contenuti', async () => {
-  giocoCorrente = 'ruota';
-  if (ctx) { await renderGiochi(ctx); openEditorRuota(); }
-  else pendingContenuti = true;
-});
 
 // altezza in px di una singola faccia del rullo (deve coincidere con .slot-reel-face in styles.css)
 const FACE_H = 120;
@@ -41,7 +31,6 @@ export async function renderGiochi(context) {
   }
   drawSelettore();
   await montaGiocoCorrente();
-  if (pendingContenuti) { pendingContenuti = false; openEditorRuota(); }
 }
 
 function drawSelettore() {
