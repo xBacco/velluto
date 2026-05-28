@@ -13,7 +13,17 @@ let facce = null;        // { az:[6], co:[6], lu:[6] } dal DB
 let attivi = { az: true, co: true, lu: true };
 let wired = false;
 let busy = false;
+let pendingContenuti = false;   // editor Ruota da aprire dopo il prossimo renderGiochi
 const cubes = {};        // dado -> { wrap, cube, spins }
+
+// Listener globale: l'opzione "Contenuti giochi" nelle Impostazioni emette `giochi:contenuti`
+// dopo `goto giochi`. Se la tab Giochi non è ancora stata renderizzata, segnamo pendingContenuti
+// e lo consumiamo alla fine del prossimo renderGiochi.
+document.addEventListener('giochi:contenuti', async () => {
+  giocoCorrente = 'ruota';
+  if (ctx) { await renderGiochi(ctx); openEditorRuota(); }
+  else pendingContenuti = true;
+});
 
 // orientamenti delle 6 facce del cubo (rotX, rotY) per atterrare su una faccia
 const ORI = [[0, 0], [0, 180], [0, -90], [0, 90], [-90, 0], [90, 0]];
@@ -29,6 +39,7 @@ export async function renderGiochi(context) {
   }
   drawSelettore();
   await montaGiocoCorrente();
+  if (pendingContenuti) { pendingContenuti = false; openEditorRuota(); }
 }
 
 function drawSelettore() {

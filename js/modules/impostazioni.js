@@ -157,9 +157,162 @@ function openSetPin() {
   document.getElementById('setSheet').appendChild(ov);
   inp.focus();
 }
-function renderPersonalizza() { return sec('Personalizza'); }
-function renderDati() { return sec('Dati'); }
-function openCambiaPassword() {}
+// ===== Personalizza: Tag del calendario + link Contenuti giochi =====
+function renderPersonalizza() {
+  const s = sec('Personalizza'); const c = card();
+
+  // TAG (popolati in modo asincrono per non rallentare il render di renderMain)
+  const rTag = mk('div', 'set-row col');
+  const head = mk('div', 'set-l');
+  add(head, mk('span', 'set-em', '🏷️'), mk('span', 'set-nm', 'Tag del calendario'));
+  add(rTag, head);
+  const chips = mk('div', 'set-chips'); add(rTag, chips);
+  add(c, rTag);
+  (async () => {
+    try {
+      const tipi = await listTipi(CTX.client, CTX.me.couple_id);
+      clear(chips);
+      tipi.forEach(t => {
+        const chip = mk('div', 'set-chip2');
+        add(chip, document.createTextNode(((t.emoji || '') + ' ' + t.label).trim()));
+        const del = mk('span', 'set-del', '×');
+        del.onclick = async (ev) => {
+          ev.stopPropagation();
+          try { await deleteTipo(CTX.client, t.id); chip.remove(); }
+          catch (e) { toast('Errore: ' + e.message, 'err'); }
+        };
+        add(chip, del); add(chips, chip);
+      });
+      const addc = mk('div', 'set-chip2 add', '+ aggiungi');
+      addc.onclick = async () => {
+        const label = prompt('Nome del tag (puoi iniziare con un emoji)');
+        if (!label) return;
+        const m = label.trim().match(/^(\p{Emoji})?\s*(.*)$/u);
+        try {
+          await addTipo(CTX.client, {
+            couple_id: CTX.me.couple_id,
+            emoji: (m && m[1]) || '🌶️',
+            label: ((m && m[2]) || label.trim()),
+            ordine: 99,
+          });
+          renderMain();
+        } catch (e) { toast('Errore: ' + e.message, 'err'); }
+      };
+      add(chips, addc);
+    } catch (e) { toast('Errore tag: ' + e.message, 'err'); }
+  })();
+
+  // CONTENUTI GIOCHI
+  const rG = row('🎲', 'Contenuti dei giochi', 'Proposte piccanti · buoni a sorpresa');
+  rG.classList.add('tap');
+  add(rG, mk('span', 'set-chev', '›'));
+  rG.onclick = () => {
+    closeImpostazioni();
+    document.dispatchEvent(new CustomEvent('goto', { detail: 'giochi' }));
+    document.dispatchEvent(new CustomEvent('giochi:contenuti'));
+  };
+  add(c, rG);
+
+  add(s, c); return s;
+}
+
+// ===== Dati: Svuota sezioni =====
+const WIPES = [
+  ['🔥', 'Desideri & fantasie', 'desideri',  wipeDesideri],
+  ['📅', 'Esperienze',          'esperienze', wipeEsperienze],
+  ['🎟️', 'Buoni',                'buoni',     wipeBuoni],
+  ['🎲', 'Giochi',               'giochi',    wipeGiochi],
+  ['🗺️', 'Luoghi',               'luoghi',    wipeLuoghi],
+  ['🏷️', 'Tag',                  'tag',       wipeTipi],
+];
+
+function renderDati() {
+  const s = sec('Dati'); const c = card();
+  const r = row('🗑️', 'Svuota dati', 'Scegli quali sezioni azzerare');
+  r.classList.add('tap');
+  add(r, mk('span', 'set-chev', '›'));
+  r.onclick = openSvuota;
+  add(c, r); add(s, c); return s;
+}
+
+function openSvuota() {
+  const body = document.getElementById('setBody'); clear(body);
+  const head = mk('div', 'set-sec');
+  const back = mk('button', 'set-back', '‹ Indietro'); back.onclick = renderMain;
+  add(head, back); add(body, head);
+  add(body, mk('div', 'set-sec-t', 'Seleziona cosa azzerare'));
+  const c = card();
+  const selected = new Set();
+  WIPES.forEach(([em, nm, key]) => {
+    const ck = mk('div', 'set-check');
+    const box = mk('div', 'set-box');
+    const t = mk('div'); add(t, mk('div', 'set-nm', em + ' ' + nm));
+    add(ck, box, t);
+    ck.onclick = () => {
+      const on = ck.classList.toggle('on');
+      box.textContent = on ? '✓' : '';
+      if (on) selected.add(key); else selected.delete(key);
+    };
+    add(c, ck);
+  });
+  add(body, c);
+  const cta = mk('button', 'set-wipe-cta', 'Svuota le sezioni selezionate');
+  cta.onclick = () => confirmWipe(selected);
+  add(body, cta);
+  add(body, mk('div', 'set-wipe-note', "L'azione è definitiva e vale per tutta la coppia."));
+}
+
+function confirmWipe(selected) {
+  if (!selected.size) { toast('Seleziona almeno una sezione'); return; }
+  const names = WIPES.filter(w => selected.has(w[2])).map(w => w[1]).join(', ');
+  const ov = mk('div', 'set-confirm show');
+  const box = mk('div', 'set-cbox');
+  add(box, mk('h3', null, 'Sei sicuro?'));
+  add(box, mk('p', null, 'Stai per svuotare: ' + names + '. Non si può annullare.'));
+  const rowB = mk('div', 'set-crow');
+  const ann = mk('button', 'set-ann', 'Annulla'); ann.onclick = () => ov.remove();
+  const go = mk('button', 'set-go', 'Sì, svuota');
+  go.onclick = async () => {
+    go.disabled = true;
+    try {
+      for (const [, , key, fn] of WIPES) {
+        if (!selected.has(key)) continue;
+        await fn(CTX.client, CTX.me.couple_id);
+        if (key === 'tag') await seedTipi(CTX.client, tipiDefaultRows(CTX.me.couple_id));
+      }
+      ov.remove(); toast('Fatto', 'ok'); closeImpostazioni();
+      location.reload();
+    } catch (e) { toast('Errore: ' + e.message, 'err'); go.disabled = false; }
+  };
+  add(rowB, ann, go); add(box, rowB); add(ov, box);
+  document.getElementById('setSheet').appendChild(ov);
+}
+
+// ===== Account: cambia password =====
+function openCambiaPassword() {
+  const ov = mk('div', 'set-confirm show');
+  const box = mk('div', 'set-cbox');
+  add(box, mk('h3', null, 'Cambia password'));
+  const p1 = mk('input', 'set-fld'); p1.type = 'password'; p1.placeholder = 'Nuova password';
+  const p2 = mk('input', 'set-fld'); p2.type = 'password'; p2.placeholder = 'Conferma'; p2.style.marginTop = '8px';
+  add(box, p1, p2);
+  const rowB = mk('div', 'set-crow');
+  const ann = mk('button', 'set-ann', 'Annulla'); ann.onclick = () => ov.remove();
+  const go = mk('button', 'set-go', 'Salva');
+  go.onclick = async () => {
+    if (p1.value.length < 6) { toast('Almeno 6 caratteri'); return; }
+    if (p1.value !== p2.value) { toast('Le password non coincidono'); return; }
+    try {
+      const { error } = await CTX.client.auth.updateUser({ password: p1.value });
+      if (error) throw error;
+      ov.remove(); toast('Password aggiornata', 'ok');
+    } catch (e) { toast('Errore: ' + e.message, 'err'); }
+  };
+  add(rowB, ann, go); add(box, rowB); add(ov, box);
+  document.getElementById('setSheet').appendChild(ov);
+  p1.focus();
+}
+
 function showInstall() {
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
   toast(ios ? 'Condividi → "Aggiungi a Home"' : 'Menu del browser → "Installa app"');
