@@ -330,6 +330,13 @@ document.addEventListener('goto', e => go(e.detail));
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  let swReloaded = false;
+  navigator.serviceWorker.addEventListener('message', ev => {
+    if (ev.data && ev.data.type === 'sw-updated' && !swReloaded) {
+      swReloaded = true;
+      setTimeout(() => location.reload(), 200);
+    }
+  });
 }
 
 boot().catch(err => toast('Errore avvio: ' + err.message, 'err'));
