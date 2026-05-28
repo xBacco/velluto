@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup · Nuova fantasia — 3 varianti</title>
+<style>
+  :root{
+    --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+    --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a;
+    --spicy:#e0556a; --mild:#7fb069; --spin:cubic-bezier(.17,.67,.18,1);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;
+    background:linear-gradient(170deg,#0a0205,#150410);padding:28px 16px 80px;}
+
+  .pagehd{text-align:center;max-width:980px;margin:0 auto 30px;}
+  .pagehd h1{margin:0 0 8px;font-size:22px;color:var(--gold-soft);font-weight:normal;letter-spacing:.5px;}
+  .pagehd p{margin:0;font-family:Arial;font-size:13px;color:#9d8478;line-height:1.6;}
+
+  .grid{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;align-items:flex-start;}
+  .item{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .vtag{font-family:Arial;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);}
+  .vtitle{font-size:18px;color:var(--gold-soft);}
+  .vsub{font-family:Arial;font-size:11.5px;color:#9d8478;max-width:320px;text-align:center;line-height:1.5;}
+
+  /* PHONE */
+  .phone{width:340px;height:720px;position:relative;
+    border:9px solid #0a0205;border-radius:38px;overflow:hidden;
+    box-shadow:0 24px 56px rgba(0,0,0,.6),0 0 0 1px rgba(212,168,108,.18);
+    background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+               linear-gradient(170deg,var(--bg),var(--bg2));}
+  .behind{position:absolute;inset:0;padding:22px 14px;opacity:.35;filter:saturate(.7);pointer-events:none;}
+  .behind .brand{font-family:Georgia;font-size:22px;color:var(--gold);letter-spacing:1px;text-align:center;}
+  .behind .blk{height:64px;border-radius:14px;margin-top:12px;
+    background:linear-gradient(160deg,rgba(122,21,51,.25),rgba(92,16,38,.1));
+    border:1px solid rgba(212,168,108,.12);}
+
+  /* SHEET base */
+  .sheet{position:absolute;left:0;right:0;bottom:0;top:62px;
+    background:linear-gradient(175deg,#1d0610,#11040a);
+    border-radius:22px 22px 0 0;
+    box-shadow:0 -8px 32px rgba(0,0,0,.55), 0 -1px 0 rgba(212,168,108,.18) inset;
+    display:flex;flex-direction:column;overflow:hidden;}
+  .grab{width:42px;height:4px;background:rgba(212,168,108,.4);border-radius:3px;margin:8px auto 0;}
+  .head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;
+    border-bottom:1px solid rgba(212,168,108,.16);flex:0 0 auto;}
+  .head h2{margin:0;font-size:18px;color:var(--gold-soft);font-weight:normal;letter-spacing:.4px;}
+  .x{font-family:Arial;background:rgba(212,168,108,.12);border:1px solid rgba(212,168,108,.25);
+    color:var(--cream);width:30px;height:30px;border-radius:50%;font-size:15px;cursor:pointer;line-height:1;}
+  .head-left{display:flex;align-items:center;gap:8px;}
+  .head-left .back{font-family:Arial;background:transparent;border:0;color:var(--gold-soft);font-size:14px;
+    cursor:pointer;padding:4px 4px;}
+  .head-left .back:hover{color:var(--gold);}
+  .body{overflow:auto;padding:14px 16px 22px;flex:1 1 auto;}
+  .body::-webkit-scrollbar{width:6px;}
+  .body::-webkit-scrollbar-thumb{background:rgba(212,168,108,.2);border-radius:3px;}
+
+  .lbl{font-family:Arial;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:#a87e6a;
+    margin:0 2px 6px;display:block;}
+  .ta, .inp{width:100%;font-family:Georgia;font-size:14.5px;color:var(--cream);
+    background:rgba(8,2,5,.5);border:1px solid rgba(212,168,108,.22);
+    border-radius:12px;padding:10px 12px;resize:none;line-height:1.45;}
+  .ta:focus,.inp:focus{outline:none;border-color:var(--gold);}
+  .ta::placeholder,.inp::placeholder{color:#7a6155;font-style:italic;}
+
+  .btn{width:100%;font-family:Arial;font-size:14px;color:#11040a;
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));
+    border:0;border-radius:12px;padding:13px;margin-top:14px;cursor:pointer;font-weight:bold;
+    letter-spacing:.4px;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn.ghost{background:transparent;color:var(--gold-soft);border:1px solid rgba(212,168,108,.35);}
+
+  /* ===== VARIANTE A — Diario velluto ===== */
+  .a-author{display:flex;justify-content:center;gap:6px;margin:8px 0 16px;}
+  .a-author .swap{font-family:Arial;font-size:11.5px;background:rgba(212,168,108,.08);
+    color:var(--gold-soft);border:1px solid rgba(212,168,108,.28);
+    border-radius:18px;padding:5px 12px;cursor:pointer;display:flex;align-items:center;gap:6px;}
+  .a-author .swap:hover{background:rgba(212,168,108,.14);}
+  .a-paper{padding:18px 14px 14px;background:
+      repeating-linear-gradient(180deg,transparent 0 26px,rgba(212,168,108,.06) 26px 27px),
+      radial-gradient(140% 120% at 50% 0%,rgba(122,21,51,.18) 0,transparent 60%),
+      linear-gradient(180deg,rgba(8,2,5,.55),rgba(8,2,5,.4));
+    border:1px solid rgba(212,168,108,.18);border-radius:14px;
+    box-shadow:inset 0 1px 0 rgba(212,168,108,.12), 0 6px 14px rgba(0,0,0,.3);}
+  .a-paper .seal{position:absolute;font-family:Georgia;font-size:14px;color:var(--gold);opacity:.5;
+    letter-spacing:1px;}
+  .a-ta{background:transparent;border:0;padding:0;line-height:1.6;font-size:15px;min-height:130px;}
+  .a-ta:focus{outline:none;}
+  .a-counter{text-align:right;font-family:Arial;font-size:10px;color:#7a6155;margin-top:6px;}
+  .a-chip-grid{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 4px;}
+  .a-chip{font-family:Arial;font-size:12px;color:var(--cream);padding:7px 12px;border-radius:18px;
+    background:rgba(122,21,51,.22);border:1px solid rgba(212,168,108,.2);cursor:pointer;
+    display:flex;align-items:center;gap:5px;transition:all .2s;}
+  .a-chip:hover{background:rgba(122,21,51,.32);}
+  .a-chip.on{background:linear-gradient(180deg,rgba(212,168,108,.35),rgba(180,130,75,.25));
+    border-color:var(--gold);color:var(--gold-soft);box-shadow:0 0 12px rgba(212,168,108,.25);}
+
+  /* ===== VARIANTE B — Componi una scena ===== */
+  .b-stepbar{display:flex;justify-content:center;align-items:center;gap:8px;padding:14px 0 4px;}
+  .b-dot{width:8px;height:8px;border-radius:50%;background:rgba(212,168,108,.25);transition:all .3s;}
+  .b-dot.on{background:var(--gold);box-shadow:0 0 8px rgba(212,168,108,.6);}
+  .b-dot.done{background:var(--gold-soft);}
+  .b-bar{flex:0 0 18px;height:1px;background:rgba(212,168,108,.2);}
+  .b-stepname{font-family:Arial;font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;
+    color:#a87e6a;text-align:center;margin:8px 0 14px;}
+  .b-steps{position:relative;}
+  .b-step{display:none;}
+  .b-step.on{display:block;animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .b-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .b-tile{background:linear-gradient(160deg,rgba(122,21,51,.28),rgba(58,8,22,.4));
+    border:1px solid rgba(212,168,108,.2);border-radius:14px;padding:18px 10px;
+    display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;
+    transition:all .25s;}
+  .b-tile:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .b-tile.on{background:linear-gradient(160deg,rgba(212,168,108,.35),rgba(140,90,40,.2));
+    border-color:var(--gold);box-shadow:0 6px 16px rgba(212,168,108,.2);}
+  .b-tile .em{font-size:30px;line-height:1;}
+  .b-tile .nm{font-family:Arial;font-size:12px;color:var(--cream);letter-spacing:.4px;}
+  .b-tile .sub{font-family:Arial;font-size:10px;color:#9d8478;text-align:center;line-height:1.35;}
+
+  .b-tag-chosen{display:flex;align-items:center;justify-content:center;gap:8px;
+    background:rgba(212,168,108,.1);border:1px solid rgba(212,168,108,.25);
+    border-radius:14px;padding:9px 14px;margin-bottom:14px;}
+  .b-tag-chosen .em{font-size:20px;}
+  .b-tag-chosen .nm{font-family:Arial;font-size:12.5px;color:var(--gold-soft);letter-spacing:.4px;}
+
+  .b-tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .b-mini{font-family:Arial;font-size:11px;color:#a87e6a;padding:4px 9px;border-radius:12px;
+    background:rgba(8,2,5,.45);border:1px dashed rgba(212,168,108,.25);cursor:pointer;}
+  .b-mini.on{color:var(--cream);border-style:solid;border-color:var(--gold);background:rgba(212,168,108,.15);}
+
+  .b-intensity{display:flex;gap:8px;margin:6px 0 18px;}
+  .b-int{flex:1;padding:16px 6px;border-radius:14px;background:rgba(8,2,5,.4);
+    border:1px solid rgba(212,168,108,.18);cursor:pointer;text-align:center;transition:all .25s;}
+  .b-int:hover{border-color:var(--gold);}
+  .b-int .em{font-size:22px;line-height:1;display:block;}
+  .b-int .nm{font-family:Arial;font-size:11px;color:var(--cream);margin-top:6px;letter-spacing:.4px;}
+  .b-int.on{background:linear-gradient(160deg,rgba(212,168,108,.3),rgba(180,130,75,.18));
+    border-color:var(--gold);box-shadow:0 0 14px rgba(212,168,108,.2);}
+  .b-int.on .em{filter:drop-shadow(0 0 6px rgba(224,85,106,.5));}
+
+  .b-preview{background:rgba(122,21,51,.15);border:1px solid rgba(212,168,108,.22);
+    border-radius:14px;padding:12px;margin-top:8px;}
+  .b-preview-t{font-family:Arial;font-size:10px;letter-spacing:1.6px;text-transform:uppercase;
+    color:var(--gold);text-align:center;margin-bottom:10px;}
+  .b-card-mini{background:linear-gradient(160deg,rgba(58,12,28,.65),rgba(28,6,16,.85));
+    border:1px solid rgba(212,168,108,.4);border-radius:10px;padding:12px;text-align:center;}
+  .b-card-mini .em{font-size:22px;}
+  .b-card-mini .tx{font-family:Georgia;font-size:13px;color:var(--cream);margin-top:6px;line-height:1.4;
+    font-style:italic;}
+  .b-card-mini .pep{font-family:Arial;font-size:11px;color:var(--gold);margin-top:8px;letter-spacing:.6px;}
+
+  .b-navrow{display:flex;gap:8px;margin-top:14px;}
+  .b-navrow .btn{flex:1;margin-top:0;}
+
+  /* ===== VARIANTE C — Carta da gioco ===== */
+  .c-card{position:relative;margin:6px auto 14px;width:230px;aspect-ratio:5/7;
+    background:radial-gradient(140% 100% at 50% 0,#3d0a1a 0,#150410 70%);
+    border:2px solid var(--gold);border-radius:14px;
+    box-shadow:0 12px 24px rgba(0,0,0,.5), inset 0 0 0 1px rgba(212,168,108,.15),
+               inset 0 0 18px rgba(212,168,108,.08);
+    padding:14px 12px;display:flex;flex-direction:column;align-items:center;
+    transition:border-color .35s, box-shadow .35s;}
+  .c-card.lvl1{border-color:#a8c08c;box-shadow:0 12px 24px rgba(0,0,0,.5), 0 0 18px rgba(127,176,105,.18),
+    inset 0 0 0 1px rgba(168,192,140,.15);}
+  .c-card.lvl2{border-color:var(--gold);box-shadow:0 12px 24px rgba(0,0,0,.5), 0 0 20px rgba(212,168,108,.25),
+    inset 0 0 0 1px rgba(212,168,108,.15);}
+  .c-card.lvl3{border-color:#e08070;box-shadow:0 12px 24px rgba(0,0,0,.5), 0 0 24px rgba(224,85,106,.4),
+    inset 0 0 0 1px rgba(224,85,106,.2);}
+  .c-corner{position:absolute;font-family:Arial;font-size:9px;letter-spacing:1.4px;color:var(--gold);
+    opacity:.55;}
+  .c-corner.tl{top:8px;left:10px;}
+  .c-corner.br{bottom:8px;right:10px;transform:rotate(180deg);}
+  .c-em{font-size:42px;line-height:1;margin:18px 0 12px;}
+  .c-cat{font-family:Arial;font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;
+    color:var(--gold-soft);margin-bottom:6px;}
+  .c-tx{font-family:Georgia;font-size:13.5px;font-style:italic;color:var(--cream);
+    text-align:center;line-height:1.45;flex:1 1 auto;display:flex;align-items:center;}
+  .c-tx.empty{color:#7a6155;}
+  .c-pep{margin-top:8px;letter-spacing:6px;font-size:14px;}
+
+  .c-row{display:flex;gap:8px;margin-bottom:10px;}
+  .c-row .inp{font-size:13px;padding:9px 10px;}
+  .c-row .inp.em{flex:0 0 50px;font-size:20px;text-align:center;padding:6px 0;}
+
+  .c-cats{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+  .c-cat-chip{font-family:Arial;font-size:11px;color:#a87e6a;padding:5px 9px;border-radius:12px;
+    background:rgba(8,2,5,.4);border:1px solid rgba(212,168,108,.18);cursor:pointer;display:flex;
+    align-items:center;gap:4px;}
+  .c-cat-chip.on{color:var(--cream);background:rgba(212,168,108,.2);border-color:var(--gold);}
+
+  .c-pep-row{display:flex;align-items:center;gap:10px;margin:6px 0 10px;}
+  .c-pep-row .label{font-family:Arial;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;
+    color:#a87e6a;flex:0 0 auto;}
+  .c-pep-row .dots{display:flex;gap:6px;flex:1 1 auto;justify-content:flex-end;}
+  .c-pep-row .pd{width:26px;height:26px;border-radius:50%;border:1px solid rgba(212,168,108,.25);
+    background:rgba(8,2,5,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;
+    font-size:14px;transition:all .2s;}
+  .c-pep-row .pd.on{background:rgba(224,85,106,.18);border-color:var(--spicy);
+    box-shadow:0 0 10px rgba(224,85,106,.3);}
+</style>
+</head>
+<body>
+
+<div class="pagehd">
+  <h1>Nuova fantasia · 3 mockup interattivi</h1>
+  <p>Tre direzioni divergenti per il flow di creazione. Stessa palette velluto, stesso bottom-sheet pattern.<br>
+     Le 3 phone sotto sono indipendenti: tocca, prova, confronta.</p>
+</div>
+
+<div class="grid">
+
+  <!-- ============================================================
+       VARIANTE A — DIARIO VELLUTO
+       Single page, scrittura nuda, chip categoria sotto.
+       ============================================================ -->
+  <div class="item">
+    <div class="vtag">Variante A</div>
+    <div class="vtitle">Diario velluto</div>
+    <div class="vsub">Una pagina sola. Foglio di diario al centro,
+      chip categoria sotto, autore in alto. Niente fronzoli, niente step.</div>
+
+    <div class="phone" id="phoneA">
+      <div class="behind">
+        <div class="brand">N · S</div>
+        <div class="blk"></div><div class="blk"></div><div class="blk"></div>
+      </div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="head">
+          <div class="head-left"><h2>Nuova fantasia</h2></div>
+          <button class="x">✕</button>
+        </div>
+        <div class="body">
+
+          <div class="a-author">
+            <button class="swap" id="aAuthor">
+              <span id="aAuthorEm">✍️</span>
+              <span id="aAuthorTxt">Firmata · Tomas</span>
+            </button>
+          </div>
+
+          <div class="a-paper" style="position:relative;">
+            <span class="seal" style="top:8px;right:12px;">N&nbsp;·&nbsp;S</span>
+            <textarea class="ta a-ta" id="aTxt"
+              placeholder="Cosa vorreste provare insieme?
+Scrivi quello che ti viene, senza filtri."
+              maxlength="500"
+              oninput="aUpdate()"></textarea>
+            <div class="a-counter"><span id="aCount">0</span> / 500</div>
+          </div>
+
+          <label class="lbl" style="margin-top:14px;">Categoria (opzionale)</label>
+          <div class="a-chip-grid" id="aChips">
+            <button class="a-chip" data-cat="🌹 Romantica"><span>🌹</span>Romantica</button>
+            <button class="a-chip" data-cat="🌶️ Spicy"><span>🌶️</span>Spicy</button>
+            <button class="a-chip" data-cat="🎲 Gioco"><span>🎲</span>Gioco</button>
+            <button class="a-chip" data-cat="🗺️ Posto"><span>🗺️</span>Posto</button>
+            <button class="a-chip" data-cat="👗 Outfit"><span>👗</span>Outfit</button>
+            <button class="a-chip" data-cat="🎬 Roleplay"><span>🎬</span>Roleplay</button>
+          </div>
+
+          <button class="btn" id="aSave" disabled>Aggiungi alla bacheca</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       VARIANTE B — COMPONI UNA SCENA (3 step)
+       Step 1: tile categoria · Step 2: testo + tag · Step 3: tono + preview
+       ============================================================ -->
+  <div class="item">
+    <div class="vtag">Variante B</div>
+    <div class="vtitle">Componi una scena</div>
+    <div class="vsub">Tre step guidati. Prima scegli il tipo di scena con tile grandi,
+      poi descrivi, poi taglia il pepe e vedi la card finale.</div>
+
+    <div class="phone" id="phoneB">
+      <div class="behind">
+        <div class="brand">N · S</div>
+        <div class="blk"></div><div class="blk"></div><div class="blk"></div>
+      </div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="head">
+          <div class="head-left">
+            <button class="back" id="bBack" style="visibility:hidden;">‹</button>
+            <h2 id="bTitle">Nuova fantasia</h2>
+          </div>
+          <button class="x">✕</button>
+        </div>
+
+        <div class="b-stepbar">
+          <div class="b-dot on" data-step="1"></div>
+          <div class="b-bar"></div>
+          <div class="b-dot" data-step="2"></div>
+          <div class="b-bar"></div>
+          <div class="b-dot" data-step="3"></div>
+        </div>
+        <div class="b-stepname" id="bStepName">1 di 3 · Che tipo di scena?</div>
+
+        <div class="body">
+
+          <!-- STEP 1 -->
+          <div class="b-step on" data-step="1">
+            <div class="b-tiles" id="bTiles">
+              <button class="b-tile" data-cat="🌹 Romantica">
+                <span class="em">🌹</span><span class="nm">Romantica</span>
+                <span class="sub">Cose lente,<br>candele, attese</span>
+              </button>
+              <button class="b-tile" data-cat="🌶️ Spicy">
+                <span class="em">🌶️</span><span class="nm">Spicy</span>
+                <span class="sub">Quando il cuore<br>batte forte</span>
+              </button>
+              <button class="b-tile" data-cat="🎲 Gioco">
+                <span class="em">🎲</span><span class="nm">Gioco</span>
+                <span class="sub">Regole, sfide,<br>scommesse</span>
+              </button>
+              <button class="b-tile" data-cat="🗺️ Posto">
+                <span class="em">🗺️</span><span class="nm">Posto</span>
+                <span class="sub">Un luogo<br>da scoprire</span>
+              </button>
+              <button class="b-tile" data-cat="👗 Outfit">
+                <span class="em">👗</span><span class="nm">Outfit</span>
+                <span class="sub">Vestiti che<br>cambiano umore</span>
+              </button>
+              <button class="b-tile" data-cat="🎬 Roleplay">
+                <span class="em">🎬</span><span class="nm">Roleplay</span>
+                <span class="sub">Personaggi<br>e copioni</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 2 -->
+          <div class="b-step" data-step="2">
+            <div class="b-tag-chosen">
+              <span class="em" id="bTagEm">🌶️</span>
+              <span class="nm" id="bTagNm">Spicy</span>
+            </div>
+            <label class="lbl">La fantasia</label>
+            <textarea class="ta" id="bTxt" rows="4"
+              placeholder="Cosa vorreste provare insieme?"
+              oninput="bUpdate()"></textarea>
+            <label class="lbl" style="margin-top:14px;">Tag rapidi</label>
+            <div class="b-tagrow" id="bTagRow">
+              <button class="b-mini" data-tag="a casa">a casa</button>
+              <button class="b-mini" data-tag="fuori">fuori</button>
+              <button class="b-mini" data-tag="sorpresa">sorpresa</button>
+              <button class="b-mini" data-tag="lunga">lunga</button>
+              <button class="b-mini" data-tag="serale">serale</button>
+              <button class="b-mini" data-tag="weekend">weekend</button>
+            </div>
+          </div>
+
+          <!-- STEP 3 -->
+          <div class="b-step" data-step="3">
+            <label class="lbl">Quanto piccante?</label>
+            <div class="b-intensity" id="bInt">
+              <button class="b-int" data-pep="1">
+                <span class="em">🌶️</span><span class="nm">Dolce</span>
+              </button>
+              <button class="b-int" data-pep="2">
+                <span class="em">🌶️🌶️</span><span class="nm">Medio</span>
+              </button>
+              <button class="b-int" data-pep="3">
+                <span class="em">🌶️🌶️🌶️</span><span class="nm">Bollente</span>
+              </button>
+            </div>
+            <div class="b-preview">
+              <div class="b-preview-t">Anteprima</div>
+              <div class="b-card-mini">
+                <div class="em" id="bPrevEm">🌶️</div>
+                <div class="tx" id="bPrevTx">— scrivi qualcosa —</div>
+                <div class="pep" id="bPrevPep">🌶️🌶️</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="b-navrow">
+            <button class="btn ghost" id="bPrev" style="display:none;">← Indietro</button>
+            <button class="btn" id="bNext" disabled>Avanti →</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       VARIANTE C — CARTA DA GIOCO
+       Single screen. La carta in alto cambia live mentre scrivi.
+       ============================================================ -->
+  <div class="item">
+    <div class="vtag">Variante C</div>
+    <div class="vtitle">Carta da gioco</div>
+    <div class="vsub">Single screen, con anteprima live della carta in alto.
+      Bordo cambia colore con l'intensità. Oggetto finito, collezionabile.</div>
+
+    <div class="phone" id="phoneC">
+      <div class="behind">
+        <div class="brand">N · S</div>
+        <div class="blk"></div><div class="blk"></div><div class="blk"></div>
+      </div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="head">
+          <div class="head-left"><h2>Nuova fantasia</h2></div>
+          <button class="x">✕</button>
+        </div>
+        <div class="body">
+
+          <div class="c-card lvl2" id="cCard">
+            <span class="c-corner tl" id="cCornerTL">FANTASIA</span>
+            <span class="c-corner br" id="cCornerBR">FANTASIA</span>
+            <div class="c-em" id="cEm">✦</div>
+            <div class="c-cat" id="cCat">— categoria —</div>
+            <div class="c-tx empty" id="cTx">la tua fantasia<br>apparirà qui</div>
+            <div class="c-pep" id="cPep">🌶️🌶️</div>
+          </div>
+
+          <label class="lbl">Testo</label>
+          <textarea class="ta" id="cTxIn" rows="2"
+            placeholder="Cosa vorreste provare insieme?"
+            oninput="cUpdate()"></textarea>
+
+          <label class="lbl" style="margin-top:12px;">Categoria</label>
+          <div class="c-cats" id="cCats">
+            <button class="c-cat-chip" data-em="🌹" data-cat="Romantica">🌹 Romantica</button>
+            <button class="c-cat-chip" data-em="🌶️" data-cat="Spicy">🌶️ Spicy</button>
+            <button class="c-cat-chip" data-em="🎲" data-cat="Gioco">🎲 Gioco</button>
+            <button class="c-cat-chip" data-em="🗺️" data-cat="Posto">🗺️ Posto</button>
+            <button class="c-cat-chip" data-em="👗" data-cat="Outfit">👗 Outfit</button>
+            <button class="c-cat-chip" data-em="🎬" data-cat="Roleplay">🎬 Roleplay</button>
+          </div>
+
+          <div class="c-pep-row">
+            <span class="label">Intensità</span>
+            <div class="dots" id="cPepDots">
+              <button class="pd" data-pep="1">🌶️</button>
+              <button class="pd on" data-pep="2">🌶️</button>
+              <button class="pd" data-pep="3">🌶️</button>
+            </div>
+          </div>
+
+          <button class="btn" id="cSave" disabled>Aggiungi alla bacheca</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =========================  VARIANTE A  ========================= */
+const aTxt=document.getElementById('aTxt');
+const aCount=document.getElementById('aCount');
+const aSave=document.getElementById('aSave');
+const aAuthor=document.getElementById('aAuthor');
+const aAuthorEm=document.getElementById('aAuthorEm');
+const aAuthorTxt=document.getElementById('aAuthorTxt');
+let aAuthorAnon=false;
+aAuthor.onclick=()=>{
+  aAuthorAnon=!aAuthorAnon;
+  aAuthorEm.textContent=aAuthorAnon?'🕯️':'✍️';
+  aAuthorTxt.textContent=aAuthorAnon?'Anonima':'Firmata · Tomas';
+};
+function aUpdate(){
+  const v=aTxt.value;
+  aCount.textContent=v.length;
+  aSave.disabled=!v.trim();
+}
+document.querySelectorAll('#aChips .a-chip').forEach(c=>{
+  c.onclick=()=>{
+    document.querySelectorAll('#aChips .a-chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');
+  };
+});
+aSave.onclick=()=>{
+  aSave.textContent='✓ Aggiunta';
+  setTimeout(()=>{aSave.textContent='Aggiungi alla bacheca';aTxt.value='';aCount.textContent='0';
+    aSave.disabled=true;document.querySelectorAll('#aChips .a-chip').forEach(x=>x.classList.remove('on'));},1400);
+};
+
+/* =========================  VARIANTE B  ========================= */
+const bState={step:1,cat:null,catEm:null,catNm:null,txt:'',tags:new Set(),pep:0};
+const bDots=document.querySelectorAll('#phoneB .b-dot');
+const bSteps=document.querySelectorAll('#phoneB .b-step');
+const bBack=document.getElementById('bBack');
+const bPrev=document.getElementById('bPrev');
+const bNext=document.getElementById('bNext');
+const bTitle=document.getElementById('bTitle');
+const bStepName=document.getElementById('bStepName');
+const bTagEm=document.getElementById('bTagEm');
+const bTagNm=document.getElementById('bTagNm');
+const bTxt=document.getElementById('bTxt');
+const bPrevEm=document.getElementById('bPrevEm');
+const bPrevTx=document.getElementById('bPrevTx');
+const bPrevPep=document.getElementById('bPrevPep');
+const stepNames=['','Che tipo di scena?','Descrivi','Quanto piccante?'];
+
+function bShow(n){
+  bState.step=n;
+  bDots.forEach((d,i)=>{
+    d.classList.remove('on','done');
+    if(i+1<n)d.classList.add('done');
+    if(i+1===n)d.classList.add('on');
+  });
+  bSteps.forEach(s=>s.classList.toggle('on', +s.dataset.step===n));
+  bStepName.textContent=n+' di 3 · '+stepNames[n];
+  bPrev.style.display=n===1?'none':'';
+  bBack.style.visibility=n===1?'hidden':'visible';
+  bNext.textContent=n===3?'✓ Salva fantasia':'Avanti →';
+  bRefreshNext();
+}
+function bRefreshNext(){
+  if(bState.step===1)bNext.disabled=!bState.cat;
+  else if(bState.step===2)bNext.disabled=!bState.txt.trim();
+  else if(bState.step===3)bNext.disabled=!bState.pep;
+}
+document.querySelectorAll('#bTiles .b-tile').forEach(t=>{
+  t.onclick=()=>{
+    document.querySelectorAll('#bTiles .b-tile').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    const cat=t.dataset.cat;
+    bState.cat=cat;
+    bState.catEm=cat.split(' ')[0];
+    bState.catNm=cat.split(' ').slice(1).join(' ');
+    bTagEm.textContent=bState.catEm;
+    bTagNm.textContent=bState.catNm;
+    bPrevEm.textContent=bState.catEm;
+    bRefreshNext();
+  };
+});
+function bUpdate(){
+  bState.txt=bTxt.value;
+  bPrevTx.textContent=bState.txt.trim()||'— scrivi qualcosa —';
+  bPrevTx.style.fontStyle=bState.txt.trim()?'italic':'normal';
+  bRefreshNext();
+}
+document.querySelectorAll('#bTagRow .b-mini').forEach(m=>{
+  m.onclick=()=>{
+    m.classList.toggle('on');
+    const t=m.dataset.tag;
+    if(bState.tags.has(t))bState.tags.delete(t);else bState.tags.add(t);
+  };
+});
+document.querySelectorAll('#bInt .b-int').forEach(i=>{
+  i.onclick=()=>{
+    document.querySelectorAll('#bInt .b-int').forEach(x=>x.classList.remove('on'));
+    i.classList.add('on');
+    bState.pep=+i.dataset.pep;
+    bPrevPep.textContent='🌶️'.repeat(bState.pep);
+    bRefreshNext();
+  };
+});
+bNext.onclick=()=>{
+  if(bState.step<3)bShow(bState.step+1);
+  else{
+    bNext.textContent='✓ Aggiunta';
+    setTimeout(()=>{
+      bState.cat=bState.catEm=bState.catNm=null;bState.txt='';bState.tags.clear();bState.pep=0;
+      bTxt.value='';bPrevTx.textContent='— scrivi qualcosa —';bPrevPep.textContent='🌶️🌶️';
+      document.querySelectorAll('#phoneB .on').forEach(x=>x.classList.remove('on'));
+      bShow(1);
+    },1400);
+  }
+};
+bPrev.onclick=bBack.onclick=()=>{ if(bState.step>1)bShow(bState.step-1); };
+bShow(1);
+
+/* =========================  VARIANTE C  ========================= */
+const cState={em:'✦',cat:null,txt:'',pep:2};
+const cCard=document.getElementById('cCard');
+const cEm=document.getElementById('cEm');
+const cCat=document.getElementById('cCat');
+const cTx=document.getElementById('cTx');
+const cPep=document.getElementById('cPep');
+const cCorTL=document.getElementById('cCornerTL');
+const cCorBR=document.getElementById('cCornerBR');
+const cTxIn=document.getElementById('cTxIn');
+const cSave=document.getElementById('cSave');
+
+function cRender(){
+  cEm.textContent=cState.em;
+  cCat.textContent=cState.cat||'— categoria —';
+  cCorTL.textContent=cCorBR.textContent=(cState.cat||'fantasia').toUpperCase();
+  if(cState.txt.trim()){
+    cTx.classList.remove('empty');
+    cTx.textContent='« '+cState.txt+' »';
+  } else {
+    cTx.classList.add('empty');
+    cTx.textContent='';
+    cTx.appendChild(document.createTextNode('la tua fantasia'));
+    cTx.appendChild(document.createElement('br'));
+    cTx.appendChild(document.createTextNode('apparirà qui'));
+  }
+  cPep.textContent='🌶️'.repeat(cState.pep);
+  cCard.classList.remove('lvl1','lvl2','lvl3');
+  cCard.classList.add('lvl'+cState.pep);
+  cSave.disabled=!(cState.txt.trim() && cState.cat);
+}
+function cUpdate(){cState.txt=cTxIn.value;cRender();}
+document.querySelectorAll('#cCats .c-cat-chip').forEach(c=>{
+  c.onclick=()=>{
+    document.querySelectorAll('#cCats .c-cat-chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');
+    cState.em=c.dataset.em;
+    cState.cat=c.dataset.cat;
+    cRender();
+  };
+});
+document.querySelectorAll('#cPepDots .pd').forEach(p=>{
+  p.onclick=()=>{
+    document.querySelectorAll('#cPepDots .pd').forEach(x=>x.classList.remove('on'));
+    p.classList.add('on');
+    cState.pep=+p.dataset.pep;
+    cRender();
+  };
+});
+cSave.onclick=()=>{
+  cSave.textContent='✓ Aggiunta';
+  setTimeout(()=>{
+    cSave.textContent='Aggiungi alla bacheca';
+    cState.em='✦';cState.cat=null;cState.txt='';cState.pep=2;
+    cTxIn.value='';
+    document.querySelectorAll('#cCats .c-cat-chip').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('#cPepDots .pd').forEach((x,i)=>x.classList.toggle('on', i===1));
+    cRender();
+  },1400);
+};
+cRender();
+</script>
+
+</body>
+</html>
