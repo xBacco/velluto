@@ -1204,7 +1204,9 @@ body.pudica [data-spicy].revealed{filter:none;}
   --neon-pink:#ff5577;--neon-pink-dim:#b83c5a;
   --gold-mute:#c9a35f;--gold-bright:#ffd97a;
   --cream-paper:#fbe9cf;
-  max-width:340px;margin:0 auto;padding:0;display:block;
+  max-width:340px;margin:0 auto;padding:0;
+  display:flex;flex-direction:column;justify-content:center;
+  min-height:100%;
 }
 
 /* --- MARQUEE --- */
