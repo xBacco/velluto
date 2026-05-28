@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mockup · Nav swipe-follow + edge-close v2</title>
+<style>
+  :root{
+    --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+    --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0;
+    --spin:cubic-bezier(.17,.67,.18,1);
+    --pop:cubic-bezier(.34,1.15,.4,1);
+    --edge:38px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;font-family:Georgia,"Times New Roman",serif;color:var(--cream);
+    background:linear-gradient(170deg,#0a0205,#150410);min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;gap:12px;padding:14px 10px 30px;}
+  .sans,input,button,.muted,.nav button{font-family:Arial,Helvetica,sans-serif;}
+
+  h1.t{font-size:17px;letter-spacing:.5px;color:var(--gold-soft);margin:0;font-weight:normal;}
+  .sub{font-family:Arial;font-size:12px;color:#a87e6a;max-width:380px;text-align:center;line-height:1.5;}
+
+  /* phone frame: fills viewport on mobile */
+  .phone{width:400px;max-width:100vw;height:min(820px,92vh);position:relative;
+    border:8px solid #0a0205;border-radius:36px;overflow:hidden;
+    box-shadow:0 30px 70px rgba(0,0,0,.6),0 0 0 1px rgba(212,168,108,.18);
+    background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+               linear-gradient(170deg,var(--bg),var(--bg2));
+    display:flex;flex-direction:column;}
+
+  /* top fake controls */
+  .topbar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;}
+  .topbar .brand{font-size:20px;color:var(--gold);letter-spacing:.5px;}
+  .topbar .openov{font-family:Arial;font-size:11.5px;background:rgba(212,168,108,.14);color:var(--gold-soft);
+    border:1px solid rgba(212,168,108,.35);padding:6px 11px;border-radius:14px;cursor:pointer;}
+  .topbar .openov:active{transform:scale(.96);}
+
+  /* viewport (track of pages) */
+  .stage{flex:1 1 auto;position:relative;overflow:hidden;}
+  .viewport{position:absolute;inset:0;overflow:hidden;touch-action:pan-y;user-select:none;}
+  .track{display:flex;height:100%;will-change:transform;}
+  .page{flex:0 0 100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:30px 18px;gap:14px;}
+  .page .em{font-size:80px;filter:drop-shadow(0 8px 24px rgba(0,0,0,.5));}
+  .page .nm{font-size:22px;color:var(--gold-soft);letter-spacing:.5px;}
+  .page .ds{font-family:Arial;font-size:12.5px;color:#b89aa2;max-width:280px;text-align:center;line-height:1.5;}
+
+  /* edge zones — sottili strisce per indicare la zona attiva */
+  .edges{position:absolute;inset:0;pointer-events:none;}
+  .edges::before,.edges::after{content:'';position:absolute;top:0;bottom:0;width:var(--edge);
+    background:linear-gradient(90deg,rgba(212,168,108,.06),transparent);transition:opacity .2s;opacity:.55;}
+  .edges::before{left:0;}
+  .edges::after{right:0;background:linear-gradient(270deg,rgba(212,168,108,.06),transparent);}
+  .edges.hot-l::before{opacity:1;background:linear-gradient(90deg,rgba(212,168,108,.28),transparent);}
+  .edges.hot-r::after{opacity:1;background:linear-gradient(270deg,rgba(212,168,108,.28),transparent);}
+
+  /* overlay (es. Cronaca) */
+  .ov{position:absolute;inset:0;background:linear-gradient(175deg,#1d0610,#11040a);
+    transform:translateX(110%);transition:transform .35s var(--spin);
+    display:flex;flex-direction:column;will-change:transform;z-index:5;}
+  .ov.show{transform:translateX(0);}
+  .ov-head{flex:0 0 auto;padding:18px 18px 14px;border-bottom:1px solid rgba(212,168,108,.16);
+    display:flex;align-items:center;justify-content:space-between;}
+  .ov-head h2{margin:0;font-size:19px;color:var(--gold-soft);font-weight:normal;letter-spacing:.5px;}
+  .ov-head .hint{font-family:Arial;font-size:10.5px;color:#a87e6a;}
+  .ov-body{flex:1 1 auto;overflow:auto;padding:14px 18px;}
+  .ov-item{padding:12px 0;border-bottom:1px solid rgba(212,168,108,.1);font-family:Arial;font-size:13.5px;color:var(--cream);}
+  .ov-item .d{font-size:11px;color:#a87e6a;margin-top:3px;}
+
+  /* nav (clone styles.css :37–49) */
+  .nav{flex:0 0 auto;margin:0 10px 12px;display:flex;gap:4px;
+    background:rgba(13,3,7,.86);backdrop-filter:blur(10px);
+    border:1px solid rgba(212,168,108,.3);border-radius:22px;padding:7px;
+    box-shadow:0 12px 30px rgba(0,0,0,.55);touch-action:pan-y;user-select:none;}
+  .nav button{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:6px;
+    font-size:20px;padding:11px 3px;border-radius:14px;color:#c8a89c;min-height:42px;cursor:pointer;border:0;background:transparent;
+    transition:flex-grow .38s var(--pop),background .38s,color .38s,transform .38s;}
+  .nav button.on{color:#fff;
+    background:linear-gradient(180deg,rgba(122,21,51,.9),rgba(92,16,38,.6));
+    box-shadow:0 5px 18px rgba(122,21,51,.55);transform:translateY(-3px);}
+  .nav button .lab{font-size:12px;max-width:0;overflow:hidden;white-space:nowrap;opacity:0;transition:.38s;}
+  .nav button.on .lab{max-width:120px;opacity:1;}
+  .nav.dragging button,.nav.dragging button .lab{transition:none !important;}
+
+  /* readout panel */
+  .read{font-family:Arial;font-size:11px;color:#9d8478;text-align:center;
+    background:rgba(13,3,7,.5);border:1px solid rgba(212,168,108,.2);border-radius:10px;
+    padding:7px 13px;min-width:300px;max-width:96vw;}
+  .read b{color:var(--gold-soft);}
+  .read span.k{color:#7a5a4e;}
+</style>
+</head>
+<body>
+
+<h1 class="t">Nav swipe-follow + edge-close · v2</h1>
+<p class="sub">Apri l'overlay con il pulsante in alto a destra. Poi <b>swipa dal bordo</b> (strisce dorate ai lati) per chiuderlo. Senza overlay, swipe normale tra tab.</p>
+
+<div class="phone" id="phone">
+  <div class="topbar">
+    <div class="brand">Lussuria</div>
+    <button class="openov" id="openov">Apri overlay</button>
+  </div>
+
+  <div class="stage">
+    <div class="viewport" id="vp">
+      <div class="track" id="track"></div>
+      <div class="edges" id="edges"></div>
+    </div>
+    <div class="ov" id="ov">
+      <div class="ov-head">
+        <h2>Cronaca della notte</h2>
+        <span class="hint">⇠ swipa dal bordo ⇢</span>
+      </div>
+      <div class="ov-body" id="ovBody"></div>
+    </div>
+  </div>
+
+  <div class="nav" id="nav"></div>
+</div>
+
+<div class="read" id="read">
+  <b>fai swipe</b> · <span class="k">mode</span> tab · <span class="k">progress</span> 0.00
+</div>
+
+<script>
+const TABS = [
+  ['desideri', '🔥', 'Desideri'],
+  ['giochi',   '🎲', 'Giochi'],
+  ['calendario','📅','Esperienze'],
+  ['mappa',    '🗺️', 'Mappa'],
+  ['buoni',    '🎟️', 'Buoni'],
+  ['galleria', '🖼️', 'Galleria'],
+];
+const COLORS = ['#7a1533','#5c1026','#3d0a1a','#2a0813','#5c1026','#7a1533'];
+const EDGE_PX = 38;
+
+let index = 0;
+const nav   = document.getElementById('nav');
+const track = document.getElementById('track');
+const vp    = document.getElementById('vp');
+const edges = document.getElementById('edges');
+const ov    = document.getElementById('ov');
+const ovBody= document.getElementById('ovBody');
+const read  = document.getElementById('read');
+
+// pages
+TABS.forEach((t,i)=>{
+  const p = document.createElement('div'); p.className='page';
+  p.style.background = `radial-gradient(120% 70% at 50% 30%, ${COLORS[i]}55, transparent 60%)`;
+  p.innerHTML = `<div class="em">${t[1]}</div><div class="nm">${t[2]}</div><div class="ds">Pagina ${i+1} di ${TABS.length}. Trascina al centro per cambiare tab, dal bordo per chiudere overlay.</div>`;
+  track.appendChild(p);
+});
+
+// nav
+TABS.forEach((t,i)=>{
+  const b = document.createElement('button');
+  b.innerHTML = `<span class="ic">${t[1]}</span><span class="lab">${t[2]}</span>`;
+  b.dataset.i = i;
+  b.onclick = ()=>go(i);
+  nav.appendChild(b);
+});
+
+// fake overlay items
+['Serata I · 12 mag','Serata II · 19 mag','Serata III · 26 mag','Serata IV · 02 giu']
+  .forEach(s=>{
+    const d=document.createElement('div'); d.className='ov-item';
+    d.innerHTML = `${s}<div class="d">Hold'em · 🐻 vs 🧁 · 4 mani giocate</div>`;
+    ovBody.appendChild(d);
+  });
+
+function W(){ return vp.clientWidth; }
+const overlayOpen = ()=>ov.classList.contains('show');
+
+function openOverlay(){ ov.classList.add('show'); ov.style.transform=''; updateRead('overlay aperto', 0); }
+function closeOverlay(animate=true){
+  ov.style.transition = animate ? `transform .3s var(--spin)` : 'none';
+  ov.style.transform = '';
+  ov.classList.remove('show');
+  updateRead('overlay chiuso', 0);
+}
+document.getElementById('openov').onclick = openOverlay;
+
+// nav layout + interpolation
+function layout(animate){
+  track.style.transition = animate ? `transform .34s var(--spin)` : 'none';
+  track.style.transform  = `translateX(${-index*W()}px)`;
+  [...nav.children].forEach((b,i)=>{
+    b.classList.toggle('on', i===index);
+    b.style.flexGrow=''; b.querySelector('.lab').style.maxWidth=''; b.querySelector('.lab').style.opacity='';
+  });
+}
+function go(i){ if(i<0||i>=TABS.length) return; index=i; layout(true); updateRead('snap', 0); }
+
+function applyNavInterp(progress, dir){
+  const target = index + dir;
+  [...nav.children].forEach((b,i)=>{
+    const lab = b.querySelector('.lab');
+    let flex=1, mw=0, op=0, on=false;
+    if (i === index)        { flex = 2.5 - 1.5*progress; mw = 120*(1-progress); op = 1-progress; on = progress<0.5; }
+    else if (i === target)  { flex = 1 + 1.5*progress;   mw = 120*progress;     op = progress;   on = progress>=0.5; }
+    b.style.flexGrow = flex; lab.style.maxWidth = mw + 'px'; lab.style.opacity = op;
+    b.classList.toggle('on', on);
+  });
+}
+
+function updateRead(mode, progress){
+  read.innerHTML = `<b>${mode}</b> · <span class="k">progress</span> ${progress.toFixed(2)} · <span class="k">index</span> ${index} · <span class="k">overlay</span> ${overlayOpen()?'on':'off'}`;
+}
+
+// --- pointer engine ---
+let startX=0, startY=0, dragging=false, decided=false, horiz=false;
+let edgeMode = null;       // 'l' | 'r' | null  (origin near edge)
+let mode = 'idle';         // 'tab' | 'edge-close-overlay' | 'idle'
+
+function pickEdge(x){
+  if (x <= EDGE_PX) return 'l';
+  if (x >= W() - EDGE_PX) return 'r';
+  return null;
+}
+
+vp.addEventListener('pointerdown', e=>{
+  dragging=true; decided=false; horiz=false;
+  startX=e.clientX; startY=e.clientY;
+  const rect = vp.getBoundingClientRect();
+  edgeMode = pickEdge(e.clientX - rect.left);
+  if (edgeMode === 'l') edges.classList.add('hot-l');
+  if (edgeMode === 'r') edges.classList.add('hot-r');
+  track.style.transition='none';
+  ov.style.transition='none';
+  try{ vp.setPointerCapture(e.pointerId); }catch(_){}
+});
+
+vp.addEventListener('pointermove', e=>{
+  if(!dragging) return;
+  const dx = e.clientX - startX, dy = e.clientY - startY;
+  if(!decided){
+    if(Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+    decided = true; horiz = Math.abs(dx) > Math.abs(dy);
+    if(!horiz){ dragging=false; edges.classList.remove('hot-l','hot-r'); return; }
+    // decide mode: edge swipe + overlay open → close overlay; else → tab swipe
+    if (edgeMode && overlayOpen()) {
+      mode = 'edge-close-overlay';
+    } else {
+      mode = 'tab';
+      nav.classList.add('dragging');
+    }
+  }
+  e.preventDefault();
+  const w = W();
+
+  if (mode === 'edge-close-overlay') {
+    // overlay segue il dito; only allow movement that goes toward dismiss
+    // L'overlay si chiude scorrendo nella direzione del dito
+    let t = dx;
+    // rubber band se vai contro
+    if (edgeMode === 'l' && t < 0) t = t * 0.25;
+    if (edgeMode === 'r' && t > 0) t = t * 0.25;
+    ov.style.transform = `translateX(${t}px)`;
+    updateRead('edge → chiude', Math.min(1, Math.abs(dx)/w));
+  } else {
+    // tab swipe (vecchio comportamento)
+    let t = -index*w + dx;
+    const min = -(TABS.length-1)*w, max = 0;
+    if (t > max) t = max + (t-max)*0.35;
+    if (t < min) t = min + (t-min)*0.35;
+    track.style.transform = `translateX(${t}px)`;
+    const dir = dx < 0 ? +1 : -1;
+    const blocked = (dir>0 && index>=TABS.length-1) || (dir<0 && index<=0);
+    const progress = blocked ? 0 : Math.min(1, Math.abs(dx)/w);
+    applyNavInterp(progress, dir);
+    updateRead('tab swipe', progress);
+  }
+});
+
+function end(e){
+  if(!dragging) return;
+  dragging=false;
+  edges.classList.remove('hot-l','hot-r');
+  nav.classList.remove('dragging');
+  if(!horiz){ return; }
+  const w = W();
+  const dx = (e && e.clientX!=null ? e.clientX : startX) - startX;
+
+  if (mode === 'edge-close-overlay') {
+    const threshold = w * 0.18;
+    if (Math.abs(dx) > threshold) {
+      // chiude con animazione nella direzione del drag
+      ov.style.transition = `transform .25s var(--spin)`;
+      ov.style.transform = `translateX(${Math.sign(dx)*w}px)`;
+      setTimeout(()=>closeOverlay(false), 240);
+    } else {
+      ov.style.transition = `transform .25s var(--spin)`;
+      ov.style.transform = '';
+    }
+  } else {
+    const threshold = w * 0.22;
+    if (dx < -threshold && index < TABS.length-1) go(index+1);
+    else if (dx > threshold && index > 0) go(index-1);
+    else layout(true);
+  }
+  edgeMode = null; mode = 'idle';
+}
+vp.addEventListener('pointerup', end);
+vp.addEventListener('pointercancel', ()=>{ dragging=false; edges.classList.remove('hot-l','hot-r'); nav.classList.remove('dragging'); layout(true); ov.style.transition=`transform .25s var(--spin)`; ov.style.transform=''; });
+window.addEventListener('resize', ()=>layout(false));
+
+layout(false);
+updateRead('pronto', 0);
+</script>
+</body>
+</html>
