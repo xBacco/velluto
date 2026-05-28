@@ -279,6 +279,20 @@ function renderScheda() {
     if (canClick) div.onclick = () => registra(item, pts);
     wrap.appendChild(div);
   }
+  updateLaunchBtn();
+}
+
+function updateLaunchBtn() {
+  const btn = document.querySelector('.yz-launch');
+  if (!btn) return;
+  while (btn.firstChild) btn.removeChild(btn.firstChild);
+  btn.appendChild(mk('span', 'e', '🎲'));
+  let txt;
+  if (tiriUsati === 0) txt = ' Lancia i dadi';
+  else if (tiriUsati >= 3) txt = ' Segna un risultato';
+  else txt = ' Continua tavolo (tiro ' + (tiriUsati + 1) + '/3)';
+  btn.appendChild(document.createTextNode(txt));
+  btn.disabled = (tiriUsati >= 3);
 }
 
 // ---------------------------------------------------------------------------
@@ -288,10 +302,11 @@ let tableScrim = null;
 
 function openTable() {
   if (gameOver) { toast('Partita finita: tocca Nuova partita.', 'info'); return; }
+  if (tiriUsati >= 3) { toast('Hai usato i 3 tiri: segna un risultato.', 'info'); return; }
   // Dal primo Lancia: blocca lo swipe del pager (vedi app.js#enablePager).
   // Resta attivo per tutta la partita fino a fine partita o Nuova partita.
   document.body.classList.add('yz-busy');
-  closeTable();
+  if (tableScrim) { tableScrim.remove(); tableScrim = null; }
   const scrim = mk('div', 'yz-scrim yz-table-scrim dadi-scrim');
   const sheet = mk('div', 'yz-table');
   const handle = mk('div', 'yz-handle');
@@ -326,11 +341,18 @@ function openTable() {
 
   renderStage(false);
   updateCtrls();
-  setTimeout(roll, 380);
+  // Auto-roll solo al primo tiro: se l'utente aveva chiuso il tavolo a metà
+  // partita (es. dopo 1 tiro), riaprire NON deve consumargli un tiro.
+  if (tiriUsati === 0) setTimeout(roll, 380);
 }
 
 function closeTable() {
   if (tableScrim) { tableScrim.remove(); tableScrim = null; }
+  // Refresh UI principale: il bottone "Lancia i dadi" deve riflettere
+  // lo stato corrente (es. "Continua tavolo (tiro 2/3)") e lo strip mostra
+  // i dadi attuali se il primo tiro è già stato fatto.
+  renderScheda();
+  renderStrip();
 }
 
 function renderStage(animate) {
