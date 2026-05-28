@@ -524,10 +524,12 @@ body.locked{overflow:hidden;touch-action:none;}
 .wheel{position:absolute;inset:0;border-radius:50%;border:7px solid var(--gold);z-index:1;
   box-shadow:0 0 0 3px #2a0813,0 0 0 7px rgba(212,168,108,.35),0 16px 46px rgba(0,0,0,.65),inset 0 0 36px rgba(0,0,0,.5);
   transition:transform 4.2s var(--spin);
-  background:conic-gradient(from 0deg,#7a1533 0 45deg,#42091a 45deg 90deg,#7a1533 90deg 135deg,#42091a 135deg 180deg,
-    #7a1533 180deg 225deg,#42091a 225deg 270deg,#7a1533 270deg 315deg,#42091a 315deg 360deg);}
+  background:radial-gradient(circle,#7a1533 55%,#5c1026 100%);}
+/* 7 divisori a 360/7 (~51.43°): geometria allineata alle 7 fette del JS (SLICE = 360/7). */
 .wheel::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
-  background:repeating-conic-gradient(from 0deg,transparent 0 44.4deg,rgba(233,201,143,.7) 44.4deg 45deg);}
+  background:repeating-conic-gradient(from 0deg,
+    transparent 0 calc(360deg/7 - 0.6deg),
+    rgba(233,201,143,.7) calc(360deg/7 - 0.6deg) calc(360deg/7));}
 .slice-lbl{position:absolute;top:50%;left:50%;width:0;height:0;}
 /* .in posiziona lo spicchio (statico, non transition-ato).
    La counter-rotazione vive su .e come singolo rotate(): cosi' CSS interpola
@@ -543,9 +545,11 @@ body.locked{overflow:hidden;touch-action:none;}
   background:radial-gradient(circle at 38% 30%,var(--gold-soft),var(--gold) 58%,#a87a3e);border:4px solid #2a0813;
   box-shadow:0 4px 12px rgba(0,0,0,.7),inset 0 2px 4px rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:22px;}
 
-/* spotlight sullo spicchio vincente (oscura tutto tranne i ~45° in alto) */
+/* spotlight sullo spicchio vincente (oscura tutto tranne i 360/7° in alto, centrati sul puntatore) */
 .winhi{position:absolute;inset:0;border-radius:50%;z-index:3;pointer-events:none;opacity:0;transition:opacity .3s;
-  background:conic-gradient(from -22.5deg,transparent 0 45deg,rgba(8,2,5,.74) 45deg 360deg);}
+  background:conic-gradient(from calc(-180deg/7),
+    transparent 0 calc(360deg/7),
+    rgba(8,2,5,.74) calc(360deg/7) 360deg);}
 .winhi.on{opacity:1;}
 
 /* --- bottone ghost "GIRA LA RUOTA" (ghost velluto, da ruota-bottone-stili.html) --- */
