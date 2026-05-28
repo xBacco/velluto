@@ -268,6 +268,7 @@ function openOv() {
   closeOv();
   const ov = mk('div', 'dadi-scrim strip-ov');
   document.body.appendChild(ov);
+  requestAnimationFrame(() => ov.classList.add('show'));
   return ov;
 }
 
