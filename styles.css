@@ -1469,11 +1469,28 @@ body.pudica [data-spicy].revealed{filter:none;}
 .game-modal-sheet{position:relative;flex:1;
   background:radial-gradient(ellipse at top,#3a1019 0%,#1a060a 75%);
   display:flex;flex-direction:column;overflow:hidden;
-  transform:translateX(60px);
-  transition:transform .45s cubic-bezier(.2,.9,.25,1);
+  transform:translateY(100%);
+  border-radius:18px 18px 0 0;
+  box-shadow:0 -8px 28px rgba(0,0,0,.5);
+  transition:transform .55s cubic-bezier(.22,.95,.3,1.05);
   touch-action:pan-y;}
-.game-modal.show .game-modal-sheet{transform:translateX(0);}
+.game-modal.show .game-modal-sheet{transform:translateY(0);}
 .game-modal-sheet.swiping{transition:none;}
+
+/* Drawer stack (iOS-style): la pagina sotto fa un passo indietro
+   mentre il modal sale dal basso. Le transition vivono su #app cosi'
+   anche la chiusura (rimozione di .game-modal-open) animava il ritorno. */
+#app{
+  transform-origin:50% 0%;
+  transition:transform .55s cubic-bezier(.22,.95,.3,1.05),
+             filter .35s ease,
+             border-radius .55s cubic-bezier(.22,.95,.3,1.05);
+}
+body.game-modal-open #app{
+  transform:scale(.94) translateY(8px);
+  border-radius:18px;
+  filter:brightness(.55);
+}
 .game-modal-topbar{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:10px;
   padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 12px 16px;
   background:linear-gradient(180deg,rgba(20,4,8,.92) 0%,rgba(20,4,8,.55) 70%,rgba(20,4,8,0) 100%);

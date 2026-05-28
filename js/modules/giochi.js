@@ -124,7 +124,7 @@ export function closeGameModal(opts) {
   modalCloseHandler = null;
   m.classList.remove('show');
   document.body.classList.remove('game-modal-open');
-  setTimeout(() => { if (m.parentNode) m.remove(); }, 320);
+  setTimeout(() => { if (m.parentNode) m.remove(); }, 460);
   if (!silent && typeof h === 'function') h();
   document.dispatchEvent(new CustomEvent('giochi:tabs-refresh'));
 }
