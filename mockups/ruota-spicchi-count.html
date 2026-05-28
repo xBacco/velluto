@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ruota — count comparison 10/12/14</title>
+<style>
+  :root {
+    --bg: #1a0e0e;
+    --fg: #f5e6d3;
+    --muted: #a89380;
+    --gold: #d4a857;
+    --c1: #6b1f2a;   /* bordeaux */
+    --c2: #8b3a3a;   /* terracotta scuro */
+    --c3: #b8632c;   /* rame */
+    --c4: #2c4a3e;   /* verde scuro */
+    --hl: rgba(255,235,180,0.18);  /* spotlight */
+    --div: rgba(0,0,0,0.35);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--fg); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+  body { padding:24px 16px 80px; }
+  h1 { font-size:18px; margin:0 0 4px; font-weight:600; }
+  .sub { color:var(--muted); font-size:13px; margin:0 0 24px; }
+
+  .grid { display:flex; flex-direction:column; gap:36px; max-width:560px; margin:0 auto; }
+
+  .card {
+    background:#251515;
+    border:1px solid #3a2020;
+    border-radius:16px;
+    padding:20px 16px 16px;
+  }
+  .card h2 { margin:0 0 4px; font-size:15px; font-weight:600; color:var(--gold); }
+  .card .meta { color:var(--muted); font-size:12px; margin:0 0 14px; }
+
+  .wheel-wrap {
+    position:relative;
+    width:280px;
+    height:280px;
+    margin:0 auto;
+  }
+
+  /* Puntatore */
+  .pointer {
+    position:absolute;
+    top:-6px; left:50%;
+    width:0; height:0;
+    border-left:10px solid transparent;
+    border-right:10px solid transparent;
+    border-top:18px solid var(--gold);
+    transform:translateX(-50%);
+    z-index:3;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  }
+
+  .wheel {
+    position:absolute; inset:0;
+    border-radius:50%;
+    box-shadow:
+      inset 0 0 0 4px #3a2020,
+      inset 0 0 0 5px rgba(255,255,255,0.06),
+      0 8px 24px rgba(0,0,0,0.5);
+    overflow:hidden;
+  }
+
+  .emoji {
+    position:absolute;
+    top:50%; left:50%;
+    width:40px; height:40px;
+    margin:-20px 0 0 -20px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+    line-height:1;
+    pointer-events:none;
+  }
+  .emoji.small { font-size:18px; width:34px; height:34px; margin:-17px 0 0 -17px; }
+  .emoji.tiny  { font-size:15px; width:28px; height:28px; margin:-14px 0 0 -14px; }
+
+  .label-list {
+    margin-top:14px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));
+    gap:6px 12px;
+    font-size:11px;
+    color:var(--muted);
+  }
+  .label-list .row { display:flex; align-items:center; gap:6px; }
+  .label-list .row .e { font-size:14px; width:18px; text-align:center; }
+  .label-list .row .t { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .label-list .row.rare .t { color:#d4a857; font-weight:600; }
+  .label-list .row.ultra .t { color:#ff8866; font-weight:600; }
+</style>
+</head>
+<body>
+
+<h1>Ruota — confronto 10 / 12 / 14 spicchi</h1>
+<p class="sub">Stesso diametro (280px). Guarda emoji + dividers + leggibilità.</p>
+
+<div class="grid">
+  <div class="card" id="card-10">
+    <h2>10 spicchi · 36° / spicchio</h2>
+    <p class="meta">Spec attuale. Geometria pulita, emoji larghi.</p>
+    <div class="wheel-wrap"><div class="pointer"></div><div class="wheel" id="w10"></div></div>
+    <div class="label-list" id="ll10"></div>
+  </div>
+
+  <div class="card" id="card-12">
+    <h2>12 spicchi · 30° / spicchio</h2>
+    <p class="meta">+ 🧣 bendare, + 📸 polaroid (peso normale).</p>
+    <div class="wheel-wrap"><div class="pointer"></div><div class="wheel" id="w12"></div></div>
+    <div class="label-list" id="ll12"></div>
+  </div>
+
+  <div class="card" id="card-14">
+    <h2>14 spicchi · 25.71° / spicchio</h2>
+    <p class="meta">+ ✖️2 doppio (raro), + 💎 jackpot (stra raro).</p>
+    <div class="wheel-wrap"><div class="pointer"></div><div class="wheel" id="w14"></div></div>
+    <div class="label-list" id="ll14"></div>
+  </div>
+</div>
+
+<script>
+  const COLORS = ['var(--c1)','var(--c2)','var(--c3)','var(--c4)'];
+
+  // set 10 (spec attuale)
+  const SET10 = [
+    { e:'💋', k:'segreto',   l:'Apri un segreto',    rare:'normal' },
+    { e:'🔥', k:'piccante',  l:'Piccante',           rare:'normal' },
+    { e:'💌', k:'desiderio', l:'Pesca fantasia',     rare:'normal' },
+    { e:'🃏', k:'wild',      l:'Wild',               rare:'normal' },
+    { e:'💆', k:'massaggio', l:'Massaggio',          rare:'normal' },
+    { e:'🎰', k:'slot',      l:'+3 tiri slot',       rare:'normal' },
+    { e:'🎟️', k:'lampo',    l:'Buono lampo',        rare:'normal' },
+    { e:'👅', k:'orale',     l:'Orale',              rare:'normal' },
+    { e:'🔁', k:'ancora',    l:'Gira ancora',        rare:'normal' },
+    { e:'⭐', k:'jolly',     l:'Jolly',              rare:'normal' },
+  ];
+
+  // set 12 = SET10 + bendare + polaroid (distribuiti)
+  const SET12 = [
+    { e:'💋', k:'segreto',   l:'Apri un segreto',    rare:'normal' },
+    { e:'🔥', k:'piccante',  l:'Piccante',           rare:'normal' },
+    { e:'💌', k:'desiderio', l:'Pesca fantasia',     rare:'normal' },
+    { e:'🧣', k:'bendare',   l:'Bendare',            rare:'normal' },
+    { e:'🃏', k:'wild',      l:'Wild',               rare:'normal' },
+    { e:'💆', k:'massaggio', l:'Massaggio',          rare:'normal' },
+    { e:'🎰', k:'slot',      l:'+3 tiri slot',       rare:'normal' },
+    { e:'📸', k:'polaroid',  l:'Foto osè 24h',       rare:'normal' },
+    { e:'🎟️', k:'lampo',    l:'Buono lampo',        rare:'normal' },
+    { e:'👅', k:'orale',     l:'Orale',              rare:'normal' },
+    { e:'🔁', k:'ancora',    l:'Gira ancora',        rare:'normal' },
+    { e:'⭐', k:'jolly',     l:'Jolly',              rare:'normal' },
+  ];
+
+  // set 14 = SET12 + doppio (raro) + jackpot (stra raro)
+  const SET14 = [
+    { e:'💋', k:'segreto',   l:'Apri un segreto',    rare:'normal' },
+    { e:'🔥', k:'piccante',  l:'Piccante',           rare:'normal' },
+    { e:'💌', k:'desiderio', l:'Pesca fantasia',     rare:'normal' },
+    { e:'🧣', k:'bendare',   l:'Bendare',            rare:'normal' },
+    { e:'🃏', k:'wild',      l:'Wild',               rare:'normal' },
+    { e:'💆', k:'massaggio', l:'Massaggio',          rare:'normal' },
+    { e:'✖️', k:'doppio',    l:'Prossimo x2',        rare:'rare' },
+    { e:'🎰', k:'slot',      l:'+3 tiri slot',       rare:'normal' },
+    { e:'📸', k:'polaroid',  l:'Foto osè 24h',       rare:'normal' },
+    { e:'🎟️', k:'lampo',    l:'Buono lampo',        rare:'normal' },
+    { e:'👅', k:'orale',     l:'Orale',              rare:'normal' },
+    { e:'💎', k:'jackpot',   l:'2 spicchi a testa',  rare:'ultra' },
+    { e:'🔁', k:'ancora',    l:'Gira ancora',        rare:'normal' },
+    { e:'⭐', k:'jolly',     l:'Jolly',              rare:'normal' },
+  ];
+
+  function buildWheel(elId, set, sizeClass) {
+    const el = document.getElementById(elId);
+    const n = set.length;
+    const slice = 360 / n;
+
+    // conic-gradient: colora gli spicchi alternando + dividers neri
+    // ogni spicchio: colore pieno; divisori sottili tra spicchi
+    const stops = [];
+    for (let i = 0; i < n; i++) {
+      const from = (i * slice).toFixed(4);
+      const to   = ((i + 1) * slice).toFixed(4);
+      const col  = COLORS[i % COLORS.length];
+      stops.push(`${col} ${from}deg ${to}deg`);
+    }
+    // ruoto -90° per partire dal top, poi sposto di -slice/2 così il primo spicchio è centrato sotto il puntatore
+    const startOffset = (-90 - slice / 2).toFixed(4);
+    el.style.background =
+      `conic-gradient(from ${startOffset}deg, ${stops.join(', ')})`;
+
+    // dividers come overlay (linee sottili)
+    const divLines = [];
+    for (let i = 0; i < n; i++) {
+      const a = (i * slice + (-90 - slice/2) + slice/2).toFixed(4);
+      // useremo un layer separato per i divisori radiali sotto
+    }
+
+    // emoji posizionati radialmente
+    const R = 110; // raggio per gli emoji
+    for (let i = 0; i < n; i++) {
+      const item = set[i];
+      // angolo del CENTRO dello spicchio i (con 0° = top)
+      // primo spicchio è centrato a 0° (sotto puntatore), poi +slice, ...
+      const ang = i * slice; // gradi rispetto al top
+      const rad = (ang - 90) * Math.PI / 180; // converti: 0° top → -90° in coord cartesiane
+      const x = Math.cos(rad) * R;
+      const y = Math.sin(rad) * R;
+      const em = document.createElement('div');
+      em.className = 'emoji ' + sizeClass;
+      em.textContent = item.e;
+      em.style.transform = `translate(${x}px, ${y}px)`;
+      el.appendChild(em);
+    }
+
+    // dividers radiali con un secondo background a strisce trasparenti
+    const lineStops = [];
+    const lineWidth = 0.6; // gradi per ogni linea divisoria
+    for (let i = 0; i < n; i++) {
+      const center = (i * slice + (-90 - slice/2) + slice/2);
+      const from = (center - lineWidth/2).toFixed(4);
+      const to   = (center + lineWidth/2).toFixed(4);
+      // sbagliato: il divider va sui CONFINI, non sui centri
+    }
+    // ricalcolo: confini tra spicchi sono a (i * slice) in coordinate ruotate da startOffset
+    const divStops = [];
+    for (let i = 0; i < n; i++) {
+      const boundary = (i * slice) - slice / 2; // confine sinistro dello spicchio i in coord 0° = sotto puntatore
+      const actual = (boundary + (-90 - slice/2 + slice/2)); // ...
+    }
+    // semplifico: aggiungo div assoluti come linee radiali
+    for (let i = 0; i < n; i++) {
+      const line = document.createElement('div');
+      const boundaryAngle = i * slice - slice/2; // confine "prima" dello spicchio i, con 0°=top
+      line.style.cssText = `
+        position:absolute;
+        top:50%; left:50%;
+        width:1px; height:50%;
+        background:var(--div);
+        transform-origin:top center;
+        transform:translateX(-0.5px) rotate(${boundaryAngle.toFixed(4)}deg);
+        margin-top:-140px;
+        pointer-events:none;
+      `;
+      // correggi: linea che parte dal centro verso il bordo
+      line.style.cssText = `
+        position:absolute;
+        top:50%; left:50%;
+        width:1.5px; height:140px;
+        background:rgba(0,0,0,0.4);
+        transform-origin:top center;
+        transform:translateX(-0.75px) rotate(${(boundaryAngle + 180).toFixed(4)}deg);
+        pointer-events:none;
+      `;
+      el.appendChild(line);
+    }
+
+    // spotlight (highlight dello spicchio sotto il puntatore = spicchio 0)
+    const spot = document.createElement('div');
+    const halfSlice = slice / 2;
+    spot.style.cssText = `
+      position:absolute; inset:0;
+      background: conic-gradient(
+        from ${(-90 - halfSlice).toFixed(4)}deg,
+        var(--hl) 0deg ${slice.toFixed(4)}deg,
+        transparent ${slice.toFixed(4)}deg 360deg
+      );
+      pointer-events:none;
+      border-radius:50%;
+    `;
+    el.appendChild(spot);
+  }
+
+  function buildLabels(elId, set) {
+    const el = document.getElementById(elId);
+    for (const item of set) {
+      const row = document.createElement('div');
+      row.className = 'row ' + (item.rare !== 'normal' ? item.rare : '');
+      const e = document.createElement('span'); e.className = 'e'; e.textContent = item.e;
+      const t = document.createElement('span'); t.className = 't'; t.textContent = item.l;
+      row.appendChild(e); row.appendChild(t);
+      el.appendChild(row);
+    }
+  }
+
+  buildWheel('w10', SET10, '');
+  buildWheel('w12', SET12, 'small');
+  buildWheel('w14', SET14, 'tiny');
+  buildLabels('ll10', SET10);
+  buildLabels('ll12', SET12);
+  buildLabels('ll14', SET14);
+</script>
+</body>
+</html>

@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ruota C · Art Deco Rose & Gold</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-1: #0c1a2f;
+    --bg-2: #142544;
+    --fg:   #f0e6d8;
+    --muted:#8295b0;
+
+    --navy-1: #1a2d4f;
+    --navy-2: #243d6b;
+    --rose-1: #d4a08a;
+    --rose-2: #b88370;
+
+    --gold-1: #f5d97a;
+    --gold-2: #d4b85a;
+    --gold-3: #8a7530;
+
+    --rare:  #f5d97a;
+    --ultra: #5a1f3a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin:0; padding:0;
+    background:
+      radial-gradient(ellipse at center, var(--bg-2), var(--bg-1) 75%),
+      var(--bg-1);
+    color:var(--fg);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+  }
+  body { padding:32px 16px 80px; }
+
+  header { text-align:center; max-width:560px; margin:0 auto 32px; position:relative; }
+  header::before, header::after {
+    content:'';
+    position:absolute;
+    top:50%; width:60px; height:1px;
+    background:linear-gradient(90deg, transparent, var(--gold-2), transparent);
+  }
+  header::before { left:calc(50% - 130px); }
+  header::after { right:calc(50% - 130px); }
+  h1 {
+    font-family:'Playfair Display', serif;
+    font-size:28px;
+    font-weight:500;
+    margin:0;
+    letter-spacing:0.32em;
+    color:var(--gold-1);
+    text-transform:uppercase;
+  }
+  header .sub {
+    font-size:11px;
+    color:var(--rose-1);
+    margin-top:6px;
+    letter-spacing:0.24em;
+    text-transform:uppercase;
+  }
+
+  .stage { max-width:380px; margin:0 auto; }
+
+  .wheel-wrap {
+    position:relative;
+    width:340px;
+    height:340px;
+    margin:0 auto;
+  }
+
+  /* Puntatore — triangolo deco lineare oro */
+  .pointer {
+    position:absolute;
+    top:-4px; left:50%;
+    transform:translateX(-50%);
+    width:18px; height:28px;
+    z-index:10;
+    background:linear-gradient(180deg, var(--gold-1), var(--gold-2));
+    clip-path:polygon(50% 100%, 0 0, 100% 0);
+    filter:drop-shadow(0 3px 5px rgba(0,0,0,0.6));
+  }
+  .pointer::before {
+    content:'';
+    position:absolute;
+    top:-8px; left:50%;
+    width:1.5px; height:8px;
+    margin-left:-0.75px;
+    background:var(--gold-2);
+  }
+  .pointer::after {
+    content:'';
+    position:absolute;
+    top:-12px; left:50%;
+    width:8px; height:8px;
+    margin:0 0 0 -4px;
+    background:var(--gold-1);
+    border-radius:50%;
+    box-shadow:0 0 0 1px var(--bg-1);
+  }
+
+  /* Doppio anello deco */
+  .ring {
+    position:absolute; inset:0;
+    border-radius:50%;
+    background:
+      radial-gradient(circle, transparent calc(50% - 14px),
+                              var(--gold-2) calc(50% - 14px) calc(50% - 12px),
+                              transparent calc(50% - 12px) calc(50% - 6px),
+                              var(--gold-1) calc(50% - 6px) calc(50% - 4px),
+                              var(--gold-2) calc(50% - 4px) 50%);
+    pointer-events:none;
+    z-index:2;
+    box-shadow:0 12px 36px rgba(0,0,0,0.5);
+  }
+
+  /* Raggi geometrici decorativi tra i due anelli */
+  .rays {
+    position:absolute; inset:0;
+    border-radius:50%;
+    pointer-events:none;
+    z-index:3;
+  }
+  .ray {
+    position:absolute;
+    top:50%; left:50%;
+    width:1px; height:10px;
+    margin:-5px 0 0 -0.5px;
+    background:var(--gold-2);
+    transform-origin:center center;
+    opacity:0.7;
+  }
+
+  /* Ruota */
+  .wheel {
+    position:absolute; inset:18px;
+    border-radius:50%;
+    overflow:hidden;
+    transition:transform 4.5s cubic-bezier(0.17, 0.67, 0.16, 0.99);
+    cursor:pointer;
+    box-shadow:inset 0 0 0 1px var(--gold-3);
+    z-index:1;
+  }
+  .wheel.spinning { cursor:not-allowed; }
+
+  .emoji {
+    position:absolute;
+    top:50%; left:50%;
+    width:42px; height:42px;
+    margin:-21px 0 0 -21px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:24px;
+    line-height:1;
+    pointer-events:none;
+    text-shadow:0 1px 2px rgba(0,0,0,0.5);
+    font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif;
+    z-index:5;
+  }
+  .emoji.rare {
+    font-size:16px;
+    width:28px; height:28px;
+    margin:-14px 0 0 -14px;
+    filter:drop-shadow(0 0 6px var(--gold-1));
+  }
+  .emoji.ultra {
+    font-size:16px;
+    width:28px; height:28px;
+    margin:-14px 0 0 -14px;
+    filter:drop-shadow(0 0 6px var(--rose-1));
+  }
+
+  /* Hub centrale — quadrato deco rotato */
+  .hub {
+    position:absolute;
+    top:50%; left:50%;
+    width:52px; height:52px;
+    margin:-26px 0 0 -26px;
+    background:linear-gradient(135deg, var(--gold-1), var(--gold-2) 50%, var(--gold-3));
+    transform:rotate(45deg);
+    border:2px solid var(--bg-1);
+    box-shadow:
+      0 0 0 3px var(--gold-2),
+      0 0 0 4px var(--bg-1),
+      0 4px 10px rgba(0,0,0,0.5);
+    z-index:5;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hub::before {
+    content:'';
+    transform:rotate(-45deg);
+    width:18px; height:18px;
+    background:radial-gradient(circle, var(--rose-1), var(--ultra));
+    border-radius:50%;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  .controls { margin-top:38px; text-align:center; }
+  .spin-btn {
+    background:transparent;
+    border:1px solid var(--gold-2);
+    color:var(--gold-1);
+    padding:14px 42px;
+    border-radius:0;
+    font-family:'Playfair Display', serif;
+    font-size:14px;
+    letter-spacing:0.3em;
+    text-transform:uppercase;
+    cursor:pointer;
+    position:relative;
+    transition:all 0.2s;
+  }
+  .spin-btn::before, .spin-btn::after {
+    content:'';
+    position:absolute;
+    width:6px; height:6px;
+    border:1px solid var(--gold-2);
+    background:var(--bg-1);
+  }
+  .spin-btn::before { top:-4px; left:-4px; }
+  .spin-btn::after  { bottom:-4px; right:-4px; }
+  .spin-btn:hover { background:rgba(212,184,90,0.08); }
+  .spin-btn:active { transform:translateY(1px); }
+  .spin-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+  .result {
+    margin-top:28px;
+    min-height:92px;
+    padding:20px;
+    background:linear-gradient(135deg, var(--navy-2), var(--navy-1));
+    border:1px solid var(--gold-3);
+    border-radius:0;
+    text-align:center;
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity 0.4s, transform 0.4s;
+    position:relative;
+  }
+  .result::before, .result::after {
+    content:'';
+    position:absolute;
+    width:8px; height:8px;
+    background:var(--gold-2);
+    transform:rotate(45deg);
+  }
+  .result::before { top:-5px; left:50%; margin-left:-4px; }
+  .result::after  { bottom:-5px; left:50%; margin-left:-4px; }
+  .result.on { opacity:1; transform:translateY(0); }
+  .result .lab {
+    font-size:10px;
+    letter-spacing:0.3em;
+    color:var(--rose-1);
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .result .prize {
+    font-family:'Playfair Display', serif;
+    font-size:22px;
+    font-weight:500;
+    color:var(--gold-1);
+    letter-spacing:0.06em;
+  }
+  .result .prize .em { font-size:26px; margin-right:8px; vertical-align:middle; }
+  .result .sub { font-size:13px; color:var(--muted); margin-top:6px; font-style:italic; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>La Roue</h1>
+  <div class="sub">Stile C · Art Déco</div>
+</header>
+
+<div class="stage">
+  <div class="wheel-wrap">
+    <div class="pointer"></div>
+    <div class="ring"></div>
+    <div class="rays" id="rays"></div>
+    <div class="wheel" id="wheel"></div>
+    <div class="hub"></div>
+  </div>
+
+  <div class="controls">
+    <button class="spin-btn" id="spin">Tourner</button>
+  </div>
+
+  <div class="result" id="result">
+    <div class="lab">Résultat</div>
+    <div class="prize"><span class="em" id="resEm">·</span><span id="resLbl">—</span></div>
+    <div class="sub" id="resSub"></div>
+  </div>
+</div>
+
+<script>
+  const SET = [
+    { e:'💋', k:'segreto',   l:'Apri un segreto',    sub:'Apri una busta segreta',                     w:1 },
+    { e:'🔥', k:'piccante',  l:'Piccante',           sub:'Una proposta piccante da provare stasera',   w:1 },
+    { e:'💌', k:'desiderio', l:'Pesca una fantasia', sub:'Dalla bacheca delle cose da provare',        w:1 },
+    { e:'🧣', k:'bendare',   l:'Bendare',            sub:'X minuti bendato/a, l\'altro decide',        w:1 },
+    { e:'🃏', k:'wild',      l:'Carta wild',         sub:'L\'altro/a decide cosa farti per 24h',       w:1 },
+    { e:'💆', k:'massaggio', l:'Massaggio',          sub:'10 minuti, dove preferisce chi ha vinto',    w:1 },
+    { e:'✖️', k:'doppio',    l:'Prossimo x2',        sub:'Il prossimo premio vale doppio',             w:0.5, rare:'rare' },
+    { e:'📸', k:'polaroid',  l:'Foto osè 24h',       sub:'Inviane una al partner entro 24 ore',        w:1 },
+    { e:'🎟️', k:'lampo',    l:'Buono lampo',        sub:'Un buono pescato a sorpresa, vale 24h',      w:1 },
+    { e:'👅', k:'orale',     l:'Servizio orale',     sub:'Quando vuole chi ha vinto',                  w:1 },
+    { e:'🔁', k:'ancora',    l:'Gira ancora',        sub:'Tiro extra concesso',                        w:1 },
+    { e:'⭐', k:'jolly',     l:'Jolly',              sub:'Scegli tu il premio',                        w:1 },
+    { e:'💎', k:'jackpot',   l:'Jackpot',            sub:'Uno spicchio a testa: 2 premi totali',       w:0.5, rare:'ultra' },
+  ];
+
+  const NORMAL_COLORS = ['var(--navy-1)','var(--rose-2)','var(--navy-2)','var(--rose-1)'];
+  const COLOR_RARE = 'var(--rare)';
+  const COLOR_ULTRA = 'var(--ultra)';
+
+  const wheelEl  = document.getElementById('wheel');
+  const raysEl   = document.getElementById('rays');
+  const spinBtn  = document.getElementById('spin');
+  const resEl    = document.getElementById('result');
+  const resEm    = document.getElementById('resEm');
+  const resLbl   = document.getElementById('resLbl');
+  const resSub   = document.getElementById('resSub');
+
+  const sumW = SET.reduce((s,x)=>s+x.w, 0);
+  const degPerUnit = 360 / sumW;
+  const slice0 = SET[0].w * degPerUnit;
+
+  function colorsFor(set) {
+    let nIdx = 0;
+    return set.map(item => {
+      if (item.rare === 'rare')  return COLOR_RARE;
+      if (item.rare === 'ultra') return COLOR_ULTRA;
+      const c = NORMAL_COLORS[nIdx % NORMAL_COLORS.length];
+      nIdx++;
+      return c;
+    });
+  }
+  const COLORS = colorsFor(SET);
+
+  (function build() {
+    const stops = [];
+    let acc = 0;
+    for (let i = 0; i < SET.length; i++) {
+      const slice = SET[i].w * degPerUnit;
+      stops.push(`${COLORS[i]} ${acc.toFixed(4)}deg ${(acc+slice).toFixed(4)}deg`);
+      acc += slice;
+    }
+    const startOffset = (-90 - slice0/2).toFixed(4);
+    wheelEl.style.background = `conic-gradient(from ${startOffset}deg, ${stops.join(', ')})`;
+
+    // dividers oro sottile + bordi più scuri ai lati per profondità deco
+    acc = 0;
+    for (let i = 0; i < SET.length; i++) {
+      const slice = SET[i].w * degPerUnit;
+      acc += slice;
+      const boundaryTop = acc - slice0/2;
+      const d = document.createElement('div');
+      d.style.cssText = `position:absolute;top:50%;left:50%;width:1.5px;height:158px;background:var(--gold-2);transform-origin:top center;transform:translateX(-0.75px) rotate(${(boundaryTop+180).toFixed(4)}deg);pointer-events:none;z-index:3;opacity:0.85;`;
+      wheelEl.appendChild(d);
+    }
+
+    // emoji
+    const R = 124;
+    acc = 0;
+    for (let i = 0; i < SET.length; i++) {
+      const item = SET[i];
+      const slice = item.w * degPerUnit;
+      const center = acc + slice/2;
+      const angTop = center - slice0/2;
+      const rad = (angTop - 90) * Math.PI / 180;
+      const x = Math.cos(rad) * R;
+      const y = Math.sin(rad) * R;
+      const em = document.createElement('div');
+      em.className = 'emoji ' + (item.rare || '');
+      em.textContent = item.e;
+      em.style.transform = `translate(${x}px, ${y}px)`;
+      wheelEl.appendChild(em);
+      acc += slice;
+    }
+
+    // raggi deco tra i due anelli (24 raggi)
+    for (let i = 0; i < 24; i++) {
+      const r = document.createElement('div');
+      r.className = 'ray';
+      r.style.transform = `rotate(${i * 15}deg) translateY(-164px)`;
+      raysEl.appendChild(r);
+    }
+  })();
+
+  let spinning = false;
+  let totalRotation = 0;
+
+  function spin() {
+    if (spinning) return;
+    spinning = true;
+    wheelEl.classList.add('spinning');
+    spinBtn.disabled = true;
+    resEl.classList.remove('on');
+
+    let r = Math.random() * sumW;
+    let chosen = 0;
+    for (let i = 0; i < SET.length; i++) {
+      r -= SET[i].w;
+      if (r <= 0) { chosen = i; break; }
+    }
+
+    let acc = 0;
+    for (let i = 0; i < chosen; i++) acc += SET[i].w * degPerUnit;
+    const sliceChosen = SET[chosen].w * degPerUnit;
+    const chosenCenterFromTop = acc + sliceChosen/2 - slice0/2;
+
+    const turns = 5 + Math.floor(Math.random()*3);
+    const target = turns * 360 + (360 - chosenCenterFromTop);
+    totalRotation += target;
+    wheelEl.style.transform = `rotate(${totalRotation}deg)`;
+
+    setTimeout(() => {
+      spinning = false;
+      wheelEl.classList.remove('spinning');
+      spinBtn.disabled = false;
+      const item = SET[chosen];
+      resEm.textContent  = item.e;
+      resLbl.textContent = item.l;
+      resSub.textContent = item.sub;
+      resEl.classList.add('on');
+    }, 4700);
+  }
+
+  spinBtn.addEventListener('click', spin);
+  wheelEl.addEventListener('click', spin);
+</script>
+</body>
+</html>
