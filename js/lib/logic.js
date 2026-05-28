@@ -376,25 +376,25 @@ export function giriEleggibile(movimenti, userId, now = new Date()) {
 
 // ---- RUOTA (fette, estrazione, storico premi) ----
 
-// Le 8 fette, in ordine sulla ruota. peso = probabilità relativa (tutti 1 = uniforme).
+// Le 7 fette, in ordine sulla ruota. peso = probabilità relativa (tutti 1 = uniforme).
+// Nota: la fetta 'tod' (Carta Obbligo o Verità) è stata rimossa il 2026-05-28
+// perché il gioco delle carte non è più presente nell'app.
 export const FETTE = [
   { key: 'segreto',   emoji: '💋', label: 'Apri un segreto',         peso: 1, differito: false },
   { key: 'piccante',  emoji: '🔥', label: 'Proposta piccante',       peso: 1, differito: false },
   { key: 'buono',     emoji: '🎁', label: 'Buono a sorpresa',        peso: 1, differito: true },
   { key: 'desiderio', emoji: '💌', label: 'Pesca un desiderio',      peso: 1, differito: true },
-  { key: 'tod',       emoji: '🃏', label: 'Carta Obbligo o Verità',  peso: 1, differito: false },
   { key: 'jolly',     emoji: '⭐', label: 'Jolly: scegli tu',        peso: 1, differito: false },
   { key: 'dadi',      emoji: '🎲', label: 'Tiro di dadi',            peso: 1, differito: false },
   { key: 'ancora',    emoji: '🔁', label: 'Gira ancora',             peso: 1, differito: false },
 ];
 
 // Copia di FETTE con i pesi delle fette condizionali azzerati quando manca la condizione.
-// Le fette restano tutte e 8 (la ruota ha geometria fissa).
-export function fetteRuota({ haSegreti, haCarte, haProposte, haBuoni }) {
+// Le fette restano tutte e 7 (la ruota ha geometria fissa).
+export function fetteRuota({ haSegreti, haProposte, haBuoni }) {
   return FETTE.map(f => {
     let peso = f.peso;
     if (f.key === 'segreto'  && !haSegreti)  peso = 0;
-    if (f.key === 'tod'      && !haCarte)    peso = 0;
     if (f.key === 'piccante' && !haProposte) peso = 0;
     if (f.key === 'buono'    && !haBuoni)    peso = 0;
     return { ...f, peso };

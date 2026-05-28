@@ -84,42 +84,40 @@ import {
   FETTE, fetteRuota, estraiFetta, ultimiPremi,
 } from '../js/lib/logic.js';
 
-test('FETTE sono 8, con le chiavi attese', () => {
-  assert.equal(FETTE.length, 8);
+test('FETTE sono 7, con le chiavi attese', () => {
+  assert.equal(FETTE.length, 7);
   assert.deepEqual(FETTE.map(f => f.key),
-    ['segreto','piccante','buono','desiderio','tod','jolly','dadi','ancora']);
+    ['segreto','piccante','buono','desiderio','jolly','dadi','ancora']);
 });
 
 test('fetteRuota azzera le condizionali quando manca la condizione', () => {
-  const f = fetteRuota({ haSegreti: false, haCarte: false, haProposte: false, haBuoni: false });
-  assert.equal(f.length, 8);
+  const f = fetteRuota({ haSegreti: false, haProposte: false, haBuoni: false });
+  assert.equal(f.length, 7);
   const peso = k => f.find(x => x.key === k).peso;
   assert.equal(peso('segreto'), 0);
-  assert.equal(peso('tod'), 0);
   assert.equal(peso('piccante'), 0);
   assert.equal(peso('buono'), 0);
   assert.equal(peso('dadi'), 1); // non condizionale resta a 1
 });
 
 test('fetteRuota lascia attive le condizionali quando la condizione c\'è', () => {
-  const f = fetteRuota({ haSegreti: true, haCarte: true, haProposte: true, haBuoni: true });
+  const f = fetteRuota({ haSegreti: true, haProposte: true, haBuoni: true });
   assert.equal(f.find(x => x.key === 'segreto').peso, 1);
-  assert.equal(f.find(x => x.key === 'tod').peso, 1);
+  assert.equal(f.find(x => x.key === 'piccante').peso, 1);
 });
 
 test('estraiFetta non estrae mai una fetta a peso 0', () => {
-  const fette = fetteRuota({ haSegreti: false, haCarte: false, haProposte: true, haBuoni: true });
+  const fette = fetteRuota({ haSegreti: false, haProposte: true, haBuoni: true });
   for (let i = 0; i < 100; i++) {
     const r = estraiFetta(fette, () => i / 100);
     assert.notEqual(r.fetta.key, 'segreto');
-    assert.notEqual(r.fetta.key, 'tod');
   }
 });
 
 test('estraiFetta con rnd deterministico atterra sulla fetta attesa', () => {
-  const fette = FETTE.map(f => ({ ...f, peso: 1 })); // 8 fette uguali
+  const fette = FETTE.map(f => ({ ...f, peso: 1 })); // 7 fette uguali
   assert.equal(estraiFetta(fette, () => 0).indice, 0);        // primo spicchio
-  assert.equal(estraiFetta(fette, () => 0.99).indice, 7);     // ultimo spicchio
+  assert.equal(estraiFetta(fette, () => 0.99).indice, 6);     // ultimo spicchio
 });
 
 test('estraiFetta restituisce null se tutti i pesi sono 0', () => {

@@ -13,19 +13,31 @@ export function fotoEditor(ctx, { contesto, refId }) {
   const pending = [];
   const wrap = mk('div');
   const file = mk('input', 'file-row'); file.type = 'file'; file.accept = 'image/*'; file.multiple = true;
+  // Etichetta persistente che ricorda quante foto sono pronte da caricare:
+  // il file input nativo si svuota dopo onchange (così si possono ri-selezionare
+  // gli stessi file), quindi senza questa label sembra "nessun file selezionato".
+  const pendingLbl = mk('div', 'pending-foto-lbl');
   const thumbs = mk('div', 'thumbs');
   if (refId) loadThumbsInto(ctx, { contesto, refId }, thumbs, true).catch(err => toast('Errore foto: ' + err.message, 'err'));
+  function refreshLbl() {
+    pendingLbl.textContent = pending.length
+      ? '📷 ' + pending.length + ' ' + (pending.length === 1 ? 'foto pronta' : 'foto pronte') + ' da caricare'
+      : '';
+  }
   file.onchange = () => {
     for (const f of file.files) if (!pending.some(x => x.name === f.name && x.size === f.size)) pending.push(f);
-    file.value = ''; toast(pending.length + ' foto pronte da caricare');
+    file.value = '';
+    refreshLbl();
+    toast(pending.length + ' foto pronte da caricare');
   };
-  add(wrap, file, thumbs);
+  add(wrap, file, pendingLbl, thumbs);
   async function flush(finalRefId) {
     for (const f of pending) {
       const path = fotoPath(ctx.me.couple_id, contesto, finalRefId, f.name);
       await uploadFoto(ctx.client, { coupleId: ctx.me.couple_id, autoreId: ctx.me.id, contesto, refId: finalRefId, file: f, path });
     }
     pending.length = 0;
+    refreshLbl();
   }
   return { el: wrap, flush };
 }

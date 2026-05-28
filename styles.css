@@ -17,10 +17,13 @@ body{position:fixed;inset:0;font-family:Georgia,"Times New Roman",serif;color:va
 .topbar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
   padding:max(14px,env(safe-area-inset-top)) 16px 10px;margin:0;}
 
-.viewport{flex:1 1 auto;position:relative;overflow:hidden;touch-action:pan-y;}
+/* touch-action: il viewport e le pagine usano `manipulation` per permettere a JS
+   di intercettare lo swipe orizzontale (pager) tramite preventDefault, lasciando
+   al browser lo scroll verticale interno e bloccando il double-tap zoom. */
+.viewport{flex:1 1 auto;position:relative;overflow:hidden;touch-action:manipulation;}
 .track{display:flex;height:100%;will-change:transform;}
 .page{flex:0 0 100%;width:100%;height:100%;overflow-y:auto;overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;
+  -webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:manipulation;
   padding:6px 16px calc(96px + env(safe-area-inset-bottom));scrollbar-width:none;}
 .page::-webkit-scrollbar{display:none;}
 .brand{font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);}
@@ -284,7 +287,11 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
 .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
 .thumb .rm{position:absolute;top:2px;right:2px;background:rgba(8,2,5,.8);color:#fff;
   width:22px;height:22px;border-radius:50%;border:none;cursor:pointer;font-size:13px;line-height:1;}
-.file-row{margin:4px 0 12px;}
+.file-row{margin:4px 0 4px;}
+/* etichetta "📷 N foto pronte" sotto al file input — invisibile finché vuota */
+.pending-foto-lbl{font-size:12.5px;color:var(--gold);margin:0 0 10px;min-height:14px;
+  font-family:Arial,Helvetica,sans-serif;letter-spacing:.2px;}
+.pending-foto-lbl:empty{margin:0;min-height:0;}
 
 /* ===== Buoni ===== */
 .bemoji{font-size:30px;line-height:1;}

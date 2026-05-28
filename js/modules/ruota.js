@@ -7,15 +7,15 @@ import {
 import {
   listGiri, accreditaGiro, spendiGiro,
   listRuotaContenuti, seedRuotaContenuti, addRuotaContenuto, updateRuotaContenuto, deleteRuotaContenuto,
-  listBuoni, addBuono, listCarte, listDesideri,
+  listBuoni, addBuono, listDesideri,
 } from '../store.js';
 
 let ctx = null;        // { client, me, panel }
-let state = null;      // { mov, cont, buoni, carte, proposte, buoniS, desideri, saldo, elegg, fette }
+let state = null;      // { mov, cont, buoni, proposte, buoniS, desideri, saldo, elegg, fette }
 let busy = false;
 let rot = 0;           // rotazione cumulativa della ruota (gradi)
 
-const SLICE = 360 / 8;
+const SLICE = 360 / 7;
 
 export async function renderRuota(context) {
   ctx = context;
@@ -37,18 +37,16 @@ export async function renderRuota(context) {
   }
 
   const buoni = await listBuoni(client, me.couple_id);
-  const carte = await listCarte(client, me.couple_id).catch(() => []);
   const desideri = await listDesideri(client, me.couple_id).catch(() => []);
   const proposte = proposteDa(cont), buoniS = buoniSorpresaDa(cont);
   const fette = fetteRuota({
     haSegreti: segretiDaRivelare(buoni, me.id).length > 0,
-    haCarte: carte.length > 0,
     haProposte: proposte.length > 0,
     haBuoni: buoniS.length > 0,
   });
 
   state = {
-    mov, cont, buoni, carte, proposte, buoniS, desideri,
+    mov, cont, buoni, proposte, buoniS, desideri,
     saldo: saldoGiri(mov, me.id), elegg: giriEleggibile(mov, me.id), fette,
   };
   draw();
@@ -194,11 +192,6 @@ async function risolvi(fetta, ui) {
       const dp = (state.desideri || []).filter(d => d.stato === 'da_provare');
       const d = pescaContenuto(dp);
       ui.body.textContent = d ? `Stasera: "${d.testo}".` : 'Aggiungi qualche desiderio da provare!';
-      break;
-    }
-    case 'tod': {
-      const c = pescaContenuto(state.carte);
-      ui.body.textContent = c ? `${c.tipo === 'verita' ? 'Verità' : 'Sfida'}: ${c.testo}` : 'Aggiungi carte in Obbligo o Verità.';
       break;
     }
     case 'dadi':
