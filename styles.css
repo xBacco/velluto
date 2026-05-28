@@ -39,9 +39,17 @@ body{position:fixed;inset:0;font-family:Georgia,"Times New Roman",serif;color:va
   display:flex;gap:4px;background:rgba(13,3,7,.86);backdrop-filter:blur(10px);
   border:1px solid rgba(212,168,108,.3);border-radius:22px;padding:8px;
   box-shadow:0 12px 30px rgba(0,0,0,.55);touch-action:pan-y;user-select:none;}
-.nav button{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:7px;
+.nav button{position:relative;flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:7px;
   font-size:21px;padding:12px 4px;border-radius:15px;color:#c8a89c;min-height:44px;cursor:pointer;
   transition:flex .38s cubic-bezier(.34,1.15,.4,1),background .38s,color .38s,transform .38s;}
+.nav button.holding{background:rgba(212,168,108,.15);}
+.nav button.holding::after{content:'';position:absolute;inset:-3px;border:2px solid var(--gold);
+  border-radius:18px;pointer-events:none;opacity:0;
+  animation:navHoldRing .5s ease-out forwards;}
+@keyframes navHoldRing{
+  0%{opacity:0;transform:scale(.7);}
+  100%{opacity:.9;transform:scale(1);}
+}
 .nav button.on{flex:2.5 1 0;color:#fff;
   background:linear-gradient(180deg,rgba(122,21,51,.9),rgba(92,16,38,.6));
   box-shadow:0 5px 18px rgba(122,21,51,.55);transform:translateY(-3px);}
@@ -1595,3 +1603,30 @@ body.game-modal-open .strip-ov{top:calc(env(safe-area-inset-top,0px) + 66px);}
   font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;
   color:#d4a86c;margin:14px 4px 8px;opacity:.85;
 }
+
+/* Quick-add fantasia: popover ancorato al tab Fantasie, aperto da long-press sulla nav */
+.qpop-scrim{position:fixed;inset:0;z-index:70;background:rgba(8,2,5,.5);
+  backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .25s;}
+.qpop-scrim.on{opacity:1;pointer-events:auto;}
+.qpop{position:fixed;z-index:71;
+  background:linear-gradient(180deg,#2a0813,#160409);
+  border:1px solid var(--gold);border-radius:18px;padding:12px 14px 14px;
+  box-shadow:0 18px 38px rgba(0,0,0,.6),0 0 0 4px rgba(8,2,5,.55);
+  opacity:0;transform:translateY(8px) scale(.94);
+  transform-origin:var(--arrow-x,50%) 100%;
+  transition:opacity .25s,transform .28s cubic-bezier(.17,.67,.18,1);
+  pointer-events:none;}
+.qpop.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
+.qpop::after{content:'';position:absolute;bottom:-7px;left:var(--arrow-x,50%);
+  transform:translateX(-50%) rotate(45deg);
+  width:14px;height:14px;background:#160409;
+  border-right:1px solid var(--gold);border-bottom:1px solid var(--gold);}
+.qpop-lbl{font-family:Arial;font-size:10px;color:var(--gold);letter-spacing:1.2px;
+  text-transform:uppercase;margin-bottom:6px;}
+.qpop-input{width:100%;background:rgba(8,2,5,.6);border:1px solid rgba(212,168,108,.2);
+  border-radius:11px;padding:11px 13px;outline:none;
+  font-family:Georgia,"Times New Roman",serif;font-size:14.5px;color:var(--cream);}
+.qpop-input::placeholder{color:#7a6155;font-style:italic;}
+.qpop-input:focus{border-color:var(--gold);}
+.qpop-row{display:flex;gap:8px;margin-top:9px;}
+.qpop-row .btn{flex:1;}
