@@ -385,11 +385,15 @@ function renderStage(animate) {
   if (!stage) return;
   clear(stage);
   for (let i = 0; i < 5; i++) {
+    const wrap = mk('div', 'yz-die-wrap');
     const d = makeDie(dice[i], false, held[i]);
     if (animate && !held[i]) {
       d.classList.add('rolling');
-      d.style.setProperty('--from-x', ((Math.random() * 180 - 90) | 0) + 'px');
-      d.style.setProperty('--from-r', ((Math.random() * 720 - 360) | 0) + 'deg');
+      const delay = (Math.random() * 180) | 0;
+      d.style.animationDelay = delay + 'ms';
+      d.style.setProperty('--h', (160 + (Math.random() * 60 | 0)) + 'px');
+      d.style.setProperty('--r', ((Math.random() * 720 - 360) | 0) + 'deg');
+      d.style.setProperty('--x', ((Math.random() * 20 - 10) | 0) + 'px');
     }
     d.onclick = () => {
       if (rolling) return;
@@ -399,7 +403,13 @@ function renderStage(animate) {
       renderStage(false);
       updateCtrls();
     };
-    stage.appendChild(d);
+    wrap.appendChild(d);
+    if (animate && !held[i]) {
+      const sh = mk('div', 'yz-die-shadow');
+      sh.style.animationDelay = d.style.animationDelay;
+      wrap.appendChild(sh);
+    }
+    stage.appendChild(wrap);
   }
 }
 
@@ -442,7 +452,7 @@ function roll() {
     renderScheda();
     renderStrip();
     if (tiriUsati >= 3) setTimeout(closeTable, 600);
-  }, 1000);
+  }, 1500);
 }
 
 // ---------------------------------------------------------------------------

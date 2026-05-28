@@ -916,12 +916,33 @@ body.pudica [data-spicy].revealed{filter:none;}
 .yz-die .pip{width:100%;height:100%;border-radius:50%;background:transparent;}
 .yz-die .pip.on{background:radial-gradient(circle at 35% 30%,#3d1820,#160409 80%);
   box-shadow:inset 0 1px 1px rgba(0,0,0,.5);}
-.yz-die.rolling{animation:yzDiceRoll .95s cubic-bezier(.18,.7,.25,1.05) forwards;}
+.yz-die.rolling{animation:yzDiceRoll 1.25s linear forwards;transform-origin:50% 100%;
+  --h:180px;--r:540deg;--x:0px;}
 @keyframes yzDiceRoll{
-  0%   {transform:translate(var(--from-x),0) rotate(var(--from-r)) scale(1);}
-  40%  {transform:translate(calc(var(--from-x) * .4),-26px) rotate(calc(var(--from-r) * .55)) scale(1.07);}
-  75%  {transform:translate(calc(var(--from-x) * .12),7px) rotate(calc(var(--from-r) * .15)) scale(.98);}
-  100% {transform:translate(0,0) rotate(0) scale(1);}
+  0%   {transform:translate(var(--x),calc(var(--h) * -1)) rotate(var(--r)) scale(1,1);}
+  26%  {transform:translate(calc(var(--x) * .35),0) rotate(calc(var(--r) * .55)) scale(1.18,.78);}
+  29%  {transform:translate(calc(var(--x) * .32),0) rotate(calc(var(--r) * .55)) scale(1.18,.78);}
+  48%  {transform:translate(calc(var(--x) * .18),-78px) rotate(calc(var(--r) * .25)) scale(.95,1.06);}
+  64%  {transform:translate(calc(var(--x) * .08),0) rotate(calc(var(--r) * .12)) scale(1.12,.85);}
+  78%  {transform:translate(calc(var(--x) * .04),-32px) rotate(calc(var(--r) * .06)) scale(.98,1.03);}
+  88%  {transform:translate(0,0) rotate(calc(var(--r) * .02)) scale(1.06,.93);}
+  95%  {transform:translate(0,-9px) rotate(0) scale(1,1.01);}
+  100% {transform:translate(0,0) rotate(0) scale(1,1);}
+}
+.yz-die-wrap{position:relative;display:inline-flex;}
+.yz-die-shadow{position:absolute;left:50%;bottom:-12px;width:54px;height:14px;
+  transform:translateX(-50%) scale(1);
+  background:radial-gradient(50% 100% at 50% 50%,rgba(0,0,0,.55),transparent 75%);
+  opacity:.55;pointer-events:none;}
+.yz-die.rolling ~ .yz-die-shadow{animation:yzDiceShadow 1.25s linear forwards;}
+@keyframes yzDiceShadow{
+  0%   {transform:translateX(-50%) scale(.42,.4);opacity:.18;}
+  26%  {transform:translateX(-50%) scale(1.25,1);opacity:.7;}
+  48%  {transform:translateX(-50%) scale(.68,.55);opacity:.32;}
+  64%  {transform:translateX(-50%) scale(1.15,.95);opacity:.65;}
+  78%  {transform:translateX(-50%) scale(.85,.75);opacity:.42;}
+  88%  {transform:translateX(-50%) scale(1.08,.92);opacity:.6;}
+  100% {transform:translateX(-50%) scale(1,1);opacity:.55;}
 }
 
 /* scheda + caselle */
