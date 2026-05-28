@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup · Nuova fantasia — 3 varianti minimal (v3)</title>
+<style>
+  :root{
+    --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
+    --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a;
+    --spin:cubic-bezier(.17,.67,.18,1);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Georgia,"Times New Roman",serif;color:var(--cream);min-height:100vh;
+    background:linear-gradient(170deg,#0a0205,#150410);padding:28px 16px 80px;}
+
+  .pagehd{text-align:center;max-width:980px;margin:0 auto 30px;}
+  .pagehd h1{margin:0 0 8px;font-size:22px;color:var(--gold-soft);font-weight:normal;letter-spacing:.5px;}
+  .pagehd p{margin:0;font-family:Arial;font-size:13px;color:#9d8478;line-height:1.6;}
+
+  .grid{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;align-items:flex-start;}
+  .item{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .vtag{font-family:Arial;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);}
+  .vtitle{font-size:18px;color:var(--gold-soft);}
+  .vsub{font-family:Arial;font-size:11.5px;color:#9d8478;max-width:320px;text-align:center;line-height:1.5;}
+
+  /* PHONE */
+  .phone{width:340px;height:720px;position:relative;
+    border:9px solid #0a0205;border-radius:38px;overflow:hidden;
+    box-shadow:0 24px 56px rgba(0,0,0,.6),0 0 0 1px rgba(212,168,108,.18);
+    background:radial-gradient(120% 70% at 50% -5%,#3d0a1a 0,transparent 55%),
+               linear-gradient(170deg,var(--bg),var(--bg2));}
+
+  /* page top bar mock (status + titolo) */
+  .ptop{position:absolute;top:0;left:0;right:0;height:46px;padding:10px 16px 0;
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:Arial;font-size:10.5px;color:#a87e6a;letter-spacing:.5px;pointer-events:none;}
+
+  /* page (sotto lo status bar) — usato per varianti G e I */
+  .page{position:absolute;inset:46px 0 70px;padding:6px 16px 14px;overflow:auto;display:flex;flex-direction:column;}
+  .page::-webkit-scrollbar{width:6px;}
+  .page::-webkit-scrollbar-thumb{background:rgba(212,168,108,.2);border-radius:3px;}
+
+  .ptitle{font-size:22px;color:var(--gold-soft);margin:8px 2px 4px;font-weight:normal;letter-spacing:.4px;}
+  .psub{font-family:Arial;font-size:11.5px;color:#9d8478;margin:0 2px 14px;line-height:1.5;}
+
+  /* mock list card (idea già salvata) */
+  .card{background:rgba(122,21,51,.16);border:1px solid rgba(212,168,108,.18);
+    border-radius:13px;padding:11px 13px;margin-bottom:8px;font-family:Georgia;
+    font-size:14px;line-height:1.4;color:var(--cream);position:relative;}
+  .card .meta{font-family:Arial;font-size:10px;color:#7a6155;margin-top:5px;letter-spacing:.4px;}
+
+  /* nav bar mock in fondo */
+  .pnav{position:absolute;bottom:0;left:0;right:0;height:54px;background:linear-gradient(180deg,rgba(8,2,5,.7),rgba(8,2,5,.95));
+    border-top:1px solid rgba(212,168,108,.15);display:flex;justify-content:space-around;align-items:center;
+    font-family:Arial;font-size:10px;color:#a87e6a;}
+  .pnav .nb{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.7;}
+  .pnav .nb.on{color:var(--gold-soft);opacity:1;}
+  .pnav .nb .e{font-size:16px;line-height:1;}
+
+  /* FAB tondo + */
+  .fab{position:absolute;right:14px;bottom:66px;width:54px;height:54px;border-radius:50%;
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#11040a;
+    border:0;font-size:28px;font-weight:bold;cursor:pointer;
+    box-shadow:0 8px 20px rgba(0,0,0,.45),0 0 0 1px rgba(8,2,5,.4);line-height:1;}
+  .fab:active{transform:translateY(1px);}
+
+  /* ============ VARIANTE G — Quick capture inline ============ */
+  .g-cap{display:flex;align-items:center;gap:8px;
+    background:rgba(8,2,5,.5);border:1px solid rgba(212,168,108,.22);
+    border-radius:14px;padding:5px 6px 5px 12px;margin-bottom:14px;
+    transition:border-color .25s;}
+  .g-cap.focused{border-color:var(--gold);box-shadow:0 0 14px rgba(212,168,108,.15);}
+  .g-cap .em{font-size:16px;flex:0 0 auto;opacity:.6;}
+  .g-cap.focused .em{opacity:1;}
+  .g-cap input{flex:1 1 auto;background:transparent;border:0;outline:0;
+    font-family:Georgia;font-size:14.5px;color:var(--cream);padding:8px 0;}
+  .g-cap input::placeholder{color:#7a6155;font-style:italic;}
+  .g-cap .add{font-family:Arial;font-size:11.5px;color:#11040a;
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));border:0;
+    border-radius:10px;padding:7px 12px;cursor:pointer;font-weight:bold;letter-spacing:.4px;
+    opacity:0;transform:scale(.9);pointer-events:none;transition:all .25s;}
+  .g-cap.has-text .add{opacity:1;transform:scale(1);pointer-events:auto;}
+  .g-hint{font-family:Arial;font-size:10.5px;color:#7a6155;text-align:center;
+    margin:-6px 0 12px;letter-spacing:.4px;opacity:0;transition:opacity .25s;}
+  .g-cap.focused + .g-hint{opacity:1;}
+  .g-toast{position:absolute;top:88px;left:50%;transform:translateX(-50%);
+    background:rgba(40,12,16,.94);border:1px solid var(--gold);color:var(--gold-soft);
+    font-family:Arial;font-size:12px;padding:8px 16px;border-radius:18px;
+    pointer-events:none;opacity:0;transition:opacity .3s, transform .3s;
+    box-shadow:0 6px 18px rgba(0,0,0,.5);}
+  .g-toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @keyframes slideIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}
+  .card.new{animation:slideIn .35s ease;border-color:var(--gold);
+    box-shadow:0 0 0 1px rgba(212,168,108,.25);}
+
+  /* ============ VARIANTE H — Sheet minimal ============ */
+  .h-scrim{position:absolute;inset:0;background:rgba(0,0,0,.5);
+    backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .35s;}
+  .h-scrim.on{opacity:1;pointer-events:auto;}
+  .h-sheet{position:absolute;left:0;right:0;bottom:0;
+    background:linear-gradient(175deg,#1d0610,#11040a);
+    border-radius:22px 22px 0 0;
+    box-shadow:0 -8px 32px rgba(0,0,0,.55), 0 -1px 0 rgba(212,168,108,.18) inset;
+    transform:translateY(110%);transition:transform .42s var(--spin);
+    padding:14px 18px 24px;}
+  .h-sheet.on{transform:translateY(0);}
+  .h-grab{width:42px;height:4px;background:rgba(212,168,108,.4);border-radius:3px;margin:0 auto 14px;}
+  .h-ta{width:100%;font-family:Georgia;font-size:15px;color:var(--cream);
+    background:rgba(8,2,5,.55);border:1px solid rgba(212,168,108,.22);
+    border-radius:14px;padding:14px 14px;resize:none;line-height:1.5;min-height:120px;
+    outline:none;}
+  .h-ta::placeholder{color:#7a6155;font-style:italic;}
+  .h-ta:focus{border-color:var(--gold);}
+  .h-btn{width:100%;font-family:Arial;font-size:15px;color:#11040a;
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));
+    border:0;border-radius:14px;padding:14px;margin-top:10px;cursor:pointer;font-weight:bold;
+    letter-spacing:.4px;transition:opacity .25s;}
+  .h-btn:disabled{opacity:.35;cursor:not-allowed;}
+
+  /* tastiera mock per H (per dare l'idea di focus automatico) */
+  .keyboard{position:absolute;left:0;right:0;bottom:0;height:212px;
+    background:linear-gradient(180deg,#3a2a36,#262026);
+    border-top:1px solid rgba(0,0,0,.4);
+    padding:8px 6px;display:none;}
+  .keyboard.on{display:block;}
+  .kb-row{display:flex;justify-content:center;gap:4px;margin-bottom:7px;}
+  .kb-key{flex:1;min-width:0;max-width:36px;height:32px;background:#5a4d56;
+    border-radius:5px;color:#fff;font-family:Arial;font-size:11px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 1px 0 rgba(0,0,0,.5);}
+  .kb-key.sp{flex:3;max-width:none;}
+  .kb-key.lg{flex:1.6;max-width:none;background:#4a4046;}
+  .kb-bar{height:4px;width:120px;background:#fff;border-radius:2px;margin:6px auto 0;opacity:.7;}
+
+  /* ============ VARIANTE I — Post-it bacheca ============ */
+  .i-board{position:relative;flex:1;background:
+    radial-gradient(circle at 20% 20%,#2a1810 0,transparent 35%),
+    radial-gradient(circle at 80% 70%,#1a0610 0,transparent 30%),
+    linear-gradient(170deg,#1a0a08,#0a0306);
+    border:1px solid rgba(212,168,108,.1);border-radius:14px;
+    padding:14px;overflow:hidden;
+    background-image:
+      radial-gradient(rgba(212,168,108,.07) 1px,transparent 1px),
+      radial-gradient(rgba(212,168,108,.04) 1px,transparent 1px);
+    background-size:18px 18px,9px 9px;background-position:0 0,9px 9px;}
+  .postit{position:absolute;padding:12px 12px 14px;width:130px;min-height:80px;
+    font-family:'Bradley Hand',cursive;font-size:13px;color:#3a2405;line-height:1.35;
+    box-shadow:2px 5px 10px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.45);
+    transform-origin:50% 0%;}
+  .postit::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+    width:22px;height:22px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,#c0364f,#7a1226 70%);
+    box-shadow:0 2px 4px rgba(0,0,0,.5),inset 0 -2px 4px rgba(0,0,0,.35);}
+  .pt-yellow{background:linear-gradient(160deg,#f0d770,#dbc04c);}
+  .pt-pink{background:linear-gradient(160deg,#f0a8c0,#dc8aa3);}
+  .pt-cream{background:linear-gradient(160deg,#f3e6cf,#e0c8a8);}
+  .pt-mint{background:linear-gradient(160deg,#b8e0c0,#94c8a3);}
+
+  /* postit nuovo (creation) */
+  .pt-new{position:absolute;top:50%;left:50%;width:180px;min-height:140px;
+    transform:translate(-50%,-50%) rotate(0deg) scale(.6);opacity:0;
+    z-index:10;transition:all .42s var(--spin);
+    background:linear-gradient(160deg,#f0d770,#dbc04c);
+    padding:18px 16px 18px;border-radius:2px;
+    box-shadow:0 18px 38px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.45);
+    font-family:'Bradley Hand',cursive;font-size:15px;color:#3a2405;}
+  .pt-new::before{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+    width:28px;height:28px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,#c0364f,#7a1226 70%);
+    box-shadow:0 2px 4px rgba(0,0,0,.5),inset 0 -2px 4px rgba(0,0,0,.35);}
+  .pt-new.on{transform:translate(-50%,-50%) rotate(-2deg) scale(1);opacity:1;}
+  .pt-new textarea{width:100%;height:90px;background:transparent;border:0;outline:none;resize:none;
+    font-family:'Bradley Hand',cursive;font-size:15px;color:#3a2405;line-height:1.4;}
+  .pt-new textarea::placeholder{color:rgba(58,36,5,.45);font-style:italic;}
+  .pt-new .pthint{font-family:Arial;font-size:9.5px;color:rgba(58,36,5,.55);
+    text-align:center;margin-top:6px;letter-spacing:.4px;text-transform:uppercase;}
+
+  .i-emptyhint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    font-family:Arial;font-size:11.5px;color:#7a6155;text-align:center;line-height:1.6;
+    pointer-events:none;opacity:1;transition:opacity .3s;}
+  .i-board.has-items .i-emptyhint{opacity:0;}
+
+  .i-scrim{position:absolute;inset:0;background:rgba(8,2,5,.55);
+    backdrop-filter:blur(1px);opacity:0;pointer-events:none;transition:opacity .35s;z-index:9;}
+  .i-scrim.on{opacity:1;pointer-events:auto;}
+</style>
+</head>
+<body>
+
+<div class="pagehd">
+  <h1>Nuova fantasia · 3 mockup minimal (v3)</h1>
+  <p>Pensati per il caso d'uso "scriviamole, non dimentichiamole".
+    Zero ceremony, zero categorie, zero step. Tre livelli di "semplicità".</p>
+</div>
+
+<div class="grid">
+
+  <!-- ============================================================
+       VARIANTE G — QUICK CAPTURE INLINE
+       Nessun modal, la pagina ha sempre l'input in cima.
+       ============================================================ -->
+  <div class="item">
+    <div class="vtag">Variante G</div>
+    <div class="vtitle">Quick capture inline</div>
+    <div class="vsub">Nessun modal. L'input è in cima alla pagina,
+      sempre. Tap, scrivi, invio → in lista. Zero attrito.</div>
+
+    <div class="phone" id="phoneG">
+      <div class="ptop"><span>9:41</span><span>●●●</span></div>
+      <div class="page">
+        <h2 class="ptitle">🔥 Fantasie</h2>
+        <p class="psub">Bacheca delle cose da provare.</p>
+
+        <div class="g-cap" id="gCap">
+          <span class="em">＋</span>
+          <input id="gInp" placeholder="Aggiungi una fantasia…">
+          <button class="add" id="gAdd">Aggiungi</button>
+        </div>
+        <div class="g-hint">Invio per aggiungere</div>
+
+        <div class="g-toast" id="gToast">✓ Aggiunta</div>
+
+        <div id="gList">
+          <div class="card">Una cena al buio
+            <div class="meta">3 giorni fa</div>
+          </div>
+          <div class="card">Weekend in baita
+            <div class="meta">1 sett fa</div>
+          </div>
+          <div class="card">Provare quel posto fuori città
+            <div class="meta">2 sett fa</div>
+          </div>
+        </div>
+      </div>
+      <div class="pnav">
+        <div class="nb on"><span class="e">🔥</span>Fantasie</div>
+        <div class="nb"><span class="e">🎲</span>Giochi</div>
+        <div class="nb"><span class="e">📅</span>Esperienze</div>
+        <div class="nb"><span class="e">🗺️</span>Mappa</div>
+        <div class="nb"><span class="e">🎟️</span>Buoni</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       VARIANTE H — SHEET MINIMAL
+       Bottom sheet riduto al minimo: textarea + bottone.
+       ============================================================ -->
+  <div class="item">
+    <div class="vtag">Variante H</div>
+    <div class="vtitle">Sheet minimal</div>
+    <div class="vsub">Bottom sheet ma RIDOTTO: solo textarea con focus
+      automatico e bottone grosso. Niente categoria, niente label.</div>
+
+    <div class="phone" id="phoneH">
+      <div class="ptop"><span>9:41</span><span>●●●</span></div>
+      <div class="page">
+        <h2 class="ptitle">🔥 Fantasie</h2>
+        <p class="psub">Bacheca delle cose da provare.</p>
+        <div class="card">Una cena al buio<div class="meta">3 giorni fa</div></div>
+        <div class="card">Weekend in baita<div class="meta">1 sett fa</div></div>
+        <div class="card">Provare quel posto fuori città<div class="meta">2 sett fa</div></div>
+      </div>
+      <div class="pnav">
+        <div class="nb on"><span class="e">🔥</span>Fantasie</div>
+        <div class="nb"><span class="e">🎲</span>Giochi</div>
+        <div class="nb"><span class="e">📅</span>Esperienze</div>
+        <div class="nb"><span class="e">🗺️</span>Mappa</div>
+        <div class="nb"><span class="e">🎟️</span>Buoni</div>
+      </div>
+      <button class="fab" id="hFab">＋</button>
+
+      <div class="h-scrim" id="hScrim"></div>
+      <div class="h-sheet" id="hSheet">
+        <div class="h-grab"></div>
+        <textarea class="h-ta" id="hTa" placeholder="Cosa vorreste provare?"></textarea>
+        <button class="h-btn" id="hBtn" disabled>Aggiungi</button>
+      </div>
+      <div class="keyboard" id="hKb">
+        <div class="kb-row">
+          <div class="kb-key">q</div><div class="kb-key">w</div><div class="kb-key">e</div>
+          <div class="kb-key">r</div><div class="kb-key">t</div><div class="kb-key">y</div>
+          <div class="kb-key">u</div><div class="kb-key">i</div><div class="kb-key">o</div>
+          <div class="kb-key">p</div>
+        </div>
+        <div class="kb-row">
+          <div class="kb-key">a</div><div class="kb-key">s</div><div class="kb-key">d</div>
+          <div class="kb-key">f</div><div class="kb-key">g</div><div class="kb-key">h</div>
+          <div class="kb-key">j</div><div class="kb-key">k</div><div class="kb-key">l</div>
+        </div>
+        <div class="kb-row">
+          <div class="kb-key lg">⇧</div>
+          <div class="kb-key">z</div><div class="kb-key">x</div><div class="kb-key">c</div>
+          <div class="kb-key">v</div><div class="kb-key">b</div><div class="kb-key">n</div>
+          <div class="kb-key">m</div>
+          <div class="kb-key lg">⌫</div>
+        </div>
+        <div class="kb-row">
+          <div class="kb-key lg">123</div>
+          <div class="kb-key sp"> </div>
+          <div class="kb-key lg">↵</div>
+        </div>
+        <div class="kb-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       VARIANTE I — POST-IT BACHECA
+       Tap +. Post-it grosso al centro, scrivi, tap fuori = appeso.
+       ============================================================ -->
+  <div class="item">
+    <div class="vtag">Variante I</div>
+    <div class="vtitle">Post-it bacheca</div>
+    <div class="vsub">＋ → un post-it appare al centro (giallo, puntina rossa).
+      Scrivi sopra a grafia. Tap fuori → si appoggia sulla bacheca.</div>
+
+    <div class="phone" id="phoneI">
+      <div class="ptop"><span>9:41</span><span>●●●</span></div>
+      <div class="page">
+        <h2 class="ptitle">🔥 Fantasie</h2>
+        <div class="i-board" id="iBoard">
+          <div class="postit pt-yellow" style="top:14px;left:14px;transform:rotate(-3deg);">
+            Una cena al buio
+          </div>
+          <div class="postit pt-pink" style="top:30px;right:18px;transform:rotate(4deg);">
+            Weekend in baita 🌲
+          </div>
+          <div class="postit pt-cream" style="top:170px;left:36px;transform:rotate(-1.5deg);">
+            Quel posto fuori città
+          </div>
+          <div class="postit pt-mint" style="top:200px;right:20px;transform:rotate(5deg);">
+            Notte di pioggia
+          </div>
+          <div class="i-emptyhint">tocca ＋ per appendere<br>una nuova fantasia</div>
+
+          <div class="i-scrim" id="iScrim"></div>
+          <div class="pt-new" id="iNew">
+            <textarea id="iTa" placeholder="Scrivi qui…"></textarea>
+            <div class="pthint">tocca fuori per appenderlo</div>
+          </div>
+        </div>
+      </div>
+      <div class="pnav">
+        <div class="nb on"><span class="e">🔥</span>Fantasie</div>
+        <div class="nb"><span class="e">🎲</span>Giochi</div>
+        <div class="nb"><span class="e">📅</span>Esperienze</div>
+        <div class="nb"><span class="e">🗺️</span>Mappa</div>
+        <div class="nb"><span class="e">🎟️</span>Buoni</div>
+      </div>
+      <button class="fab" id="iFab">＋</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =========================  VARIANTE G — QUICK CAPTURE  ========================= */
+const gCap=document.getElementById('gCap');
+const gInp=document.getElementById('gInp');
+const gAdd=document.getElementById('gAdd');
+const gList=document.getElementById('gList');
+const gToast=document.getElementById('gToast');
+
+gInp.addEventListener('focus',()=>gCap.classList.add('focused'));
+gInp.addEventListener('blur',()=>gCap.classList.remove('focused'));
+gInp.addEventListener('input',()=>{
+  gCap.classList.toggle('has-text', gInp.value.trim().length>0);
+});
+gInp.addEventListener('keydown',e=>{ if(e.key==='Enter')gSubmit(); });
+gAdd.onclick=gSubmit;
+
+function gSubmit(){
+  const v=gInp.value.trim();
+  if(!v)return;
+  const c=document.createElement('div');
+  c.className='card new';
+  c.appendChild(document.createTextNode(v));
+  const m=document.createElement('div');m.className='meta';m.textContent='ora';
+  c.appendChild(m);
+  gList.insertBefore(c,gList.firstChild);
+  setTimeout(()=>c.classList.remove('new'),400);
+  gInp.value='';
+  gCap.classList.remove('has-text');
+  gToast.classList.add('on');
+  setTimeout(()=>gToast.classList.remove('on'),1100);
+}
+
+/* =========================  VARIANTE H — SHEET MINIMAL  ========================= */
+const hFab=document.getElementById('hFab');
+const hScrim=document.getElementById('hScrim');
+const hSheet=document.getElementById('hSheet');
+const hTa=document.getElementById('hTa');
+const hBtn=document.getElementById('hBtn');
+const hKb=document.getElementById('hKb');
+
+function hOpen(){
+  hScrim.classList.add('on');
+  hSheet.classList.add('on');
+  setTimeout(()=>{
+    hKb.classList.add('on');           // simula tastiera che sale
+    hTa.focus();
+  },220);
+}
+function hClose(){
+  hKb.classList.remove('on');
+  hSheet.classList.remove('on');
+  hScrim.classList.remove('on');
+  hTa.blur();
+}
+hFab.onclick=hOpen;
+hScrim.onclick=hClose;
+hTa.addEventListener('input',()=>{ hBtn.disabled=!hTa.value.trim(); });
+hBtn.onclick=()=>{
+  hBtn.textContent='✓ Aggiunta';
+  setTimeout(()=>{
+    hBtn.textContent='Aggiungi';
+    hTa.value='';
+    hBtn.disabled=true;
+    hClose();
+  },1100);
+};
+
+/* =========================  VARIANTE I — POST-IT BACHECA  ========================= */
+const iFab=document.getElementById('iFab');
+const iNew=document.getElementById('iNew');
+const iScrim=document.getElementById('iScrim');
+const iTa=document.getElementById('iTa');
+const iBoard=document.getElementById('iBoard');
+
+const COLORS=['pt-yellow','pt-pink','pt-cream','pt-mint'];
+let nextColor=0;
+
+iFab.onclick=()=>{
+  iNew.classList.add('on');
+  iScrim.classList.add('on');
+  setTimeout(()=>iTa.focus(),300);
+};
+function iAppend(){
+  const v=iTa.value.trim();
+  iNew.classList.remove('on');
+  iScrim.classList.remove('on');
+  if(!v){ iTa.value=''; return; }
+  // crea un nuovo postit appeso in una posizione random nella board
+  const p=document.createElement('div');
+  p.className='postit '+COLORS[nextColor%COLORS.length];
+  nextColor++;
+  const tilt=(Math.random()*8-4).toFixed(1);
+  // posizioni casuali ragionevoli
+  const top=Math.floor(60+Math.random()*180);
+  const onLeft=Math.random()<0.5;
+  const sideStyle=onLeft?'left:'+(10+Math.random()*40)+'px':'right:'+(10+Math.random()*40)+'px';
+  p.style.cssText='top:'+top+'px;'+sideStyle+';transform:rotate('+tilt+'deg);opacity:0;';
+  p.appendChild(document.createTextNode(v));
+  iBoard.insertBefore(p, iScrim);
+  iBoard.classList.add('has-items');
+  requestAnimationFrame(()=>{p.style.transition='opacity .4s ease';p.style.opacity='1';});
+  iTa.value='';
+}
+iScrim.onclick=iAppend;
+// tap fuori dal postit (sul board ma non sul postit/scrim/textarea) = appendi
+iBoard.addEventListener('click',(e)=>{
+  if(!iNew.classList.contains('on'))return;
+  if(e.target===iScrim||iScrim.contains(e.target))iAppend();
+});
+</script>
+
+</body>
+</html>
