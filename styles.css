@@ -721,6 +721,20 @@ body.locked{overflow:hidden;touch-action:none;}
   animation:mappaFlash .42s ease-out forwards;}
 @keyframes mappaFlash{0%{opacity:0}14%{opacity:.92}100%{opacity:0}}
 
+/* M3: chip filtro sopra la mappa (Tutti / Viaggi / Intimi) */
+.mappa-chips{display:flex;gap:8px;justify-content:center;margin:4px 0 10px;flex-wrap:wrap;}
+.mappa-chip{font-family:Arial,sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  padding:7px 14px;border-radius:999px;border:1px solid rgba(212,168,108,.28);
+  background:rgba(0,0,0,.3);color:rgba(243,217,176,.55);cursor:pointer;transition:.2s;user-select:none;}
+.mappa-chip.on{border-color:var(--gold);background:linear-gradient(180deg,rgba(212,168,108,.22),rgba(212,168,108,.06));
+  color:var(--gold);}
+
+/* M6: link "Apri in Maps" sul retro della polaroid (sfondo crema, contrasto scuro) */
+.mappa-nav{display:inline-block;margin:4px 0;padding:7px 12px;border-radius:999px;
+  font-family:Arial,sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.04em;
+  background:#3a2614;color:#f0dfb8;text-decoration:none;align-self:flex-start;}
+.mappa-nav:active{opacity:.75;}
+
 /* form aggiungi/modifica (dentro .sheet) */
 .mappa-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
 .mappa-field label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);font-family:Arial,sans-serif;}

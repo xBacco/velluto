@@ -15,6 +15,9 @@ let luoghi = [];
 let map = null;
 let statView = 'vis';
 let pendingTap = null;   // listener "tocca la mappa" in attesa, da annullare al re-render
+let filterMode = 'all';  // 'all' | 'vis' (non-intimi) | 'fat' (intimi)
+let markers = [];        // marker correnti, per applyFilter
+let chipsHost = null;    // nodo dei chip filtro, per refresh visual state
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -35,8 +38,13 @@ function draw() {
   if (map && pendingTap) { map.off('click', pendingTap); }
   pendingTap = null;
   if (map) { map.remove(); map = null; }
+  markers = [];
   add(p, mk('h2', 'ptitle', '🗺️ La nostra mappa'),
          mk('p', 'psub', 'I posti che ci portiamo dietro.'));
+  // Chip filtro (M3) - nasconde/mostra pin senza ricaricare la mappa
+  chipsHost = mk('div', 'mappa-chips');
+  refreshChips();
+  add(p, chipsHost);
   const area = mk('div', 'mappa-area');
   const mapEl = mk('div', 'mappa-map');
   const handle = mk('div', 'mappa-handle');
@@ -45,6 +53,37 @@ function draw() {
   add(area, mapEl, handle);
   add(p, area);
   initMap(mapEl);
+}
+
+function refreshChips() {
+  if (!chipsHost) return;
+  clear(chipsHost);
+  const opts = [['all', 'Tutti'], ['vis', '📍 Viaggi'], ['fat', '🔥 Intimi']];
+  for (const [mode, label] of opts) {
+    const b = mk('button', 'mappa-chip' + (filterMode === mode ? ' on' : ''), label);
+    b.onclick = () => { filterMode = mode; refreshChips(); applyFilter(); };
+    chipsHost.appendChild(b);
+  }
+}
+
+function passaFiltro(l) {
+  return filterMode === 'all' || (filterMode === 'vis' && !l.intimo) || (filterMode === 'fat' && l.intimo);
+}
+
+function applyFilter() {
+  if (!map) return;
+  for (const m of markers) {
+    if (passaFiltro(m._luogo)) { if (!map.hasLayer(m)) m.addTo(map); }
+    else if (map.hasLayer(m)) m.remove();
+  }
+  // Auto-fit ai pin visibili (se ce ne sono almeno 2)
+  const visibili = markers.filter(m => map.hasLayer(m));
+  if (visibili.length >= 2) {
+    const group = L.featureGroup(visibili);
+    map.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 13 });
+  } else if (visibili.length === 1) {
+    map.setView(visibili[0].getLatLng(), 13);
+  }
 }
 
 function pinIcon() {
@@ -56,9 +95,21 @@ function initMap(mapEl) {
   map = L.map(mapEl, { zoomControl: false }).setView(CENTRO_IT, 5.2);
   L.tileLayer(TILE_DARK, { attribution: '© OpenStreetMap, © CARTO', maxZoom: 19 }).addTo(map);
   L.control.zoom({ position: 'topright' }).addTo(map);
+  markers = [];
   for (const l of luoghi) {
-    const marker = L.marker([l.lat, l.lng], { icon: pinIcon() }).addTo(map);
+    const marker = L.marker([l.lat, l.lng], { icon: pinIcon() });
+    marker._luogo = l;
     marker.on('click', () => openDetail(l));
+    if (passaFiltro(l)) marker.addTo(map);
+    markers.push(marker);
+  }
+  // M1: auto-fit sui pin visibili invece di partire dal centro Italia
+  const visibili = markers.filter(m => map.hasLayer(m));
+  if (visibili.length >= 2) {
+    const group = L.featureGroup(visibili);
+    map.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 13 });
+  } else if (visibili.length === 1) {
+    map.setView(visibili[0].getLatLng(), 13);
   }
   setTimeout(() => map.invalidateSize(), 80);
 }
@@ -169,6 +220,11 @@ function openDetail(l) {
             mk('div', 'mappa-added', 'Aggiunta il ' + etichettaData(l.creato, { conGiorno: true })));
   if (l.intimo) add(back, mk('div', 'mappa-hearts', cuoriLabel(l.voto)));
   add(back, mk('div', 'mappa-bdesc', l.descrizione || ''));
+  // M6: link "Apri in Maps" (Google Maps universal URL)
+  const nav = mk('a', 'mappa-nav', '🧭 Apri in Maps');
+  nav.href = 'https://www.google.com/maps/search/?api=1&query=' + l.lat + ',' + l.lng;
+  nav.target = '_blank'; nav.rel = 'noopener';
+  add(back, nav);
   const strip = mk('div', 'mappa-bstrip');
   loadThumbsInto(ctx, { contesto: 'luogo', refId: l.id }, strip, false).catch(() => {});
   add(back, strip);
