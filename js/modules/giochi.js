@@ -331,35 +331,58 @@ function closePop() {
 }
 
 // ---- editor contenuti (modifica emoji + testo delle facce) ----
-function openEditor() {
-  openSheet('Modifica i dadi', s => {
-    add(s, mk('p', 'muted', 'Cambia emoji e testo di ogni faccia. Tre dadi: Azione, Corpo, Dove.'));
-    const dirty = new Map();   // id -> { emoji, testo }
-    for (const k of DADI_ORDER) {
-      s.appendChild(mk('div', 'section-label', DADI_LABEL[k]));
-      facce[k].forEach(f => {
-        const row = mk('div', 'dadi-edit-row');
-        const em = mk('input', 'dadi-em'); em.value = f.emoji; em.maxLength = 4;
-        const tx = mk('input'); tx.value = f.testo; tx.placeholder = 'testo';
-        const mark = () => dirty.set(f.id, { emoji: em.value.trim() || '✦', testo: tx.value.trim() });
-        em.oninput = mark; tx.oninput = mark;
-        add(row, em, tx);
-        s.appendChild(row);
-      });
+// Monta l'editor dei contenuti Slot dentro a `host` (qualsiasi container DOM).
+// Usato sia dal FAB + in pagina Giochi (via openEditor) sia dall'hub
+// "Contenuti dei giochi" in Impostazioni. onSaved: callback opzionale.
+export async function renderSlotEditorInto(host, context, onSaved) {
+  if (!facce || !ctx || ctx.client !== context.client) {
+    ctx = context;
+    let rows = await listDadiFacce(ctx.client, ctx.me.couple_id);
+    if (!rows.length) {
+      await seedDadiFacce(ctx.client, facceDefaultRows(ctx.me.couple_id));
+      rows = await listDadiFacce(ctx.client, ctx.me.couple_id);
     }
-    const save = mk('button', 'btn', 'Salva'); save.style.cssText = 'width:100%;margin-top:8px;';
-    save.onclick = async () => {
-      save.disabled = true;
-      try {
-        for (const [id, patch] of dirty) {
-          if (!patch.testo) { toast('Il testo non può essere vuoto', 'err'); save.disabled = false; return; }
-          await updateDadiFaccia(ctx.client, id, patch);
-        }
-        s.closest('.modal').remove();
-        document.body.classList.remove('locked');
-        await renderGiochi(ctx);
-      } catch (err) { save.disabled = false; toast('Errore salvataggio: ' + err.message, 'err'); }
-    };
-    s.appendChild(save);
+    facce = raggruppaFacce(rows);
+  }
+
+  clear(host);
+  add(host, mk('p', 'muted', 'Cambia emoji e testo di ogni faccia. Tre dadi: Azione, Corpo, Dove.'));
+  const dirty = new Map();   // id -> { emoji, testo }
+  for (const k of DADI_ORDER) {
+    host.appendChild(mk('div', 'section-label', DADI_LABEL[k]));
+    facce[k].forEach(f => {
+      const row = mk('div', 'dadi-edit-row');
+      const em = mk('input', 'dadi-em'); em.value = f.emoji; em.maxLength = 4;
+      const tx = mk('input'); tx.value = f.testo; tx.placeholder = 'testo';
+      const mark = () => dirty.set(f.id, { emoji: em.value.trim() || '✦', testo: tx.value.trim() });
+      em.oninput = mark; tx.oninput = mark;
+      add(row, em, tx);
+      host.appendChild(row);
+    });
+  }
+  const save = mk('button', 'btn', 'Salva'); save.style.cssText = 'width:100%;margin-top:8px;';
+  save.onclick = async () => {
+    save.disabled = true;
+    try {
+      for (const [id, patch] of dirty) {
+        if (!patch.testo) { toast('Il testo non può essere vuoto', 'err'); save.disabled = false; return; }
+        await updateDadiFaccia(ctx.client, id, patch);
+      }
+      toast('Slot salvato', 'ok');
+      onSaved && onSaved();
+    } catch (err) { save.disabled = false; toast('Errore salvataggio: ' + err.message, 'err'); }
+  };
+  host.appendChild(save);
+}
+
+// Wrapper FAB + in pagina Giochi: apre il sheet e monta l'editor inline.
+function openEditor() {
+  openSheet('Modifica i dadi', async s => {
+    await renderSlotEditorInto(s, ctx, async () => {
+      const modal = s.closest('.modal');
+      if (modal) modal.remove();
+      document.body.classList.remove('locked');
+      await renderGiochi(ctx);
+    });
   });
 }
