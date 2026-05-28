@@ -134,13 +134,13 @@ export function closeGameModal(opts) {
   const h = modalCloseHandler;
   modalEl = null;
   modalCloseHandler = null;
-  // Chiusura morbida: lo sheet SCIVOLA giù restando opaco (.closing tiene
-  // opacity:1 e dissolve solo lo scrim/blur), mentre #app torna in primo piano.
-  // Rimozione del nodo solo a slide completato (560ms > .55s del transform).
+  // Chiusura morbida (Morbida+): lo sheet SCIVOLA giù mentre scrim e blur si
+  // dissolvono e #app torna in primo piano. Rimozione del nodo solo a slide
+  // completato (640ms > .6s del transform di chiusura).
   m.classList.add('closing');
   m.classList.remove('show');
   document.body.classList.remove('game-modal-open');
-  setTimeout(() => { if (m.parentNode) m.remove(); }, 560);
+  setTimeout(() => { if (m.parentNode) m.remove(); }, 640);
   if (!silent && typeof h === 'function') h();
   document.dispatchEvent(new CustomEvent('giochi:tabs-refresh'));
 }

@@ -1519,35 +1519,60 @@ body.pudica [data-spicy].revealed{filter:none;}
    Lo stato del gioco vive nei moduli e NON viene resettato dalla
    chiusura — la riapertura passa dal badge sul tab.
    ============================================================ */
+/* Animazione "Morbida+": scrim e blur entrano lenti e cerimoniosi (.8s);
+   la visibilità è gestita da `visibility` cosi' lo scrim può animare da 0.
+   opacity resta a 1 (serve solo allo swipe laterale che la abbassa a mano). */
 .game-modal{position:fixed;inset:0;z-index:50;
-  background:rgba(8,2,4,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  opacity:0;transition:opacity .35s ease,background .15s linear;
+  background:rgba(8,2,4,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);
+  opacity:1;visibility:hidden;
+  transition:background .8s ease,backdrop-filter .8s ease,opacity .26s ease,visibility 0s linear .9s;
   display:flex;align-items:stretch;justify-content:stretch;}
-.game-modal.show{opacity:1;}
-/* Chiusura morbida: il modal resta opaco mentre lo sheet scivola giù; si
-   dissolvono solo lo scrim e il blur. Evita lo "snap" della sola opacity. */
-.game-modal.closing{opacity:1;background:rgba(8,2,4,0);
-  backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);
-  transition:background .42s ease,backdrop-filter .42s ease;}
+.game-modal.show{visibility:visible;
+  background:rgba(8,2,4,.72);backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px);
+  transition:background .8s ease,backdrop-filter .8s ease;}
+/* Chiusura morbida: lo sheet scivola giù mentre scrim e blur si dissolvono. */
+.game-modal.closing{visibility:visible;
+  background:rgba(8,2,4,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);
+  transition:background .5s ease,backdrop-filter .5s ease;}
 .game-modal-sheet{position:relative;flex:1;
   background:radial-gradient(ellipse at top,#3a1019 0%,#1a060a 75%);
   display:flex;flex-direction:column;overflow:hidden;
   transform:translateY(100%);
   border-radius:18px 18px 0 0;
   box-shadow:0 -8px 28px rgba(0,0,0,.5);
-  transition:transform .55s cubic-bezier(.22,.95,.3,1.05);
+  transition:transform .86s cubic-bezier(.26,.7,.16,1);
   touch-action:pan-y;}
 .game-modal.show .game-modal-sheet{transform:translateY(0);}
+.game-modal.closing .game-modal-sheet{transform:translateY(100%);
+  transition:transform .6s cubic-bezier(.5,0,.7,.3);}
 .game-modal-sheet.swiping{transition:none;}
+/* Filo d'oro: una luce sul bordo alto che si accende al momento dell'apertura. */
+.game-modal-sheet::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;z-index:6;
+  pointer-events:none;opacity:0;
+  background:linear-gradient(90deg,transparent,var(--gold-soft,#e9c98f),transparent);}
+.game-modal.show .game-modal-sheet::before{animation:gmGoldEdge 1.1s ease .25s 1;}
+@keyframes gmGoldEdge{0%{opacity:0;}40%{opacity:.9;}100%{opacity:.25;}}
+/* Contenuti in cascata: freccia, titolo e corpo entrano in sequenza dopo la
+   salita dello sheet (effetto cerimonioso). In chiusura sfumano in fretta. */
+.game-modal .gmt-arrow,
+.game-modal .gmt-title,
+.game-modal-body{opacity:0;transform:translateY(16px);
+  transition:opacity .55s ease,transform .55s cubic-bezier(.2,1,.3,1);}
+.game-modal.show .gmt-arrow{transition-delay:.40s;opacity:1;transform:none;}
+.game-modal.show .gmt-title{transition-delay:.48s;opacity:1;transform:none;}
+.game-modal.show .game-modal-body{transition-delay:.56s;opacity:1;transform:none;}
+.game-modal.closing .gmt-arrow,
+.game-modal.closing .gmt-title,
+.game-modal.closing .game-modal-body{opacity:0;transform:none;transition:opacity .2s ease;}
 
 /* Drawer stack (iOS-style): la pagina sotto fa un passo indietro
    mentre il modal sale dal basso. Le transition vivono su #app cosi'
    anche la chiusura (rimozione di .game-modal-open) animava il ritorno. */
 #app{
   transform-origin:50% 0%;
-  transition:transform .55s cubic-bezier(.22,.95,.3,1.05),
-             filter .35s ease,
-             border-radius .55s cubic-bezier(.22,.95,.3,1.05);
+  transition:transform .7s cubic-bezier(.26,.7,.16,1),
+             filter .5s ease,
+             border-radius .7s cubic-bezier(.26,.7,.16,1);
 }
 body.game-modal-open #app{
   transform:scale(.94) translateY(8px);
