@@ -205,15 +205,11 @@ function renderPersonalizza() {
     } catch (e) { toast('Errore tag: ' + e.message, 'err'); }
   })();
 
-  // CONTENUTI GIOCHI
-  const rG = row('🎲', 'Contenuti dei giochi', 'Proposte piccanti · buoni a sorpresa');
+  // CONTENUTI GIOCHI → hub a tab dentro Impostazioni (non chiude il foglio)
+  const rG = row('🎲', 'Contenuti dei giochi', 'Modifica Slot · Ruota · Yahtzutra');
   rG.classList.add('tap');
   add(rG, mk('span', 'set-chev', '›'));
-  rG.onclick = () => {
-    closeImpostazioni();
-    document.dispatchEvent(new CustomEvent('goto', { detail: 'giochi' }));
-    document.dispatchEvent(new CustomEvent('giochi:contenuti'));
-  };
+  rG.onclick = openContenutiGiochi;
   add(c, rG);
 
   add(s, c); return s;
