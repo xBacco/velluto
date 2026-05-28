@@ -47,9 +47,16 @@ export function sortByDateDesc(rows) {
   return [...rows].sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : 0));
 }
 
+// Supporta voti decimali con step 0.5: 3.5 → 🔥🔥🔥½🤍
 export function fiammeLabel(voto) {
-  const v = Math.max(0, Math.min(5, voto | 0));
-  return '🔥'.repeat(v) + '🤍'.repeat(5 - v);
+  const n = Number(voto) || 0;
+  const v = Math.max(0, Math.min(5, n));
+  const full = Math.floor(v);
+  const half = (v - full) >= 0.5;
+  let s = '🔥'.repeat(full);
+  if (half) s += '½';
+  s += '🤍'.repeat(5 - full - (half ? 1 : 0));
+  return s;
 }
 
 // ---- TIPI di momento (editabili per coppia) ----
@@ -651,9 +658,16 @@ export function luoghiDelMese(luoghi, mese) {
 }
 
 // Voto a cuori per il retro della polaroid.
+// Supporta voti decimali con step 0.5: 3.5 → ❤❤❤◐♡
 export function cuoriLabel(voto) {
-  const v = Math.max(0, Math.min(5, voto | 0));
-  return '❤'.repeat(v) + '♡'.repeat(5 - v);
+  const n = Number(voto) || 0;
+  const v = Math.max(0, Math.min(5, n));
+  const full = Math.floor(v);
+  const half = (v - full) >= 0.5;
+  let s = '❤'.repeat(full);
+  if (half) s += '◐';
+  s += '♡'.repeat(5 - full - (half ? 1 : 0));
+  return s;
 }
 
 // Etichetta data breve italiana. conGiorno=false → "Ago 2025"; true → "21 ago 2025".

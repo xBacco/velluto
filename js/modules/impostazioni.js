@@ -243,6 +243,23 @@ function openSvuota() {
   add(body, mk('div', 'set-sec-t', 'Seleziona cosa azzerare'));
   const c = card();
   const selected = new Set();
+
+  // Riga "Tutti" in cima: spunta/desuppla in blocco tutte le sezioni sotto.
+  const allRow = mk('div', 'set-check set-check-all');
+  const allBox = mk('div', 'set-box');
+  const allTxt = mk('div'); add(allTxt, mk('div', 'set-nm', '⚡ Tutti'));
+  add(allRow, allBox, allTxt);
+  add(c, allRow);
+
+  // refs per gestire la sincronizzazione bidirezionale tra "Tutti" e le righe figlie
+  const childRefs = [];
+
+  function syncAll() {
+    const allOn = childRefs.length > 0 && childRefs.every(r => r.row.classList.contains('on'));
+    allRow.classList.toggle('on', allOn);
+    allBox.textContent = allOn ? '✓' : '';
+  }
+
   WIPES.forEach(([em, nm, key]) => {
     const ck = mk('div', 'set-check');
     const box = mk('div', 'set-box');
@@ -252,9 +269,23 @@ function openSvuota() {
       const on = ck.classList.toggle('on');
       box.textContent = on ? '✓' : '';
       if (on) selected.add(key); else selected.delete(key);
+      syncAll();
     };
     add(c, ck);
+    childRefs.push({ row: ck, box, key });
   });
+
+  allRow.onclick = () => {
+    const turnOn = !allRow.classList.contains('on');
+    allRow.classList.toggle('on', turnOn);
+    allBox.textContent = turnOn ? '✓' : '';
+    for (const { row, box, key } of childRefs) {
+      row.classList.toggle('on', turnOn);
+      box.textContent = turnOn ? '✓' : '';
+      if (turnOn) selected.add(key); else selected.delete(key);
+    }
+  };
+
   add(body, c);
   const cta = mk('button', 'set-wipe-cta', 'Svuota le sezioni selezionate');
   cta.onclick = () => confirmWipe(selected);

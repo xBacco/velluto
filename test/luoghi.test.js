@@ -46,10 +46,13 @@ test('luoghiDelMese separa visited e fatto', () => {
   assert.equal(gen.fatto.length, 0);
 });
 
-test('cuoriLabel rende cuori pieni/vuoti, clamp 0-5', () => {
+test('cuoriLabel rende cuori pieni/vuoti/mezzi, clamp 0-5', () => {
   assert.equal(cuoriLabel(3), '❤❤❤♡♡');
   assert.equal(cuoriLabel(0), '♡♡♡♡♡');
   assert.equal(cuoriLabel(9), '❤❤❤❤❤');
+  assert.equal(cuoriLabel(3.5), '❤❤❤◐♡');
+  assert.equal(cuoriLabel(0.5), '◐♡♡♡♡');
+  assert.equal(cuoriLabel(4.5), '❤❤❤❤◐');
 });
 
 test('etichettaData: breve capitalizzata e con giorno minuscola', () => {

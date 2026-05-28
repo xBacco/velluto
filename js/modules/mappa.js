@@ -256,14 +256,32 @@ function field(label, input) {
 
 function votoSelector(initial) {
   const wrap = mk('div', 'mappa-voto');
-  let v = initial || 0;
+  let v = Number(initial) || 0;
   const cuori = [];
-  const paint = () => cuori.forEach((c, i) => { c.textContent = i < v ? '❤' : '♡'; });
+  const halfChip = mk('button', 'half-chip', '◐'); halfChip.type = 'button';
+  const paint = () => {
+    const full = Math.floor(v);
+    const half = (v - full) >= 0.5;
+    cuori.forEach((c, i) => {
+      const k = i + 1;
+      if (k <= full) c.textContent = '❤';
+      else if (k === full + 1 && half) c.textContent = '◐';
+      else c.textContent = '♡';
+    });
+    halfChip.classList.toggle('on', half);
+  };
   for (let i = 0; i < 5; i++) {
     const c = mk('span', 'mappa-cuore');
     c.onclick = () => { v = i + 1; paint(); };
     cuori.push(c); wrap.appendChild(c);
   }
+  halfChip.onclick = () => {
+    const full = Math.floor(v);
+    const half = (v - full) >= 0.5;
+    v = half ? full : Math.min(5, full + 0.5);
+    paint();
+  };
+  wrap.appendChild(halfChip);
   paint();
   return { el: wrap, get: () => v };
 }
