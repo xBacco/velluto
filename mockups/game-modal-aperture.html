@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Game modal · 3 animazioni di apertura</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{
+    --bg-deep:#0c0306;
+    --bg:#1a060a;
+    --rosso-card:#2a0e14;
+    --rosso-deep:#3a1019;
+    --oro:#c8a96a;
+    --oro-soft:#a8895a;
+    --oro-bright:#e9c98f;
+    --testo:#f3e7d0;
+    --muted:#8a7a64;
+    --rosso-acceso:#c0334a;
+    --velluto:#5a0f1d;
+    --velluto-dk:#2c0610;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#0c0306;color:var(--testo);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  body{padding:32px 20px 80px;min-height:100vh}
+  h1{font-family:Georgia,serif;color:var(--oro);font-weight:500;letter-spacing:.5px;
+    margin:0 0 6px;font-size:26px;text-align:center}
+  .lead{color:var(--muted);max-width:720px;margin:0 auto 28px;line-height:1.5;
+    font-size:14px;text-align:center}
+  .lead b{color:var(--testo)}
+  .row{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .col{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .col h2{margin:0;font-family:Georgia,serif;color:var(--oro-bright);font-size:18px;
+    font-weight:500;letter-spacing:.3px}
+  .col .desc{color:var(--muted);font-size:12.5px;max-width:300px;text-align:center;line-height:1.45}
+
+  /* === Phone frame === */
+  .phone{
+    position:relative;width:300px;height:620px;border-radius:36px;
+    background:#000;border:2px solid #1a1a1a;
+    box-shadow:0 30px 60px rgba(0,0,0,.6),0 0 0 4px #1a1a1a;
+    overflow:hidden;
+  }
+  .phone .notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);
+    width:90px;height:18px;border-radius:14px;background:#000;z-index:100;pointer-events:none}
+  .phone .home-ind{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);
+    width:90px;height:4px;border-radius:2px;background:rgba(243,231,208,.45);z-index:100;pointer-events:none}
+
+  /* === Screen (sotto al phone) === */
+  .screen{
+    position:absolute;inset:0;
+    background:
+      radial-gradient(120% 70% at 50% -5%, #3d0a1a 0%, transparent 55%),
+      linear-gradient(170deg,var(--bg) 0%, #2a0813 100%);
+    color:var(--testo);overflow:hidden;
+  }
+  .screen .topbar{display:flex;justify-content:space-between;align-items:center;
+    padding:38px 16px 10px;font-family:Georgia,serif}
+  .screen .topbar .brand{font-size:13px;letter-spacing:.3em;color:var(--oro);text-transform:uppercase}
+  .screen .topbar .me{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);
+    border:1px solid rgba(212,168,108,.3);border-radius:99px;padding:3px 10px 3px 5px;font-size:12px}
+  .screen .topbar .me .av{font-size:16px}
+
+  /* tabs giochi */
+  .gtabs{display:flex;gap:6px;margin:8px 12px;background:rgba(255,255,255,.03);
+    border:1px solid rgba(212,168,108,.18);border-radius:14px;padding:6px}
+  .gtab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;padding:8px 4px;border-radius:10px;cursor:pointer;
+    color:var(--muted);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+    transition:background .2s,color .2s;border:1px solid transparent}
+  .gtab .em{font-size:18px;line-height:1}
+  .gtab.on{background:linear-gradient(180deg,rgba(122,21,51,.55),rgba(92,16,38,.25));
+    border-color:rgba(212,168,108,.35);color:var(--testo)}
+
+  /* body fittizio della pagina giochi */
+  .gbody{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+  .gbody .h{font-family:Georgia,serif;font-size:18px;color:var(--testo);margin:4px 0 2px}
+  .gbody .p{font-size:11.5px;color:var(--muted);line-height:1.45;margin:0 0 6px}
+  .gbody .mock-card{background:rgba(40,12,22,.5);border:1px solid rgba(212,168,108,.15);
+    border-radius:12px;padding:14px;font-size:11px;color:var(--muted);min-height:120px}
+
+  /* bottom nav */
+  .bnav{position:absolute;left:0;right:0;bottom:18px;
+    display:flex;justify-content:space-around;padding:0 12px}
+  .bnav .b{width:42px;height:42px;border-radius:10px;background:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:18px;
+    box-shadow:0 4px 12px rgba(0,0,0,.5)}
+  .bnav .b.curr{background:var(--rosso-deep);color:var(--oro-bright)}
+
+  /* === Game modal (overlay che parte chiuso) === */
+  .gmodal{position:absolute;inset:0;z-index:50;pointer-events:none}
+  .gmodal .scrim{position:absolute;inset:0;
+    background:rgba(8,2,4,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    opacity:0}
+  .gmodal .sheet{position:absolute;inset:0;
+    background:radial-gradient(ellipse at top,#3a1019 0%,#1a060a 75%);
+    display:flex;flex-direction:column;overflow:hidden}
+  .gmodal .stop{display:grid;grid-template-columns:36px 1fr 36px;align-items:center;
+    padding:38px 14px 10px;border-bottom:1px solid rgba(212,168,108,.18);
+    background:linear-gradient(180deg,rgba(20,4,8,.92) 0%,rgba(20,4,8,.55) 70%,transparent 100%)}
+  .gmodal .sback{appearance:none;cursor:pointer;border:1px solid rgba(212,168,108,.34);
+    background:rgba(212,168,108,.14);color:var(--oro);
+    border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+    font-size:18px;line-height:1}
+  .gmodal .stitle{text-align:center;font-family:Georgia,serif;color:var(--oro);
+    font-size:17px;letter-spacing:.04em}
+  .gmodal .gcontent{flex:1;padding:18px 14px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center}
+  .gmodal .gcontent .big{font-size:52px;margin-bottom:14px;
+    filter:drop-shadow(0 4px 14px rgba(192,51,74,.5))}
+  .gmodal .gcontent h3{font-family:Georgia,serif;color:var(--oro-bright);font-weight:500;
+    font-size:22px;margin:0 0 8px;letter-spacing:.5px}
+  .gmodal .gcontent p{color:var(--muted);font-size:12px;margin:0;max-width:230px;line-height:1.5}
+
+  /* trigger CTA */
+  .cta{margin-top:10px;background:rgba(212,168,108,.16);color:var(--oro-bright);
+    border:1px solid rgba(212,168,108,.4);border-radius:99px;padding:8px 16px;
+    font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+    font-family:inherit}
+  .cta:active{transform:scale(.97)}
+
+  /* ===========================================================
+     VARIANTE A — SIPARIO velluto (curtain reveal)
+     fase 1: backdrop fade
+     fase 2: due tende che si aprono dal centro verso i bordi,
+             il modal sotto e' gia' presente
+     =========================================================== */
+  .phone.a .gmodal .scrim{transition:opacity .25s ease}
+  .phone.a .gmodal .sheet{opacity:0;transform:scale(.985);
+    transition:opacity .35s ease .12s, transform .55s cubic-bezier(.2,.85,.25,1) .12s}
+  .phone.a .curtains{position:absolute;inset:0;z-index:55;pointer-events:none;
+    display:flex;opacity:0}
+  .phone.a .curtains .c{flex:1;position:relative;
+    background:
+      repeating-linear-gradient(90deg,
+        var(--velluto-dk) 0 6px, var(--velluto) 6px 12px, var(--velluto-dk) 12px 18px),
+      linear-gradient(180deg,#460a18,#1c0408);
+    box-shadow:inset 0 0 80px rgba(0,0,0,.7)}
+  .phone.a .curtains .c.l{border-right:1px solid rgba(212,168,108,.35);
+    box-shadow:inset 0 0 60px rgba(0,0,0,.7), inset -10px 0 24px rgba(0,0,0,.6)}
+  .phone.a .curtains .c.r{border-left:1px solid rgba(212,168,108,.35);
+    box-shadow:inset 0 0 60px rgba(0,0,0,.7), inset 10px 0 24px rgba(0,0,0,.6)}
+  .phone.a .curtains .rod{position:absolute;top:0;left:0;right:0;height:14px;
+    background:linear-gradient(180deg,var(--oro-bright),var(--oro) 50%,#6d5430);
+    border-bottom:1px solid rgba(0,0,0,.4);
+    box-shadow:0 4px 12px rgba(0,0,0,.6);z-index:2}
+  .phone.a.open .gmodal{pointer-events:auto}
+  .phone.a.open .gmodal .scrim{opacity:1}
+  .phone.a.open .gmodal .sheet{opacity:1;transform:scale(1)}
+  .phone.a.open .curtains{opacity:1;animation:noop 0s}
+  .phone.a.open .curtains .c.l{animation:partLeft .85s cubic-bezier(.6,.05,.25,1) forwards}
+  .phone.a.open .curtains .c.r{animation:partRight .85s cubic-bezier(.6,.05,.25,1) forwards}
+  @keyframes partLeft{0%{transform:translateX(0)}100%{transform:translateX(-105%)}}
+  @keyframes partRight{0%{transform:translateX(0)}100%{transform:translateX(105%)}}
+  @keyframes noop{0%,100%{}}
+
+  /* ===========================================================
+     VARIANTE B — ZOOM dal tab (origin-based scale)
+     il modal scala dalla posizione del tab tappato verso fullscreen
+     =========================================================== */
+  .phone.b .gmodal{transform-origin:var(--ox,50%) var(--oy,50%)}
+  .phone.b .gmodal .scrim{transition:opacity .35s ease}
+  .phone.b .gmodal .sheet{
+    transform-origin:var(--ox,50%) var(--oy,50%);
+    transform:scale(.08);opacity:0;border-radius:14px;
+    transition:transform .55s cubic-bezier(.22,1,.36,1),
+               opacity .25s ease,
+               border-radius .55s cubic-bezier(.22,1,.36,1)}
+  .phone.b .gmodal .stop{opacity:0;transition:opacity .25s ease .25s}
+  .phone.b .gmodal .gcontent{opacity:0;transition:opacity .3s ease .25s}
+  .phone.b.open .gmodal{pointer-events:auto}
+  .phone.b.open .gmodal .scrim{opacity:1}
+  .phone.b.open .gmodal .sheet{transform:scale(1);opacity:1;border-radius:0}
+  .phone.b.open .gmodal .stop{opacity:1}
+  .phone.b.open .gmodal .gcontent{opacity:1}
+
+  /* ===========================================================
+     VARIANTE C — IRIS (circle clip-path che si espande dal tab)
+     il modal e' visibile in un cerchio che si espande
+     =========================================================== */
+  .phone.c .gmodal .scrim{transition:opacity .3s ease}
+  .phone.c .gmodal .sheet{
+    clip-path:circle(0% at var(--ox,50%) var(--oy,50%));
+    transition:clip-path .7s cubic-bezier(.55,.05,.25,1)}
+  .phone.c .gmodal .stop{opacity:0;transition:opacity .3s ease .35s}
+  .phone.c .gmodal .gcontent{opacity:0;transform:translateY(8px);
+    transition:opacity .35s ease .35s, transform .45s cubic-bezier(.2,.85,.25,1) .35s}
+  .phone.c.open .gmodal{pointer-events:auto}
+  .phone.c.open .gmodal .scrim{opacity:1}
+  .phone.c.open .gmodal .sheet{clip-path:circle(150% at var(--ox,50%) var(--oy,50%))}
+  .phone.c.open .gmodal .stop{opacity:1}
+  .phone.c.open .gmodal .gcontent{opacity:1;transform:translateY(0)}
+
+  /* === reset (replay) === */
+  .replay{margin-top:4px;background:transparent;border:none;color:var(--oro-soft);
+    cursor:pointer;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    font-family:inherit;padding:6px}
+  .replay:hover{color:var(--oro-bright)}
+
+  @media (max-width:720px){
+    .row{gap:32px}
+  }
+</style>
+</head>
+<body>
+
+<h1>Apertura modal di gioco · 3 animazioni</h1>
+<p class="lead">
+  Tap su un <b>tab di gioco</b> (Slot, Ruota, Dadi, Strip) per vedere l'animazione di apertura.
+  Tap sulla freccia o sul fondo scuro per chiudere e replay.
+</p>
+
+<div class="row">
+
+  <!-- ============================ -->
+  <!-- VARIANTE A · SIPARIO         -->
+  <!-- ============================ -->
+  <div class="col">
+    <h2>A · Sipario velluto</h2>
+    <p class="desc">Due tende di velluto si aprono dal centro, il modal e' gia' sotto.
+      Cinematografico, fits the casino theme.</p>
+    <div class="phone a" id="phone-a">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="topbar">
+          <div class="brand">Lussuria</div>
+          <div class="me"><span class="av">🐻</span> Tomas</div>
+        </div>
+        <div class="gtabs">
+          <div class="gtab on"><span class="em">🎰</span><span>Slot</span></div>
+          <div class="gtab"><span class="em">🎡</span><span>Ruota</span></div>
+          <div class="gtab game-trigger" data-game="dadi"><span class="em">🎲</span><span>Dadi</span></div>
+          <div class="gtab game-trigger" data-game="strip"><span class="em">♠️</span><span>Strip</span></div>
+        </div>
+        <div class="gbody">
+          <p class="h">Slot</p>
+          <p class="p">Schermata fittizia per dare un riferimento alla pagina sotto.</p>
+          <div class="mock-card">contenuto giochi…</div>
+        </div>
+        <div class="bnav">
+          <div class="b">🔥</div><div class="b curr">🎲</div><div class="b">📅</div>
+          <div class="b">🗺</div><div class="b">🎟</div>
+        </div>
+      </div>
+      <div class="gmodal" id="gm-a">
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="stop">
+            <button class="sback" data-close>‹</button>
+            <div class="stitle" data-title>♠️ Strip</div>
+            <div></div>
+          </div>
+          <div class="gcontent">
+            <div class="big" data-emoji>♠️</div>
+            <h3 data-name>Strip Poker</h3>
+            <p>Il modal e' completamente caricato sotto le tende: quando si aprono, il contenuto e' gia' li'.</p>
+          </div>
+        </div>
+        <div class="curtains">
+          <div class="c l"></div>
+          <div class="c r"></div>
+          <div class="rod"></div>
+        </div>
+      </div>
+      <div class="home-ind"></div>
+    </div>
+    <button class="replay" data-replay="phone-a">↻ replay</button>
+  </div>
+
+  <!-- ============================ -->
+  <!-- VARIANTE B · ZOOM DAL TAB    -->
+  <!-- ============================ -->
+  <div class="col">
+    <h2>B · Zoom dal tab</h2>
+    <p class="desc">Il modal scala fuori dal tab tappato (origin = posizione tab).
+      iOS-like, pulito e veloce.</p>
+    <div class="phone b" id="phone-b">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="topbar">
+          <div class="brand">Lussuria</div>
+          <div class="me"><span class="av">🐻</span> Tomas</div>
+        </div>
+        <div class="gtabs">
+          <div class="gtab on"><span class="em">🎰</span><span>Slot</span></div>
+          <div class="gtab"><span class="em">🎡</span><span>Ruota</span></div>
+          <div class="gtab game-trigger" data-game="dadi"><span class="em">🎲</span><span>Dadi</span></div>
+          <div class="gtab game-trigger" data-game="strip"><span class="em">♠️</span><span>Strip</span></div>
+        </div>
+        <div class="gbody">
+          <p class="h">Slot</p>
+          <p class="p">Schermata fittizia per dare un riferimento alla pagina sotto.</p>
+          <div class="mock-card">contenuto giochi…</div>
+        </div>
+        <div class="bnav">
+          <div class="b">🔥</div><div class="b curr">🎲</div><div class="b">📅</div>
+          <div class="b">🗺</div><div class="b">🎟</div>
+        </div>
+      </div>
+      <div class="gmodal" id="gm-b">
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="stop">
+            <button class="sback" data-close>‹</button>
+            <div class="stitle" data-title>♠️ Strip</div>
+            <div></div>
+          </div>
+          <div class="gcontent">
+            <div class="big" data-emoji>♠️</div>
+            <h3 data-name>Strip Poker</h3>
+            <p>L'origine dello scale e' la posizione esatta del tab che hai toccato.</p>
+          </div>
+        </div>
+      </div>
+      <div class="home-ind"></div>
+    </div>
+    <button class="replay" data-replay="phone-b">↻ replay</button>
+  </div>
+
+  <!-- ============================ -->
+  <!-- VARIANTE C · IRIS            -->
+  <!-- ============================ -->
+  <div class="col">
+    <h2>C · Iris (cerchio)</h2>
+    <p class="desc">Un cerchio si espande dal tab e svela il modal sottostante.
+      Magico, fits il mood "il velo si alza".</p>
+    <div class="phone c" id="phone-c">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="topbar">
+          <div class="brand">Lussuria</div>
+          <div class="me"><span class="av">🐻</span> Tomas</div>
+        </div>
+        <div class="gtabs">
+          <div class="gtab on"><span class="em">🎰</span><span>Slot</span></div>
+          <div class="gtab"><span class="em">🎡</span><span>Ruota</span></div>
+          <div class="gtab game-trigger" data-game="dadi"><span class="em">🎲</span><span>Dadi</span></div>
+          <div class="gtab game-trigger" data-game="strip"><span class="em">♠️</span><span>Strip</span></div>
+        </div>
+        <div class="gbody">
+          <p class="h">Slot</p>
+          <p class="p">Schermata fittizia per dare un riferimento alla pagina sotto.</p>
+          <div class="mock-card">contenuto giochi…</div>
+        </div>
+        <div class="bnav">
+          <div class="b">🔥</div><div class="b curr">🎲</div><div class="b">📅</div>
+          <div class="b">🗺</div><div class="b">🎟</div>
+        </div>
+      </div>
+      <div class="gmodal" id="gm-c">
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="stop">
+            <button class="sback" data-close>‹</button>
+            <div class="stitle" data-title>♠️ Strip</div>
+            <div></div>
+          </div>
+          <div class="gcontent">
+            <div class="big" data-emoji>♠️</div>
+            <h3 data-name>Strip Poker</h3>
+            <p>Clip-path circle che si espande dal punto del tap. Bel feeling tattile.</p>
+          </div>
+        </div>
+      </div>
+      <div class="home-ind"></div>
+    </div>
+    <button class="replay" data-replay="phone-c">↻ replay</button>
+  </div>
+
+</div>
+
+<script>
+  const GAMES = {
+    dadi:  { emoji:'🎲',  title:'🎲 Yahtzutra', name:'Yahtzutra' },
+    strip: { emoji:'♠️', title:'♠️ Strip',     name:'Strip Poker' },
+  };
+
+  function openModal(phone, tabEl, key){
+    const phoneRect = phone.getBoundingClientRect();
+    const tabRect = tabEl.getBoundingClientRect();
+    const ox = ((tabRect.left + tabRect.width/2) - phoneRect.left) / phoneRect.width * 100;
+    const oy = ((tabRect.top + tabRect.height/2) - phoneRect.top) / phoneRect.height * 100;
+    phone.style.setProperty('--ox', ox + '%');
+    phone.style.setProperty('--oy', oy + '%');
+    const game = GAMES[key];
+    if (game) {
+      phone.querySelectorAll('[data-emoji]').forEach(el => el.textContent = game.emoji);
+      phone.querySelectorAll('[data-title]').forEach(el => el.textContent = game.title);
+      phone.querySelectorAll('[data-name]').forEach(el => el.textContent = game.name);
+    }
+    // toggle off+on per ri-triggerare le animazioni anche al replay
+    phone.classList.remove('open');
+    void phone.offsetWidth;
+    phone.classList.add('open');
+  }
+
+  function closeModal(phone){
+    phone.classList.remove('open');
+  }
+
+  document.querySelectorAll('.phone').forEach(phone => {
+    phone.querySelectorAll('.game-trigger').forEach(tab => {
+      tab.addEventListener('click', () => {
+        openModal(phone, tab, tab.dataset.game);
+      });
+    });
+    phone.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener('click', () => closeModal(phone));
+    });
+    phone.querySelectorAll('.scrim').forEach(sc => {
+      sc.addEventListener('click', () => closeModal(phone));
+    });
+  });
+  document.querySelectorAll('[data-replay]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const phone = document.getElementById(btn.dataset.replay);
+      const trigger = phone.querySelector('.game-trigger[data-game="strip"]');
+      if (!phone.classList.contains('open')) {
+        openModal(phone, trigger, 'strip');
+      } else {
+        closeModal(phone);
+        setTimeout(() => openModal(phone, trigger, 'strip'), 400);
+      }
+    });
+  });
+</script>
+</body>
+</html>
