@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Strip Poker · 3 redesign wardrobe</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{
+    --bg-deep:#0c0306;
+    --bg:#1a060a;
+    --rosso-card:#2a0e14;
+    --rosso-deep:#3a1019;
+    --rosso-vivo:#7a1533;
+    --bordeaux:#5a0f1d;
+    --oro:#c8a96a;
+    --oro-soft:#a8895a;
+    --oro-bright:#e9c98f;
+    --cream:#fbf0d8;
+    --cream-dim:#ecd3a6;
+    --testo:#f3e7d0;
+    --muted:#8a7a64;
+    --wine:#5c1026;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#0c0306;color:var(--testo);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  body{padding:32px 20px 80px;min-height:100vh}
+  h1{font-family:Georgia,serif;color:var(--oro);font-weight:500;letter-spacing:.5px;
+    margin:0 0 6px;font-size:26px;text-align:center}
+  .lead{color:var(--muted);max-width:760px;margin:0 auto 28px;line-height:1.5;
+    font-size:14px;text-align:center}
+  .lead b{color:var(--testo)}
+  .row{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .col{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .col h2{margin:0;font-family:Georgia,serif;color:var(--oro-bright);font-size:18px;
+    font-weight:500;letter-spacing:.3px}
+  .col .desc{color:var(--muted);font-size:12.5px;max-width:300px;text-align:center;line-height:1.45}
+
+  /* === Phone frame === */
+  .phone{
+    position:relative;width:330px;height:680px;border-radius:38px;
+    background:#000;border:2px solid #1a1a1a;
+    box-shadow:0 30px 60px rgba(0,0,0,.6),0 0 0 4px #1a1a1a;
+    overflow:hidden;
+  }
+  .phone .notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);
+    width:90px;height:18px;border-radius:14px;background:#000;z-index:100;pointer-events:none}
+  .phone .home-ind{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);
+    width:90px;height:4px;border-radius:2px;background:rgba(243,231,208,.45);z-index:100;pointer-events:none}
+
+  /* === Modal shell comune === */
+  .modal{position:absolute;inset:0;
+    background:radial-gradient(ellipse at top,#3a1019 0%,#1a060a 75%);
+    display:flex;flex-direction:column;overflow:hidden}
+  .topbar{display:grid;grid-template-columns:36px 1fr 36px;align-items:center;gap:10px;
+    padding:38px 14px 8px;border-bottom:1px solid rgba(212,168,108,.18);
+    background:linear-gradient(180deg,rgba(20,4,8,.92) 0%,rgba(20,4,8,.55) 70%,transparent 100%);
+    flex:0 0 auto}
+  .back{appearance:none;cursor:pointer;border:1px solid rgba(212,168,108,.34);
+    background:rgba(212,168,108,.14);color:var(--oro);
+    border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+    font-size:18px;line-height:1}
+  .ttitle{text-align:center;font-family:Georgia,serif;color:var(--oro);
+    font-size:17px;letter-spacing:.04em}
+
+  .heading{text-align:center;padding:10px 14px 6px;flex:0 0 auto}
+  .heading h3{margin:0;font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;
+    font-size:21px;color:var(--cream);letter-spacing:.01em}
+  .heading h3 b{color:var(--oro-bright);font-weight:600}
+  .heading .sub{font-size:11px;color:#b79a86;font-style:italic;line-height:1.4;margin-top:3px;
+    padding:0 8px}
+
+  .body{flex:1;display:flex;flex-direction:column;overflow:hidden;
+    padding:6px 12px 10px;min-height:0}
+
+  /* CTA */
+  .footbar{flex:0 0 auto;padding:8px 12px calc(14px + env(safe-area-inset-bottom,0px));
+    border-top:1px solid rgba(212,168,108,.12)}
+  .eq{text-align:center;font-size:11px;color:#b79a86;font-style:italic;line-height:1.4;
+    padding:0 6px;margin-bottom:8px;min-height:16px}
+  .cta{width:100%;border:none;border-radius:99px;
+    background:linear-gradient(180deg,#f0d49a,#c8a96a);color:#3a1a08;
+    font-family:Georgia,serif;font-weight:600;font-size:15px;
+    padding:13px 18px;letter-spacing:.04em;cursor:pointer;
+    box-shadow:0 8px 22px rgba(200,169,106,.35), inset 0 1px 0 rgba(255,255,255,.4);
+    transition:opacity .2s}
+  .cta:active{transform:translateY(1px)}
+  .cta:disabled{opacity:.4;cursor:not-allowed}
+
+  /* group header riutilizzabile */
+  .grp{font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:rgba(212,168,108,.6);margin:8px 2px 4px}
+
+  /* =========================================================
+     W1 · Tab Lui|Lei, una colonna alla volta
+     ========================================================= */
+  .w1 .tabs{display:flex;gap:6px;padding:8px 12px 4px;flex:0 0 auto}
+  .w1 .tab{flex:1;cursor:pointer;border:1px solid rgba(212,168,108,.3);
+    background:rgba(40,12,22,.4);color:#b79a86;
+    border-radius:14px 14px 4px 4px;padding:10px 8px;text-align:center;
+    font-family:'Cormorant Garamond',Georgia,serif;font-size:17px;
+    transition:all .18s;position:relative}
+  .w1 .tab .tot{display:block;font-size:10px;color:rgba(212,168,108,.55);
+    font-family:Arial,sans-serif;font-style:italic;margin-top:2px;letter-spacing:.04em}
+  .w1 .tab.on{background:linear-gradient(180deg,#5f1127,#3a0b1c);
+    border-color:rgba(212,168,108,.7);color:var(--cream);
+    box-shadow:inset 0 -2px 0 var(--oro-bright)}
+  .w1 .tab.on .tot{color:var(--oro-bright)}
+
+  .w1 .list{overflow:auto;padding:6px 4px 8px;flex:1;min-height:0}
+  .w1 .it{display:flex;align-items:center;gap:10px;padding:11px 12px;margin:5px 0;
+    border-radius:12px;cursor:pointer;font-size:14px;
+    background:#1f0810;box-shadow:inset 0 0 0 1px rgba(212,168,108,.22);
+    color:#b79a86;transition:all .15s}
+  .w1 .it .em{font-size:24px;width:32px;flex:none;text-align:center;line-height:1}
+  .w1 .it .nm{flex:1;font-family:'Cormorant Garamond',Georgia,serif;font-size:17px}
+  .w1 .it .qty{font-size:10px;color:var(--oro-soft);letter-spacing:.04em;
+    background:rgba(212,168,108,.12);padding:2px 7px;border-radius:99px}
+  .w1 .it .ck{width:20px;height:20px;border-radius:6px;flex:none;
+    box-shadow:inset 0 0 0 1.5px rgba(212,168,108,.55);
+    display:flex;align-items:center;justify-content:center;
+    color:transparent;font-size:14px;font-weight:700;transition:all .15s}
+  .w1 .it.on{background:linear-gradient(160deg,#5f1127,#3a0b1c);
+    color:var(--cream);box-shadow:inset 0 0 0 1px rgba(212,168,108,.7)}
+  .w1 .it.on .ck{background:var(--oro-bright);color:#2a0813;box-shadow:none}
+  .w1 .it.on .ck::after{content:"✓"}
+  .w1 .it.on .nm{color:var(--cream)}
+
+  /* =========================================================
+     W2 · Due colonne grid con emoji XL
+     ========================================================= */
+  .w2 .cols{display:grid;grid-template-columns:1fr 1fr;gap:8px;
+    flex:1;min-height:0;padding-top:4px}
+  .w2 .who-card{display:flex;flex-direction:column;min-height:0;
+    border:1px solid rgba(212,168,108,.3);border-radius:14px;
+    background:rgba(40,12,22,.25);padding:8px 6px 6px}
+  .w2 .who-card .head{text-align:center;flex:0 0 auto;
+    padding-bottom:6px;border-bottom:1px solid rgba(212,168,108,.15);margin-bottom:4px}
+  .w2 .who-card .head .nm{font-family:'Cormorant Garamond',Georgia,serif;
+    font-size:16px;color:var(--cream);line-height:1.1}
+  .w2 .who-card .head .tot{font-size:10px;color:var(--oro-bright);
+    letter-spacing:.04em;font-style:italic;margin-top:2px}
+  .w2 .who-card .scroll{overflow:auto;flex:1;min-height:0;padding:2px 2px 4px}
+  .w2 .grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+  .w2 .tile{position:relative;background:#1f0810;
+    box-shadow:inset 0 0 0 1px rgba(212,168,108,.22);
+    border-radius:11px;padding:8px 4px 6px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    transition:all .15s;color:#9c8268}
+  .w2 .tile .em{font-size:26px;line-height:1;filter:saturate(.7) brightness(.85);
+    transition:filter .15s}
+  .w2 .tile .nm{font-size:10px;letter-spacing:.02em;text-align:center;line-height:1.1;
+    font-family:Arial,sans-serif}
+  .w2 .tile .qty{position:absolute;top:3px;left:4px;font-size:8px;
+    color:var(--oro-soft);background:rgba(20,5,10,.7);
+    padding:1px 4px;border-radius:99px;letter-spacing:.04em}
+  .w2 .tile .ck{position:absolute;top:3px;right:4px;width:14px;height:14px;
+    border-radius:5px;box-shadow:inset 0 0 0 1px rgba(212,168,108,.5);
+    display:flex;align-items:center;justify-content:center;
+    color:transparent;font-size:9px;font-weight:700}
+  .w2 .tile.on{background:linear-gradient(160deg,#5f1127,#3a0b1c);
+    box-shadow:inset 0 0 0 1px rgba(212,168,108,.7), 0 4px 10px rgba(94,16,29,.5);
+    color:var(--cream)}
+  .w2 .tile.on .em{filter:none}
+  .w2 .tile.on .ck{background:var(--oro-bright);color:#2a0813;box-shadow:none}
+  .w2 .tile.on .ck::after{content:"✓"}
+
+  /* =========================================================
+     W3 · Chip flow Lui/Lei in due metà
+     ========================================================= */
+  .w3 .scroll{flex:1;overflow:auto;padding:4px 4px 8px;min-height:0}
+  .w3 .who-block{margin-bottom:10px}
+  .w3 .who-bar{display:flex;align-items:center;gap:8px;margin:6px 0 4px;
+    padding:4px 8px;border-radius:10px;
+    background:linear-gradient(90deg,rgba(94,16,29,.4),transparent);
+    border-left:2px solid var(--oro-bright)}
+  .w3 .who-bar .nm{font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;
+    color:var(--cream)}
+  .w3 .who-bar .tot{font-size:10px;color:var(--oro-bright);
+    letter-spacing:.04em;font-style:italic;margin-left:auto}
+  .w3 .grp-mini{font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+    color:rgba(212,168,108,.55);margin:5px 4px 3px}
+  .w3 .chips{display:flex;flex-wrap:wrap;gap:5px;padding:0 2px}
+  .w3 .chip{position:relative;display:inline-flex;align-items:center;gap:5px;
+    padding:6px 11px;border-radius:99px;cursor:pointer;
+    font-size:12px;font-family:Arial,sans-serif;
+    background:transparent;color:#8a7a64;
+    box-shadow:inset 0 0 0 1px rgba(212,168,108,.35);
+    transition:all .15s;user-select:none}
+  .w3 .chip .em{font-size:14px;line-height:1}
+  .w3 .chip .qty{font-size:9px;color:var(--oro-soft);font-style:italic;
+    margin-left:2px}
+  .w3 .chip:active{transform:scale(.96)}
+  .w3 .chip.on{background:linear-gradient(160deg,var(--oro-bright),var(--oro));
+    color:#2a0813;box-shadow:inset 0 0 0 1px var(--oro), 0 3px 10px rgba(232,201,143,.3);
+    font-weight:600}
+  .w3 .chip.on .qty{color:#5a2a08}
+
+  .replay{margin-top:4px;background:transparent;border:none;color:var(--oro-soft);
+    cursor:pointer;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    font-family:inherit;padding:6px}
+
+  @media (max-width:1080px){.row{gap:32px}}
+</style>
+</head>
+<body>
+
+<h1>Strip Poker · 3 redesign del wardrobe</h1>
+<p class="lead">
+  La schermata <b>"Cosa avete addosso?"</b> ridisegnata in 3 modi. Stesso set di
+  capi (13 a testa). <b>Tocca i capi</b> per selezionarli; il contatore si
+  aggiorna e la CTA si sblocca quando entrambi hanno almeno un capo.
+</p>
+
+<div class="row">
+
+  <!-- ============================ -->
+  <!-- W1 · TAB LUI/LEI             -->
+  <!-- ============================ -->
+  <div class="col">
+    <h2>W1 · Tab Lui / Lei</h2>
+    <p class="desc">Una persona alla volta, lista full-width.
+      Le righe sono <b>più alte</b> e leggibili, niente compressione a due colonne.</p>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="modal w1">
+        <div class="topbar">
+          <button class="back">‹</button>
+          <div class="ttitle">♠ Strip · Setup</div>
+          <div></div>
+        </div>
+        <div class="heading">
+          <h3>Cosa avete <b>addosso</b>?</h3>
+          <div class="sub">Spunta quello che indossate adesso. Scarpe e calzini contano 2 e si tolgono uno alla volta.</div>
+        </div>
+        <div class="tabs">
+          <div class="tab on" data-tab="lui">🐻 Lui<span class="tot" data-tot="lui">0 capi</span></div>
+          <div class="tab"      data-tab="lei">🧁 Lei<span class="tot" data-tot="lei">0 capi</span></div>
+        </div>
+        <div class="body">
+          <div class="list" data-list="lui"></div>
+          <div class="list" data-list="lei" style="display:none"></div>
+        </div>
+        <div class="footbar">
+          <div class="eq" data-eq>Consiglio: stesso numero di capi per una partita equilibrata.</div>
+          <button class="cta" disabled>Inizia a giocare →</button>
+        </div>
+      </div>
+      <div class="home-ind"></div>
+    </div>
+    <button class="replay" data-reset>↺ reset</button>
+  </div>
+
+  <!-- ============================ -->
+  <!-- W2 · GRID EMOJI XL           -->
+  <!-- ============================ -->
+  <div class="col">
+    <h2>W2 · Grid · emoji XL</h2>
+    <p class="desc">Due colonne, ogni capo è una <b>tile</b> con emoji grande.
+      Più visivo, meno "form". Vedi tutto in un colpo d'occhio.</p>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="modal w2">
+        <div class="topbar">
+          <button class="back">‹</button>
+          <div class="ttitle">♠ Strip · Setup</div>
+          <div></div>
+        </div>
+        <div class="heading">
+          <h3>Cosa avete <b>addosso</b>?</h3>
+          <div class="sub">Tocca i capi. Scarpe e calzini contano 2.</div>
+        </div>
+        <div class="body">
+          <div class="cols">
+            <div class="who-card">
+              <div class="head">
+                <div class="nm">🐻 Lui</div>
+                <div class="tot" data-tot="lui">0 capi</div>
+              </div>
+              <div class="scroll" data-list="lui"></div>
+            </div>
+            <div class="who-card">
+              <div class="head">
+                <div class="nm">🧁 Lei</div>
+                <div class="tot" data-tot="lei">0 capi</div>
+              </div>
+              <div class="scroll" data-list="lei"></div>
+            </div>
+          </div>
+        </div>
+        <div class="footbar">
+          <div class="eq" data-eq>Consiglio: stesso numero di capi per una partita equilibrata.</div>
+          <button class="cta" disabled>Inizia a giocare →</button>
+        </div>
+      </div>
+      <div class="home-ind"></div>
+    </div>
+    <button class="replay" data-reset>↺ reset</button>
+  </div>
+
+  <!-- ============================ -->
+  <!-- W3 · CHIP FLOW               -->
+  <!-- ============================ -->
+  <div class="col">
+    <h2>W3 · Chip pickable</h2>
+    <p class="desc">Niente checkbox: i capi sono <b>chip</b> da toccare,
+      raggruppati per zona. Gesto rapido, very tactile, sembra meno un form.</p>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="modal w3">
+        <div class="topbar">
+          <button class="back">‹</button>
+          <div class="ttitle">♠ Strip · Setup</div>
+          <div></div>
+        </div>
+        <div class="heading">
+          <h3>Cosa avete <b>addosso</b>?</h3>
+          <div class="sub">Tocca i chip per accendere i capi. Scarpe e calzini contano 2.</div>
+        </div>
+        <div class="body">
+          <div class="scroll" data-flow></div>
+        </div>
+        <div class="footbar">
+          <div class="eq" data-eq>Consiglio: stesso numero di capi per una partita equilibrata.</div>
+          <button class="cta" disabled>Inizia a giocare →</button>
+        </div>
+      </div>
+      <div class="home-ind"></div>
+    </div>
+    <button class="replay" data-reset>↺ reset</button>
+  </div>
+
+</div>
+
+<script>
+// =========================================================
+// Dataset capi (specchio di js/lib/logic.js#GUARDAROBA)
+// =========================================================
+const GUARDAROBA = [
+  { k:'cappello',    n:'Cappello',    e:'🎩', g:'Testa',  qty:1 },
+  { k:'occhiali',    n:'Occhiali',    e:'🕶️', g:'Testa',  qty:1 },
+  { k:'sciarpa',     n:'Sciarpa',     e:'🧣', g:'Testa',  qty:1 },
+  { k:'giacca',      n:'Giacca',      e:'🧥', g:'Sopra',  qty:1 },
+  { k:'felpa',       n:'Felpa',       e:'🧶', g:'Sopra',  qty:1 },
+  { k:'maglietta',   n:'Maglietta',   e:'👕', g:'Sopra',  qty:1 },
+  { k:'gonna',       n:'Gonna',       e:'👗', g:'Sotto',  qty:1, sesso:'lei' },
+  { k:'pantaloncini',n:'Pantaloncini',e:'🩳', g:'Sotto',  qty:1, sesso:'lui' },
+  { k:'scarpe',      n:'Scarpe',      e:'👟', g:'Piedi',  qty:2 },
+  { k:'calzini',     n:'Calzini',     e:'🧦', g:'Piedi',  qty:2 },
+  { k:'mutande',     n:'Mutande',     e:'🩲', g:'Intimo', qty:1 },
+  { k:'reggiseno',   n:'Reggiseno',   e:'👙', g:'Intimo', qty:1, sesso:'lei' },
+  { k:'canottiera',  n:'Canottiera',  e:'🦺', g:'Intimo', qty:1, sesso:'lui' },
+];
+const forSesso = s => GUARDAROBA.filter(c => !c.sesso || c.sesso === s);
+const GROUPS = ['Testa','Sopra','Sotto','Piedi','Intimo'];
+
+// stato per ogni mockup separato
+function mkState(){ return { lui:{}, lei:{} }; }
+function defaultSel(){
+  const st = mkState();
+  for (const c of forSesso('lui')) st.lui[c.k] = true;
+  for (const c of forSesso('lei')) st.lei[c.k] = true;
+  return st;
+}
+function totCapi(sel, sesso){
+  let n = 0;
+  for (const c of forSesso(sesso)) if (sel[c.k]) n += c.qty;
+  return n;
+}
+
+// =========================================================
+// W1 — Tab Lui/Lei + list rows
+// =========================================================
+function initW1(root){
+  let state = defaultSel();
+  let activeTab = 'lui';
+
+  const renderList = (who) => {
+    const list = root.querySelector(`[data-list="${who}"]`);
+    list.innerHTML = '';
+    let lastG = null;
+    for (const c of forSesso(who)){
+      if (c.g !== lastG){
+        const h = document.createElement('div'); h.className='grp'; h.textContent = c.g;
+        list.appendChild(h); lastG = c.g;
+      }
+      const row = document.createElement('div');
+      row.className = 'it' + (state[who][c.k] ? ' on' : '');
+      row.innerHTML =
+        `<span class="em">${c.e}</span>`+
+        `<span class="nm">${c.n}</span>`+
+        (c.qty>1 ? `<span class="qty">×${c.qty}</span>` : '')+
+        `<span class="ck"></span>`;
+      row.onclick = () => { state[who][c.k] = !state[who][c.k]; renderAll(); };
+      list.appendChild(row);
+    }
+  };
+  const renderAll = () => {
+    renderList('lui'); renderList('lei');
+    const nL = totCapi(state.lui,'lui'), nF = totCapi(state.lei,'lei');
+    root.querySelector('[data-tot="lui"]').textContent = nL+' capi';
+    root.querySelector('[data-tot="lei"]').textContent = nF+' capi';
+    const eq = root.querySelector('[data-eq]');
+    eq.textContent = (nL && nF && nL!==nF)
+      ? `Sbilanciata: Lui ${nL} · Lei ${nF} (ok lo stesso).`
+      : 'Consiglio: stesso numero di capi per una partita equilibrata.';
+    root.querySelector('.cta').disabled = !(nL>0 && nF>0);
+  };
+  root.querySelectorAll('.tab').forEach(t => {
+    t.onclick = () => {
+      activeTab = t.dataset.tab;
+      root.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x===t));
+      root.querySelectorAll('[data-list]').forEach(l =>
+        l.style.display = (l.dataset.list===activeTab) ? '' : 'none');
+    };
+  });
+  root.querySelector('[data-reset]').onclick = () => { state = defaultSel(); renderAll(); };
+  renderAll();
+}
+
+// =========================================================
+// W2 — Grid emoji XL, due colonne
+// =========================================================
+function initW2(root){
+  let state = defaultSel();
+
+  const renderCol = (who) => {
+    const box = root.querySelector(`[data-list="${who}"]`);
+    box.innerHTML = '';
+    let lastG = null, grid = null;
+    for (const c of forSesso(who)){
+      if (c.g !== lastG){
+        const h = document.createElement('div'); h.className='grp'; h.textContent = c.g;
+        box.appendChild(h);
+        grid = document.createElement('div'); grid.className='grid';
+        box.appendChild(grid); lastG = c.g;
+      }
+      const tile = document.createElement('div');
+      tile.className = 'tile' + (state[who][c.k] ? ' on' : '');
+      tile.innerHTML =
+        (c.qty>1 ? `<span class="qty">×${c.qty}</span>` : '')+
+        `<span class="ck"></span>`+
+        `<span class="em">${c.e}</span>`+
+        `<span class="nm">${c.n}</span>`;
+      tile.onclick = () => { state[who][c.k] = !state[who][c.k]; renderAll(); };
+      grid.appendChild(tile);
+    }
+  };
+  const renderAll = () => {
+    renderCol('lui'); renderCol('lei');
+    const nL = totCapi(state.lui,'lui'), nF = totCapi(state.lei,'lei');
+    root.querySelector('[data-tot="lui"]').textContent = nL+' capi';
+    root.querySelector('[data-tot="lei"]').textContent = nF+' capi';
+    const eq = root.querySelector('[data-eq]');
+    eq.textContent = (nL && nF && nL!==nF)
+      ? `Sbilanciata: Lui ${nL} · Lei ${nF} (ok lo stesso).`
+      : 'Consiglio: stesso numero di capi per una partita equilibrata.';
+    root.querySelector('.cta').disabled = !(nL>0 && nF>0);
+  };
+  root.querySelector('[data-reset]').onclick = () => { state = defaultSel(); renderAll(); };
+  renderAll();
+}
+
+// =========================================================
+// W3 — Chip flow, due blocchi (Lui sopra, Lei sotto)
+// =========================================================
+function initW3(root){
+  let state = defaultSel();
+  const flow = root.querySelector('[data-flow]');
+
+  const renderFlow = () => {
+    flow.innerHTML = '';
+    for (const who of ['lui','lei']){
+      const block = document.createElement('div'); block.className='who-block';
+      const bar = document.createElement('div'); bar.className='who-bar';
+      const nm = document.createElement('div'); nm.className='nm';
+      nm.textContent = (who==='lui' ? '🐻 Lui' : '🧁 Lei');
+      const tot = document.createElement('div'); tot.className='tot'; tot.dataset.tot = who;
+      bar.append(nm, tot); block.appendChild(bar);
+
+      for (const g of GROUPS){
+        const items = forSesso(who).filter(c => c.g === g);
+        if (!items.length) continue;
+        const head = document.createElement('div'); head.className='grp-mini'; head.textContent = g;
+        block.appendChild(head);
+        const chips = document.createElement('div'); chips.className='chips';
+        for (const c of items){
+          const chip = document.createElement('div');
+          chip.className = 'chip' + (state[who][c.k] ? ' on' : '');
+          chip.innerHTML =
+            `<span class="em">${c.e}</span>`+
+            `<span class="nm">${c.n}</span>`+
+            (c.qty>1 ? `<span class="qty">×${c.qty}</span>` : '');
+          chip.onclick = () => { state[who][c.k] = !state[who][c.k]; renderAll(); };
+          chips.appendChild(chip);
+        }
+        block.appendChild(chips);
+      }
+      flow.appendChild(block);
+    }
+  };
+  const renderAll = () => {
+    renderFlow();
+    const nL = totCapi(state.lui,'lui'), nF = totCapi(state.lei,'lei');
+    flow.querySelector('[data-tot="lui"]').textContent = nL+' capi';
+    flow.querySelector('[data-tot="lei"]').textContent = nF+' capi';
+    const eq = root.querySelector('[data-eq]');
+    eq.textContent = (nL && nF && nL!==nF)
+      ? `Sbilanciata: Lui ${nL} · Lei ${nF} (ok lo stesso).`
+      : 'Consiglio: stesso numero di capi per una partita equilibrata.';
+    root.querySelector('.cta').disabled = !(nL>0 && nF>0);
+  };
+  root.querySelector('[data-reset]').onclick = () => { state = defaultSel(); renderAll(); };
+  renderAll();
+}
+
+// boot
+document.querySelectorAll('.modal.w1').forEach(initW1);
+document.querySelectorAll('.modal.w2').forEach(initW2);
+document.querySelectorAll('.modal.w3').forEach(initW3);
+document.querySelectorAll('[data-reset]').forEach(b => {
+  // ogni modal ha gia' un proprio reset; ma se il reset di col e' fuori dalla modal, lo bindiamo al modal sibling
+  if (!b.closest('.modal')){
+    const ph = b.parentElement.querySelector('.phone .modal');
+    if (!ph) return;
+    b.onclick = () => {
+      if (ph.classList.contains('w1')) initW1(ph);
+      else if (ph.classList.contains('w2')) initW2(ph);
+      else if (ph.classList.contains('w3')) initW3(ph);
+    };
+  }
+});
+</script>
+</body>
+</html>

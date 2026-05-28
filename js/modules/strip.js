@@ -531,7 +531,7 @@ function renderList(box, who, sel, onChange) {
   GUARDAROBA.filter(c => !c.sesso || c.sesso === who).forEach(c => {
     if (c.gruppo !== lastG) { box.appendChild(mk('div', 'grp', c.gruppo)); lastG = c.gruppo; }
     const row = mk('div', 'it' + (sel[c.k] ? ' on' : ''));
-    add(row, mk('span', 'em', GUARDAROBA_META[c.k].e), mk('span', null, c.n));
+    add(row, mk('span', 'em', GUARDAROBA_META[c.k].e), mk('span', 'nm', c.n));
     if (c.qty > 1) row.appendChild(mk('span', 'qty', '×' + c.qty));
     row.appendChild(mk('span', 'ck'));
     row.onclick = () => { sel[c.k] = !sel[c.k]; onChange(); };
@@ -548,21 +548,29 @@ function drawSetup() {
   add(head, h3, mk('div', 'sub', 'Spunta quello che indossate adesso. Scarpe e calzini contano 2 e si tolgono uno alla volta.'));
   ov.appendChild(head);
 
-  const cols = mk('div', 'cols');
-  const cardLui = mk('div', 'who-card'); const totLui = mk('div', 'tot', '0 capi'); const listLui = mk('div', 'list');
-  add(cardLui, mk('h4', null, '🐻 Lui'), totLui, listLui);
-  const cardLei = mk('div', 'who-card'); const totLei = mk('div', 'tot', '0 capi'); const listLei = mk('div', 'list');
-  add(cardLei, mk('h4', null, '🧁 Lei'), totLei, listLei);
-  add(cols, cardLui, cardLei);
-  ov.appendChild(cols);
+  // tab Lui/Lei: una colonna alla volta, lista full-width
+  const tabs = mk('div', 'tabs');
+  const tabLui = mk('div', 'tab on');
+  const totLui = mk('span', 'tot', '0 capi');
+  tabLui.appendChild(document.createTextNode('🐻 Lui'));
+  tabLui.appendChild(totLui);
+  const tabLei = mk('div', 'tab');
+  const totLei = mk('span', 'tot', '0 capi');
+  tabLei.appendChild(document.createTextNode('🧁 Lei'));
+  tabLei.appendChild(totLei);
+  add(tabs, tabLui, tabLei);
+  ov.appendChild(tabs);
+
+  let active = 'lui';
+  const list = mk('div', 'list');
+  ov.appendChild(list);
 
   const eqNote = mk('div', 'eqNote', 'Consiglio: stesso numero di capi per una partita equilibrata.');
   ov.appendChild(eqNote);
 
   const go = mk('button', 'btn', 'Inizia a giocare →'); go.disabled = true;
   const refresh = () => {
-    renderList(listLui, 'lui', selLui, refresh);
-    renderList(listLei, 'lei', selLei, refresh);
+    renderList(list, active, active === 'lui' ? selLui : selLei, refresh);
     const nL = totCapi(selLui), nF = totCapi(selLei);
     totLui.textContent = nL + ' capi'; totLei.textContent = nF + ' capi';
     go.disabled = !(nL > 0 && nF > 0);
@@ -570,6 +578,9 @@ function drawSetup() {
       ? ('Sbilanciata: Lui ' + nL + ' · Lei ' + nF + ' (ok lo stesso).')
       : 'Consiglio: stesso numero di capi per una partita equilibrata.';
   };
+  tabLui.onclick = () => { if (active === 'lui') return; active = 'lui'; tabLui.classList.add('on'); tabLei.classList.remove('on'); refresh(); };
+  tabLei.onclick = () => { if (active === 'lei') return; active = 'lei'; tabLei.classList.add('on'); tabLui.classList.remove('on'); refresh(); };
+
   go.onclick = () => { closeOv(); startGame(selLui, selLei); };
   ov.appendChild(go);
   refresh();
