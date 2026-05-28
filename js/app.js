@@ -156,6 +156,8 @@ function enablePager() {
   let startX = 0, startY = 0, dragging = false, decided = false, horiz = false;
   vp.addEventListener('pointerdown', e => {
     if (e.target.closest('.mappa-area')) return;   // dentro la mappa: lascia fare a Leaflet
+    if (e.target.closest('.yz-scrim')) return;     // tavolo/popup Yahtzutra = isola
+    if (document.body.classList.contains('yz-busy')) return; // partita Yahtzutra in corso: niente swipe
     dragging = true; decided = false; horiz = false;
     startX = e.clientX; startY = e.clientY;
     track().style.transition = 'none';

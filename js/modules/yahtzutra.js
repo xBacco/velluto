@@ -93,6 +93,7 @@ function resetGame() {
   pendingRegistra = null;
   jackpotConcessoGiri = false;
   currentPlayer = 'lui';
+  document.body.classList.remove('yz-busy'); // pre-partita: swipe libero
 }
 
 function other(p) { return p === 'lui' ? 'lei' : 'lui'; }
@@ -287,6 +288,9 @@ let tableScrim = null;
 
 function openTable() {
   if (gameOver) { toast('Partita finita: tocca Nuova partita.', 'info'); return; }
+  // Dal primo Lancia: blocca lo swipe del pager (vedi app.js#enablePager).
+  // Resta attivo per tutta la partita fino a fine partita o Nuova partita.
+  document.body.classList.add('yz-busy');
   closeTable();
   const scrim = mk('div', 'yz-scrim yz-table-scrim dadi-scrim');
   const sheet = mk('div', 'yz-table');
@@ -725,6 +729,7 @@ function openImpostazioni() {
 // ---------------------------------------------------------------------------
 function openFinePartita() {
   gameOver = true;
+  document.body.classList.remove('yz-busy'); // partita finita: swipe sblocco
   const tt = totale.lui, tg = totale.lei;
   let winner = null;
   if (tt > tg) winner = 'lui';
