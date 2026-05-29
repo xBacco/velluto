@@ -9,8 +9,11 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Lussuria">
-<title>Lussuria</title>
+<meta name="apple-mobile-web-app-title" content="brace.">
+<title>brace.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -31,7 +34,7 @@
   <div id="login" style="display:none">
     <div class="candle">🕯️</div>
     <div class="login-kick">il nostro spazio</div>
-    <div class="login-title">Lussuria</div>
+    <div class="login-title">brace<span class="wm-dot">.</span></div>
     <form id="loginForm" autocomplete="on">
       <input id="email" type="email" placeholder="Email" autocomplete="username" required>
       <input id="password" type="password" placeholder="Password" autocomplete="current-password" required>
@@ -43,7 +46,7 @@
   <!-- GATE LOCK PIN -->
   <div id="lockgate" class="lockgate" style="display:none">
     <div class="candle">🔥</div>
-    <div class="lock-title">Lussuria</div>
+    <div class="lock-title">brace<span class="wm-dot">.</span></div>
     <div class="lock-sub">Inserisci il codice</div>
     <div class="pin-dots" id="pinDots"></div>
     <div class="pin-pad" id="pinPad"></div>
@@ -54,7 +57,7 @@
   <!-- APP -->
   <div class="wrap" id="app" style="display:none">
     <div class="topbar">
-      <div class="brand">Lussuria</div>
+      <div class="brand">brace<span class="wm-dot">.</span></div>
       <div class="topbar-right">
         <button class="me-chip" id="meChip"></button>
       </div>

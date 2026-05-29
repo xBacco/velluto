@@ -100,7 +100,7 @@ function renderMain() {
   const pw = row('🔐', 'Cambia password'); add(pw, mk('span', 'set-chev', '›'));
   pw.classList.add('tap'); pw.onclick = openCambiaPassword;   // Task 12 (form)
   add(aCard, pw); add(aSec, aCard);
-  const out = mk('button', 'set-logout', 'Esci da Lussuria');
+  const out = mk('button', 'set-logout', 'Esci da brace.');
   out.onclick = async () => { closeImpostazioni(); try { await logout(); } catch (_) {} location.reload(); };
   add(aSec, out); add(body, aSec);
 

@@ -55,8 +55,8 @@ export async function enableBio() {
   const cred = await navigator.credentials.create({
     publicKey: {
       challenge: crypto.getRandomValues(new Uint8Array(32)),
-      rp: { name: 'Lussuria' },
-      user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'lussuria', displayName: 'Lussuria' },
+      rp: { name: 'brace.' },
+      user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'brace', displayName: 'brace.' },
       pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
       authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' },
       timeout: 60000,
