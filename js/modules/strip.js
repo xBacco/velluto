@@ -567,7 +567,7 @@ function resetPolaroid() {
 // ---------------------------------------------------------------------------
 let ovEntry = null;
 
-function closeOv() {
+export function closeOv() {
   if (ovEntry && ovEntry.alive) ovEntry.close();   // → history.back → popstate → teardownOv
   else teardownOv();
 }

@@ -4,7 +4,7 @@ import {
 } from '../lib/logic.js';
 import { listDadiFacce, seedDadiFacce, updateDadiFaccia } from '../store.js';
 import { renderRuota, openEditorRuota } from './ruota.js';
-import { renderStrip, hasActiveGame as stripHasActiveGame } from './strip.js';
+import { renderStrip, hasActiveGame as stripHasActiveGame, closeOv as closeStripOv } from './strip.js';
 import { renderYahtzutra, hasActiveGame as yzHasActiveGame } from './yahtzutra.js';
 import { attachSwipeBack } from '../lib/swipe-back.js';
 import { pushBack } from '../lib/back-stack.js';
@@ -118,12 +118,9 @@ export function openGameModal(title, mount, onClose) {
     // Back gerarchico: se c'è un overlay Strip aperto (Regole/Opzioni/Storia),
     // la freccia torna al palco (chiude l'overlay con fade) invece di uscire
     // di colpo dal gioco. Solo dal palco l'arrow chiude davvero il modal.
-    const ov = document.querySelector('.strip-ov');
-    if (ov) {
-      ov.classList.remove('show');
-      setTimeout(() => { if (ov.parentNode) ov.remove(); }, 300);
-      return;
-    }
+    // closeStripOv passa per il back-stack (history.back → popstate → teardown),
+    // evitando entry stale che consumerebbero un back-press fantasma dopo.
+    if (document.querySelector('.strip-ov')) { closeStripOv(); return; }
     closeGameModal();
   };
   arrow.addEventListener('pointerdown', e => e.stopPropagation());
