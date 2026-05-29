@@ -365,6 +365,13 @@ export const ECONOMIA_SLOT = {
 export const LAMPO_TTL_MS    = 24 * 60 * 60 * 1000;
 export const POLAROID_TTL_MS = 24 * 60 * 60 * 1000;
 
+// Quanti tiri si possono davvero accreditare senza superare il cap.
+// Ritorna l'incremento effettivo (>=0). Eccedenza scartata.
+export function accreditoConCap(saldo, delta, cap) {
+  if (delta <= 0) return 0;
+  return Math.max(0, Math.min(delta, cap - saldo));
+}
+
 // Saldo = somma dei delta dei movimenti dell'utente (ledger insert-only).
 export function saldoGiri(movimenti, userId) {
   return movimenti.filter(m => m.user_id === userId).reduce((s, m) => s + m.delta, 0);
