@@ -168,13 +168,15 @@ export async function listBuoni(client, coupleId) {
   return check(res);
 }
 
-export async function addBuono(client, { couple_id, da_id, a_id, emoji, titolo, descrizione, tipo, stato, bundle_id }) {
-  const res = await client.from('buoni').insert({
+export async function addBuono(client, { couple_id, da_id, a_id, emoji, titolo, descrizione, tipo, stato, bundle_id, scadenza_iso }) {
+  const payload = {
     couple_id, da_id, a_id,
     emoji: emoji || '🎟️', titolo, descrizione: descrizione || null,
     tipo, stato, bundle_id: bundle_id || null,
-  }).select().single();
-  return check(res);
+  };
+  if (scadenza_iso != null) payload.scadenza_iso = scadenza_iso;
+  const { data, error } = await client.from('buoni').insert(payload).select().single();
+  return check({ data, error });
 }
 
 export async function updateStatoBuono(client, id, patch) {
