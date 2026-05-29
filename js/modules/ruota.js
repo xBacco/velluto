@@ -2,7 +2,7 @@ import { mk, add, clear, toast, openSheet } from '../ui.js';
 import {
   fetteRuota, estraiFetta, saldoGiri, puoGirare, giriEleggibile, ultimiPremi,
   ruotaContenutiDefaultRows, proposteDa, buoniSorpresaDa, pescaContenuto,
-  segretiDaRivelare, applicaDoppio,
+  segretiDaRivelare, applicaDoppio, LAMPO_TTL_MS, POLAROID_TTL_MS,
 } from '../lib/logic.js';
 import {
   listGiri, accreditaGiro, spendiGiro,
@@ -292,6 +292,7 @@ async function renderEsitoNormale(fetta, ui, boost) {
 
   // Effetti differiti / azioni per-spicchio
   await applicaEffettoEsito(fetta, ui, boost);
+  await persistEsito(fetta, boost, { user_id: ctx.me.id });
 }
 
 // Testo descrittivo del premio in funzione dello spicchio e del boost.
@@ -309,8 +310,43 @@ function bodyText(esito, boost) {
   return '';
 }
 
+// Salva i premi differiti (polaroid, lampo) nel DB con scadenza_iso.
+async function persistEsito(esito, boost, { user_id }) {
+  const { client, me } = ctx;
+  const coupleId = me.couple_id;
+  const partnerUserId = await partnerId();
+
+  if (esito.key === 'polaroid') {
+    const quantita = boost.boosted ? 2 : 1;
+    const scadenza_iso = new Date(Date.now() + POLAROID_TTL_MS).toISOString();
+    for (let i = 0; i < quantita; i++) {
+      await addBuono(client, {
+        couple_id: coupleId, da_id: user_id, a_id: partnerUserId,
+        emoji: '📸', titolo: 'Foto osè', descrizione: 'Inviane una al partner entro 24h',
+        tipo: 'regalo', stato: 'attivo', scadenza_iso,
+      });
+    }
+    return;
+  }
+
+  if (esito.key === 'lampo') {
+    const quantita = boost.boosted ? 2 : 1;
+    const scadenza_iso = new Date(Date.now() + LAMPO_TTL_MS).toISOString();
+    const lista = state.cont.filter(c => c.categoria === 'buono');
+    for (let i = 0; i < quantita; i++) {
+      const pesca = lista[Math.floor(Math.random() * lista.length)];
+      if (!pesca) continue;
+      await addBuono(client, {
+        couple_id: coupleId, da_id: user_id, a_id: partnerUserId,
+        emoji: pesca.emoji || '🎟️', titolo: pesca.testo, descrizione: pesca.descrizione,
+        tipo: 'regalo', stato: 'attivo', scadenza_iso,
+      });
+    }
+    return;
+  }
+}
+
 // Effetti collaterali per-spicchio (DB writes, bottoni azione).
-// Le varianti boost per polaroid/lampo con scadenza_iso saranno completate in Task 18.
 async function applicaEffettoEsito(fetta, ui, boost) {
   const { client, me } = ctx;
   switch (fetta.key) {
@@ -323,23 +359,6 @@ async function applicaEffettoEsito(fetta, ui, boost) {
         // boost.quantita === 2: pesca una seconda proposta
         const pr2 = pescaContenuto(state.proposte.filter(p => p !== pr));
         ui.body.textContent = pr && pr2 ? `${pr.testo} / ${pr2.testo}` : (pr ? pr.testo : '—');
-      }
-      break;
-    }
-    case 'buono': {
-      // 'buono' / 'lampo' — vecchio nome 'buono' nel switch originale
-      const b = pescaContenuto(state.buoniS);
-      if (!boost.boosted) {
-        ui.body.textContent = b ? `${b.testo}: lo trovi nei Buoni.` : 'Un buono a sorpresa!';
-      }
-      if (b) {
-        try {
-          const partner = await partnerId();
-          await addBuono(client, {
-            couple_id: me.couple_id, da_id: partner, a_id: me.id,
-            emoji: b.emoji, titolo: b.testo, descrizione: b.descrizione, tipo: 'regalo', stato: 'attivo',
-          });
-        } catch (err) { toast('Buono non salvato: ' + err.message, 'err'); }
       }
       break;
     }
@@ -367,7 +386,7 @@ async function applicaEffettoEsito(fetta, ui, boost) {
       ui.azione.onclick = () => { ui.scrim.remove(); if (winhiEl) winhiEl.classList.remove('on'); apriSceltaSegreto(); };
       break;
     // 'massaggio', 'wild', 'orale', 'bendare', 'lampo', 'polaroid', 'jolly':
-    // solo testo (già impostato da bodyText) — effetti differiti in Task 18
+    // solo testo (già impostato da bodyText) — persistEsito gestisce i DB write
     default:
       break;
   }
@@ -409,7 +428,7 @@ async function risolviJackpot(ui, boostActive) {
   await animaSpinVerso(sub1.indice);
   const boost1 = boostActive ? applicaDoppio(sub1.fetta) : { boosted: false };
   renderEsitoJackpot(sub1.fetta, boost1, { avatar: '🐻', name: 'Tomas' }, ui);
-  // TODO Task 18: persistEsito(sub1.fetta, boost1, { user_id: me.id })
+  await persistEsito(sub1.fetta, boost1, { user_id: me.id });
   await applicaEffettoEsito(sub1.fetta, ui, boost1);
   // Pausa perché l'utente legga il primo esito
   await new Promise(r => setTimeout(r, 1200));
@@ -421,8 +440,7 @@ async function risolviJackpot(ui, boostActive) {
   await animaSpinVerso(sub2.indice);
   const boost2 = (boostActive || boost2carry) ? applicaDoppio(sub2.fetta) : { boosted: false };
   renderEsitoJackpot(sub2.fetta, boost2, { avatar: '🧁', name: 'morosa' }, ui);
-  // TODO Task 18: persistEsito(sub2.fetta, boost2, { user_id: partnerUserId })
-  //   dove partnerUserId = await partnerId()
+  await persistEsito(sub2.fetta, boost2, { user_id: await partnerId() });
   await applicaEffettoEsito(sub2.fetta, ui, boost2);
 
   // 4. Summary card
