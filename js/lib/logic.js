@@ -372,6 +372,23 @@ export function accreditoConCap(saldo, delta, cap) {
   return Math.max(0, Math.min(delta, cap - saldo));
 }
 
+// Saldo slot dell'utente (ledger insert-only, somma dei delta).
+export function saldoSlot(movimenti, userId) {
+  return movimenti.filter(m => m.user_id === userId).reduce((s, m) => s + m.delta, 0);
+}
+
+// Settimanale slot: ok se mai maturato o se passati ECONOMIA_SLOT.GRATIS_OGNI_GIORNI dall'ultimo.
+// `now` (Date) iniettabile per i test.
+export function slotEleggibile(movimenti, userId, now = new Date()) {
+  const settimanali = movimenti
+    .filter(m => m.user_id === userId && m.motivo === 'settimanale')
+    .map(m => new Date(m.creato))
+    .sort((a, b) => b - a);
+  if (!settimanali.length) return { ok: true, prossimoSblocco: null };
+  const prossimo = new Date(settimanali[0].getTime() + ECONOMIA_SLOT.GRATIS_OGNI_GIORNI * 864e5);
+  return { ok: now >= prossimo, prossimoSblocco: prossimo.toISOString() };
+}
+
 // Saldo = somma dei delta dei movimenti dell'utente (ledger insert-only).
 export function saldoGiri(movimenti, userId) {
   return movimenti.filter(m => m.user_id === userId).reduce((s, m) => s + m.delta, 0);
