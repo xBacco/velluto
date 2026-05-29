@@ -2,12 +2,13 @@ import { mk, add, clear, toast, openSheet } from '../ui.js';
 import {
   fetteRuota, estraiFetta, saldoGiri, puoGirare, giriEleggibile, ultimiPremi,
   ruotaContenutiDefaultRows, proposteDa, buoniSorpresaDa, pescaContenuto,
-  segretiDaRivelare,
+  segretiDaRivelare, applicaDoppio,
 } from '../lib/logic.js';
 import {
   listGiri, accreditaGiro, spendiGiro,
   listRuotaContenuti, seedRuotaContenuti, addRuotaContenuto, updateRuotaContenuto, deleteRuotaContenuto,
   listBuoni, addBuono, listDesideri,
+  getFlagDoppio, setFlagDoppio,
 } from '../store.js';
 
 let ctx = null;        // { client, me, panel }
@@ -51,6 +52,9 @@ export async function renderRuota(context) {
     saldo: saldoGiri(mov, me.id), elegg: giriEleggibile(mov, me.id), fette,
   };
   draw();
+
+  const flagDoppio = await getFlagDoppio(client, me.couple_id);
+  if (flagDoppio) mostraBadgeX2(spinBtnEl);
 }
 
 function draw() {
@@ -78,6 +82,7 @@ function draw() {
   const cost = mk('span', 'cost'); cost.appendChild(mk('span', 'c'));
   btn.appendChild(cost);
   btn.onclick = spin;
+  spinBtnEl = btn;
   p.appendChild(btn);
 
   const ups = ultimiPremi(state.mov, ctx.me.id);
@@ -95,9 +100,24 @@ function giorniA(iso) {
   return giorni <= 1 ? '1 giorno' : giorni + ' giorni';
 }
 
+// ---- badge ×2 helpers ----
+function mostraBadgeX2(btn) {
+  if (!btn || btn.querySelector('.ruota-x2-badge')) return;
+  const b = document.createElement('span');
+  b.className = 'ruota-x2-badge';
+  b.textContent = 'PROSSIMO ×2';
+  btn.style.position = 'relative';
+  btn.appendChild(b);
+}
+
+function nascondiBadgeX2(btn) {
+  btn?.querySelector('.ruota-x2-badge')?.remove();
+}
+
 // ---- ruota (emoji sempre dritte) ----
 let wheelEl = null;
 let winhiEl = null;
+let spinBtnEl = null;
 
 function buildWheel() {
   const wrap = mk('div', 'wheel-wrap');
@@ -248,6 +268,12 @@ async function risolvi(fetta, ui) {
       ui.azione.style.display = '';
       ui.azione.onclick = () => { ui.scrim.remove(); if (winhiEl) winhiEl.classList.remove('on'); apriSceltaSegreto(); };
       break;
+    case 'doppio': {
+      await setFlagDoppio(client, me.couple_id, true);
+      mostraBadgeX2(spinBtnEl);
+      ui.body.textContent = 'Il tuo prossimo premio sarà raddoppiato.';
+      break;
+    }
   }
 }
 
