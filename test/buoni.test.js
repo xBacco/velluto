@@ -139,3 +139,44 @@ test('deleteBuono elimina per id', async () => {
   await deleteBuono(c, 'b1');
   assert.equal(c._tables.buoni.length, 0);
 });
+
+test('addBuono accetta scadenza_iso e la inoltra nel payload', async () => {
+  // fakeClient simile a quello in ruota.test.js
+  const calls = [];
+  const fakeClient = {
+    from(table) {
+      const state = { table, op: null, payload: null };
+      return {
+        insert(p) { state.op = 'insert'; state.payload = p; return this; },
+        select() { return this; },
+        single() { return this; },
+        then(resolve) { calls.push(state); resolve({ data: { id: 'b1', ...state.payload }, error: null }); }
+      };
+    },
+  };
+  const r = await addBuono(fakeClient, {
+    couple_id: 'c1', da_id: 'me', a_id: 'altro',
+    emoji: '🎟️', titolo: 'Coccola', descrizione: 'Lampo',
+    tipo: 'regalo', stato: 'attivo',
+    scadenza_iso: '2026-05-29T22:00:00.000Z',
+  });
+  assert.equal(calls[0].payload.scadenza_iso, '2026-05-29T22:00:00.000Z');
+  assert.equal(r.scadenza_iso, '2026-05-29T22:00:00.000Z');
+});
+
+test('addBuono senza scadenza_iso non la include nel payload', async () => {
+  const calls = [];
+  const fakeClient = {
+    from(table) {
+      const state = { table, op: null, payload: null };
+      return {
+        insert(p) { state.op = 'insert'; state.payload = p; return this; },
+        select() { return this; },
+        single() { return this; },
+        then(resolve) { calls.push(state); resolve({ data: { id: 'b2', ...state.payload }, error: null }); }
+      };
+    },
+  };
+  await addBuono(fakeClient, { couple_id: 'c1', da_id: 'me', a_id: 'altro', emoji: '🎁', titolo: 'X', tipo: 'regalo', stato: 'attivo' });
+  assert.ok(!('scadenza_iso' in calls[0].payload));
+});

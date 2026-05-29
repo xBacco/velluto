@@ -168,13 +168,15 @@ export async function listBuoni(client, coupleId) {
   return check(res);
 }
 
-export async function addBuono(client, { couple_id, da_id, a_id, emoji, titolo, descrizione, tipo, stato, bundle_id }) {
-  const res = await client.from('buoni').insert({
+export async function addBuono(client, { couple_id, da_id, a_id, emoji, titolo, descrizione, tipo, stato, bundle_id, scadenza_iso }) {
+  const payload = {
     couple_id, da_id, a_id,
     emoji: emoji || '🎟️', titolo, descrizione: descrizione || null,
     tipo, stato, bundle_id: bundle_id || null,
-  }).select().single();
-  return check(res);
+  };
+  if (scadenza_iso != null) payload.scadenza_iso = scadenza_iso;
+  const { data, error } = await client.from('buoni').insert(payload).select().single();
+  return check({ data, error });
 }
 
 export async function updateStatoBuono(client, id, patch) {
@@ -217,6 +219,36 @@ export async function spendiGiro(client, { couple_id, user_id, esito }) {
 // Hook per i giochi: accredita i giri di una vittoria.
 export async function concediGiro(client, { couple_id, user_id }) {
   return accreditaGiro(client, { couple_id, user_id, motivo: 'gioco', delta: ECONOMIA.GIRI_PER_VITTORIA });
+}
+
+// --- Slot (ledger simmetrico a giri_movimenti) ---
+
+export async function listSlotMov(client, coupleId) {
+  const { data, error } = await client.from('slot_movimenti').select().eq('couple_id', coupleId).order('creato', { ascending: false });
+  return check({ data, error });
+}
+
+export async function accreditaSlot(client, { couple_id, user_id, motivo, delta }) {
+  const { data, error } = await client.from('slot_movimenti').insert({ couple_id, user_id, motivo, delta }).select().single();
+  return check({ data, error });
+}
+
+export async function spendiSlot(client, { couple_id, user_id }) {
+  const { data, error } = await client.from('slot_movimenti').insert({ couple_id, user_id, motivo: 'tiro', delta: -1 }).select().single();
+  return check({ data, error });
+}
+
+// --- Flag persistente "prossimo premio ×2" (couples.ruota_flag_doppio) ---
+
+export async function getFlagDoppio(client, coupleId) {
+  const { data, error } = await client.from('couples').select('ruota_flag_doppio').eq('id', coupleId).single();
+  if (error) check({ data, error });
+  return !!data?.ruota_flag_doppio;
+}
+
+export async function setFlagDoppio(client, coupleId, value) {
+  const { data, error } = await client.from('couples').update({ ruota_flag_doppio: !!value }).eq('id', coupleId);
+  return check({ data, error });
 }
 
 // ---- CONTENUTI RUOTA (editabili per coppia) ----

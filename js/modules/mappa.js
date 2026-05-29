@@ -5,6 +5,8 @@ import {
 } from '../lib/logic.js';
 import { listLuoghi, addLuogo, updateLuogo, deleteLuogo, listFoto, signedUrl, deleteFotoDi } from '../store.js';
 import { fotoEditor, loadThumbsInto } from './foto.js';
+import { pushBack } from '../lib/back-stack.js';
+import { attachSwipeBack } from '../lib/swipe-back.js';
 
 const TILE_DARK = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 const MESI = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
@@ -198,6 +200,9 @@ async function loadCover(l, img) {
 
 function openDetail(l) {
   const ov = mk('div', 'modal on');
+  const teardown = () => ov.remove();
+  const entry = pushBack(teardown);
+  const close = () => { if (entry.alive) entry.close(); else teardown(); };
   const stage = mk('div', 'mappa-stage');
   const pol = mk('div', 'mappa-pol');
   const inner = mk('div', 'mappa-pol-inner');
@@ -236,14 +241,15 @@ function openDetail(l) {
   const flip = mk('button', 'mappa-tbtn primary', '↻ Gira');
   flip.onclick = () => { pol.classList.toggle('flip'); flip.textContent = pol.classList.contains('flip') ? '↺ Fronte' : '↻ Gira'; };
   const edit = mk('button', 'mappa-tbtn', '✎ Modifica');
-  edit.onclick = () => { ov.remove(); openEdit(l); };
-  const close = mk('button', 'mappa-tbtn', '✕ Chiudi');
-  close.onclick = () => ov.remove();
-  add(tools, flip, edit, close);
+  edit.onclick = () => { close(); openEdit(l); };
+  const closeBtn = mk('button', 'mappa-tbtn', '✕ Chiudi');
+  closeBtn.onclick = close;
+  add(tools, flip, edit, closeBtn);
 
   add(ov, stage, tools);
   const fx = mk('div', 'mappa-flash'); add(ov, fx); setTimeout(() => fx.remove(), 450);
-  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+  ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  attachSwipeBack(ov, close);
   document.body.appendChild(ov);
 }
 

@@ -1,3 +1,6 @@
+import { pushBack } from './lib/back-stack.js';
+import { attachSwipeBack } from './lib/swipe-back.js';
+
 // Helper DOM SENZA innerHTML (un hook di sicurezza blocca innerHTML).
 export function mk(tag, cls, txt) {
   const e = document.createElement(tag);
@@ -26,15 +29,22 @@ export function toast(message, kind = 'info') {
 }
 
 // Bottom sheet modale; buildBody(sheetEl) riempie il contenuto.
+// Back-stack: registra una voce di history all'apertura cosi' tasto-back ed
+// edge-swipe del telefono chiudono lo sheet invece di uscire dall'app.
+// Lo swipe-back orizzontale dai bordi e' attivo sull'intero scrim.
 export function openSheet(title, buildBody) {
   const overlay = mk('div', 'modal on');
   const sheet = mk('div', 'sheet');
+  const teardown = () => overlay.remove();
+  const entry = pushBack(teardown);
+  const close = () => { if (entry.alive) entry.close(); else teardown(); };
   const x = mk('span', 'x', '✕');
-  x.onclick = () => overlay.remove();
+  x.onclick = close;
   add(sheet, x, mk('h3', null, title));
   buildBody(sheet);
   overlay.appendChild(sheet);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  attachSwipeBack(overlay, close);
   document.body.appendChild(overlay);
   return overlay;
 }

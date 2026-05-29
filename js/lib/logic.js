@@ -353,6 +353,42 @@ export const ECONOMIA = {
   ULTIMI_PREMI: 5,         // voci dello storico "Ultimi premi"
 };
 
+// Economia slot (Fase 4b, 2026-05-28). Indipendente dalla ruota.
+export const ECONOMIA_SLOT = {
+  COSTO_TIRO: 1,
+  GRATIS_OGNI_GIORNI: 7,
+  TIRI_SETTIMANALI: 5,
+  CAP_SALDO: 10,
+};
+
+// Time-to-live per buoni "lampo" (🎟️) e "polaroid" (📸). Ambedue 24h.
+export const LAMPO_TTL_MS    = 24 * 60 * 60 * 1000;
+export const POLAROID_TTL_MS = 24 * 60 * 60 * 1000;
+
+// Quanti tiri si possono davvero accreditare senza superare il cap.
+// Ritorna l'incremento effettivo (>=0). Eccedenza scartata.
+export function accreditoConCap(saldo, delta, cap) {
+  if (delta <= 0) return 0;
+  return Math.max(0, Math.min(delta, cap - saldo));
+}
+
+// Saldo slot dell'utente (ledger insert-only, somma dei delta).
+export function saldoSlot(movimenti, userId) {
+  return movimenti.filter(m => m.user_id === userId).reduce((s, m) => s + m.delta, 0);
+}
+
+// Settimanale slot: ok se mai maturato o se passati ECONOMIA_SLOT.GRATIS_OGNI_GIORNI dall'ultimo.
+// `now` (Date) iniettabile per i test.
+export function slotEleggibile(movimenti, userId, now = new Date()) {
+  const settimanali = movimenti
+    .filter(m => m.user_id === userId && m.motivo === 'settimanale')
+    .map(m => new Date(m.creato))
+    .sort((a, b) => b - a);
+  if (!settimanali.length) return { ok: true, prossimoSblocco: null };
+  const prossimo = new Date(settimanali[0].getTime() + ECONOMIA_SLOT.GRATIS_OGNI_GIORNI * 864e5);
+  return { ok: now >= prossimo, prossimoSblocco: prossimo.toISOString() };
+}
+
 // Saldo = somma dei delta dei movimenti dell'utente (ledger insert-only).
 export function saldoGiri(movimenti, userId) {
   return movimenti.filter(m => m.user_id === userId).reduce((s, m) => s + m.delta, 0);
@@ -376,29 +412,74 @@ export function giriEleggibile(movimenti, userId, now = new Date()) {
 
 // ---- RUOTA (fette, estrazione, storico premi) ----
 
-// Le 7 fette, in ordine sulla ruota. peso = probabilità relativa (tutti 1 = uniforme).
-// Nota: la fetta 'tod' (Carta Obbligo o Verità) è stata rimossa il 2026-05-28
-// perché il gioco delle carte non è più presente nell'app.
+// Le 13 fette, in ordine sulla ruota (dal puntatore in senso orario).
+// GEOMETRIA: 13 spicchi UGUALI (360/13 = 27.692°). I pesi NON influenzano la
+// larghezza visiva, solo la probabilita' di estrazione (vedi estraiFetta).
+// 3 tier di probabilita':
+//   - Comuni (peso 1):   6 fette  → 10.00% ciascuna
+//   - Medi   (peso 2/3): 5 fette  →  6.67% ciascuna
+//   - Rari   (peso 1/3): 2 fette  →  3.33% ciascuna  (cornice oro nel render)
+// Somma pesi base = 6×1 + 5×(2/3) + 2×(1/3) = 10. Le condizionali (segreto,
+// piccante, desiderio, lampo) azzerano il proprio peso quando manca la
+// risorsa, e gli altri salgono in percentuale.
 export const FETTE = [
-  { key: 'segreto',   emoji: '💋', label: 'Apri un segreto',         peso: 1, differito: false },
-  { key: 'piccante',  emoji: '🔥', label: 'Proposta piccante',       peso: 1, differito: false },
-  { key: 'buono',     emoji: '🎁', label: 'Buono a sorpresa',        peso: 1, differito: true },
-  { key: 'desiderio', emoji: '💌', label: 'Pesca un desiderio',      peso: 1, differito: true },
-  { key: 'jolly',     emoji: '⭐', label: 'Jolly: scegli tu',        peso: 1, differito: false },
-  { key: 'dadi',      emoji: '🎲', label: 'Tiro di dadi',            peso: 1, differito: false },
-  { key: 'ancora',    emoji: '🔁', label: 'Gira ancora',             peso: 1, differito: false },
+  { key: 'segreto',   emoji: '💋', label: 'Apri un segreto',     peso: 1,    differito: false },
+  { key: 'piccante',  emoji: '🔥', label: 'Proposta piccante',   peso: 1,    differito: false },
+  { key: 'desiderio', emoji: '💌', label: 'Pesca una fantasia',  peso: 1,    differito: true  },
+  { key: 'bendare',   emoji: '🧣', label: 'Bendare',             peso: 1,    differito: false },
+  { key: 'wild',      emoji: '🃏', label: 'Carta wild',          peso: 2/3,  differito: false },
+  { key: 'massaggio', emoji: '💆', label: 'Massaggio',           peso: 1,    differito: false },
+  { key: 'doppio',    emoji: '🪄', label: 'Prossimo ×2',         peso: 1/3,  differito: false, rare: true },
+  { key: 'polaroid',  emoji: '📸', label: 'Foto osè 24h',        peso: 2/3,  differito: true  },
+  { key: 'lampo',     emoji: '🎟️', label: 'Buono lampo',         peso: 2/3,  differito: true  },
+  { key: 'orale',     emoji: '👅', label: 'Servizio orale',      peso: 2/3,  differito: false },
+  { key: 'ancora',    emoji: '🔁', label: 'Gira ancora',         peso: 1,    differito: false },
+  { key: 'jolly',     emoji: '⭐', label: 'Jolly: scegli tu',    peso: 2/3,  differito: false },
+  { key: 'jackpot',   emoji: '💎', label: 'Jackpot',             peso: 1/3,  differito: false, rare: true },
 ];
 
 // Copia di FETTE con i pesi delle fette condizionali azzerati quando manca la condizione.
-// Le fette restano tutte e 7 (la ruota ha geometria fissa).
-export function fetteRuota({ haSegreti, haProposte, haBuoni }) {
+// Le fette restano tutte e 13 (la ruota ha geometria fissa).
+// Condizionali: segreto (haSegreti), piccante (haProposte), desiderio (haFantasie), lampo (haBuoni).
+export function fetteRuota({ haSegreti, haProposte, haFantasie, haBuoni }) {
   return FETTE.map(f => {
     let peso = f.peso;
-    if (f.key === 'segreto'  && !haSegreti)  peso = 0;
-    if (f.key === 'piccante' && !haProposte) peso = 0;
-    if (f.key === 'buono'    && !haBuoni)    peso = 0;
+    if (f.key === 'segreto'   && !haSegreti)  peso = 0;
+    if (f.key === 'piccante'  && !haProposte) peso = 0;
+    if (f.key === 'desiderio' && !haFantasie) peso = 0;
+    if (f.key === 'lampo'     && !haBuoni)    peso = 0;
     return { ...f, peso };
   });
+}
+
+// Effetto del flag persistente "prossimo ×2" su un esito della ruota.
+// Ritorna un oggetto con le proprietà raddoppiate, da consumare nel rendering del reveal
+// e/o nella creazione dei record differiti (buoni con quantita=2).
+//
+// Regole:
+// - massaggio: 10 → 20 minuti
+// - wild: 24h → 48h
+// - lampo / polaroid: quantita = 2 (crea due record)
+// - segreto / piccante / desiderio: quantita = 2 (apri/pesca due volte)
+// - orale: testoExtra "due volte, una ora e una quando vuole chi ha vinto"
+// - bendare: cosmeticOnly (label "il doppio del tempo")
+// - jolly: deferToJolly (il flag passa allo spicchio scelto dal selettore)
+// - ancora / doppio / jackpot: gestiti separatamente nel chiamante (non consumano flag o sono idempotenti)
+export function applicaDoppio(esito) {
+  const out = { boosted: true };
+  switch (esito.key) {
+    case 'massaggio':  return { ...out, minuti: 20 };
+    case 'wild':       return { ...out, ore: 48 };
+    case 'lampo':
+    case 'polaroid':   return { ...out, quantita: 2 };
+    case 'segreto':
+    case 'piccante':
+    case 'desiderio':  return { ...out, quantita: 2 };
+    case 'orale':      return { ...out, testoExtra: 'Due volte: una ora e una quando vuole chi ha vinto.' };
+    case 'bendare':    return { ...out, cosmeticOnly: true };
+    case 'jolly':      return { ...out, deferToJolly: true };
+    default:           return { ...out };
+  }
 }
 
 // Estrazione pesata. rnd ∈ [0,1) iniettabile. Salta i pesi 0. null se tutti 0.

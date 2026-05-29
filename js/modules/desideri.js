@@ -2,6 +2,8 @@ import { mk, add, clear, toast } from '../ui.js';
 import { filterDesideri } from '../lib/logic.js';
 import { listDesideri, addDesiderio, markRealizzato, deleteDesiderio } from '../store.js';
 import { getTimbri } from '../lib/timbri.js';
+import { pushBack } from '../lib/back-stack.js';
+import { attachSwipeBack } from '../lib/swipe-back.js';
 
 let ctx = null;        // { client, me, panel }
 let fil = 'tutti';
@@ -69,8 +71,11 @@ function cardOf(d) {
 function openAdd() {
   const overlay = mk('div', 'modal on');
   const sheet = mk('div', 'sheet fantasia-sheet');
+  const teardown = () => overlay.remove();
+  const entry = pushBack(teardown);
+  const close = () => { if (entry.alive) entry.close(); else teardown(); };
   const closeBtn = mk('span', 'x', '✕');
-  closeBtn.onclick = () => overlay.remove();
+  closeBtn.onclick = close;
 
   // Cartolina
   const card = mk('div', 'fantasia-card');
@@ -104,7 +109,7 @@ function openAdd() {
   // Azioni
   const acts = mk('div', 'fantasia-acts');
   const cancel = mk('button', 'fantasia-cancel', 'Annulla');
-  cancel.onclick = () => overlay.remove();
+  cancel.onclick = close;
   const send = mk('button', 'fantasia-send', 'Spedisci');
   send.disabled = true;
   ta.addEventListener('input', () => { send.disabled = !ta.value.trim(); });
@@ -117,7 +122,7 @@ function openAdd() {
         testo: ta.value.trim(), categoria: selectedCat,
       });
       fil = 'tutti';
-      await playPlana(overlay, card);
+      await playPlana(overlay, card, close);
     } catch (e) {
       toast('Errore salvataggio: ' + e.message, 'err');
       send.disabled = false;
@@ -127,18 +132,19 @@ function openAdd() {
 
   add(sheet, closeBtn, card, chipsLbl, chips, acts);
   overlay.appendChild(sheet);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  attachSwipeBack(overlay, close);
   document.body.appendChild(overlay);
 }
 
 function fmt(iso) { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; }
 function todayISO() { return new Date().toISOString().slice(0, 10); }
 
-async function playPlana(overlay, sourceCard) {
+async function playPlana(overlay, sourceCard, close) {
   const sRect = sourceCard.getBoundingClientRect();
   await renderDesideri(ctx);
   const target = ctx.panel.querySelector('.card');
-  if (!target) { overlay.remove(); return; }
+  if (!target) { close(); return; }
 
   target.style.transition = 'opacity .35s ease';
   target.style.opacity = '0';
@@ -165,7 +171,7 @@ async function playPlana(overlay, sourceCard) {
 
   setTimeout(() => {
     sourceCard.remove();
-    overlay.remove();
+    close();
     target.style.transition = '';
     target.style.opacity = '';
     target.classList.add('card-just-landed');

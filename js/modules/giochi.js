@@ -1,11 +1,14 @@
 import { mk, add, clear, toast, openSheet } from '../ui.js';
 import {
   DADI_ORDER, DADI_LABEL, DADI_CHIP, raggruppaFacce, facceDefaultRows, tiraDadi, componiFrase,
+  ECONOMIA_SLOT, saldoSlot, slotEleggibile, accreditoConCap,
 } from '../lib/logic.js';
-import { listDadiFacce, seedDadiFacce, updateDadiFaccia } from '../store.js';
+import { listDadiFacce, seedDadiFacce, updateDadiFaccia, listSlotMov, accreditaSlot, spendiSlot } from '../store.js';
 import { renderRuota, openEditorRuota } from './ruota.js';
-import { renderStrip, hasActiveGame as stripHasActiveGame } from './strip.js';
+import { renderStrip, hasActiveGame as stripHasActiveGame, closeOv as closeStripOv } from './strip.js';
 import { renderYahtzutra, hasActiveGame as yzHasActiveGame } from './yahtzutra.js';
+import { attachSwipeBack } from '../lib/swipe-back.js';
+import { pushBack } from '../lib/back-stack.js';
 
 let giocoCorrente = 'dadi';   // 'dadi' | 'ruota'
 let ctx = null;          // { client, me, panel }
@@ -41,26 +44,36 @@ function drawSelettore() {
 
 function refreshSelettore() {
   if (!ctx) return;
-  const existing = ctx.panel.querySelector('.gioco-selettore');
+  const existing = ctx.panel.querySelector('.giochi-nav');
   if (existing) existing.replaceWith(buildSelettore());
 }
 
+function makeTab(k, ico, lbl) {
+  const b = mk('button', 'gioco-tab' + (giocoCorrente === k ? ' on' : ''));
+  add(b, mk('span', 'ico', ico), mk('span', 'lab', lbl));
+  if (k === 'yz' && yzHasActiveGame()) b.appendChild(mk('span', 'gt-badge'));
+  if (k === 'strip' && stripHasActiveGame()) b.appendChild(mk('span', 'gt-badge'));
+  b.onclick = () => {
+    if (k === 'yz') { renderYahtzutra({ client: ctx.client, me: ctx.me }); return; }
+    if (k === 'strip') { renderStrip({ client: ctx.client, me: ctx.me }); return; }
+    giocoCorrente = k;
+    renderGiochi(ctx);
+  };
+  return b;
+}
+
 function buildSelettore() {
-  const sel = mk('div', 'gioco-selettore');
-  for (const [k, ico, lbl] of [['dadi', '🎰', 'Slot'], ['ruota', '🎡', 'Ruota'], ['yz', '🎲', 'Yahtzutra'], ['strip', '♠️', 'Strip']]) {
-    const b = mk('button', 'gioco-tab' + (giocoCorrente === k ? ' on' : ''));
-    add(b, mk('span', 'ico', ico), mk('span', 'lab', lbl));
-    if (k === 'yz' && yzHasActiveGame()) b.appendChild(mk('span', 'gt-badge'));
-    if (k === 'strip' && stripHasActiveGame()) b.appendChild(mk('span', 'gt-badge'));
-    b.onclick = () => {
-      if (k === 'yz') { renderYahtzutra({ client: ctx.client, me: ctx.me }); return; }
-      if (k === 'strip') { renderStrip({ client: ctx.client, me: ctx.me }); return; }
-      giocoCorrente = k;
-      renderGiochi(ctx);
-    };
-    sel.appendChild(b);
-  }
-  return sel;
+  const wrap = mk('div', 'giochi-nav');
+  const dock = mk('div', 'gioco-selettore');
+  // Gruppo "a tempo" (Ruota/Slot) e gruppo "liberi" (Yahtzutra/Strip) coabitano
+  // nello stesso dock: separatore verticale al centro al posto delle label.
+  dock.appendChild(makeTab('ruota', '🎡', 'Ruota'));
+  dock.appendChild(makeTab('dadi',  '🎰', 'Slot'));
+  dock.appendChild(mk('div', 'sep'));
+  dock.appendChild(makeTab('yz',    '🎲', 'Yahtzutra'));
+  dock.appendChild(makeTab('strip', '♠️', 'Strip'));
+  wrap.appendChild(dock);
+  return wrap;
 }
 
 // ===========================================================================
@@ -73,9 +86,10 @@ function buildSelettore() {
 // ===========================================================================
 let modalEl = null;
 let modalCloseHandler = null;
+let modalBackEntry = null;   // voce di history del game-modal (back-stack)
 
 export function openGameModal(title, mount, onClose) {
-  closeGameModal({ silent: true });
+  teardownGameModal({ silent: true });
   const overlay = mk('div', 'game-modal');
   const sheet = mk('div', 'game-modal-sheet');
   sheet.appendChild(mk('div', 'game-modal-edge'));
@@ -102,12 +116,9 @@ export function openGameModal(title, mount, onClose) {
     // Back gerarchico: se c'è un overlay Strip aperto (Regole/Opzioni/Storia),
     // la freccia torna al palco (chiude l'overlay con fade) invece di uscire
     // di colpo dal gioco. Solo dal palco l'arrow chiude davvero il modal.
-    const ov = document.querySelector('.strip-ov');
-    if (ov) {
-      ov.classList.remove('show');
-      setTimeout(() => { if (ov.parentNode) ov.remove(); }, 300);
-      return;
-    }
+    // closeStripOv passa per il back-stack (history.back → popstate → teardown),
+    // evitando entry stale che consumerebbero un back-press fantasma dopo.
+    if (document.querySelector('.strip-ov')) { closeStripOv(); return; }
     closeGameModal();
   };
   arrow.addEventListener('pointerdown', e => e.stopPropagation());
@@ -119,24 +130,45 @@ export function openGameModal(title, mount, onClose) {
   sheet.appendChild(body);
   overlay.appendChild(sheet);
   document.body.appendChild(overlay);
-  document.body.classList.add('game-modal-open');
-  requestAnimationFrame(() => overlay.classList.add('show'));
-  wireModalSwipe(sheet, overlay);
   modalEl = overlay;
   modalCloseHandler = onClose;
-  mount(body);
+  mount(body);                    // riempi il corpo PRIMA del reveal
+  wireModalSwipe(sheet);
+  // Forza il commit dello stato iniziale (overlay nascosto, contenuti
+  // opacity:0) PRIMA di attivare le classi. Senza questo, quando openGameModal
+  // e' chiamata da una continuazione async (Strip awaita la rete a OGNI
+  // apertura; Yahtzutra solo alla prima), un singolo requestAnimationFrame non
+  // basta a far partire la transizione → l'apertura "non si anima".
+  void overlay.offsetWidth;
+  document.body.classList.add('game-modal-open');
+  overlay.classList.add('show');
+  // Registra il game-modal nel back-stack: il tasto-back / edge-swipe del
+  // telefono chiude il modal invece di uscire dall'app.
+  modalBackEntry = pushBack(() => teardownGameModal({}));
 }
 
-export function closeGameModal(opts) {
+// Chiusura richiesta da utente/codice (freccia dal palco, swipe, abbandona
+// partita). Passa SEMPRE per la history (entry.close → history.back →
+// popstate) cosi' tasto-back del telefono, edge-swipe e bottoni fanno la stessa
+// identica cosa e il modal si chiude una sola volta.
+export function closeGameModal() {
+  if (modalBackEntry && modalBackEntry.alive) modalBackEntry.close();
+  else teardownGameModal({});
+}
+
+// Smontaggio vero del modal: eseguito da popstate (via back-stack) o
+// direttamente nel caso silent (sostituzione di un modal residuo). Anima la
+// chiusura morbida (Morbida+) e rimuove il nodo.
+function teardownGameModal(opts) {
   const silent = opts && opts.silent;
   if (!modalEl) return;
   const m = modalEl;
   const h = modalCloseHandler;
   modalEl = null;
   modalCloseHandler = null;
-  // Chiusura morbida (Morbida+): lo sheet SCIVOLA giù mentre scrim e blur si
-  // dissolvono e #app torna in primo piano. Rimozione del nodo solo a slide
-  // completato (640ms > .6s del transform di chiusura).
+  modalBackEntry = null;
+  // Lo sheet SCIVOLA giù mentre scrim e blur si dissolvono e #app torna in
+  // primo piano. Rimozione del nodo solo a slide completato (640ms > .6s).
   m.classList.add('closing');
   m.classList.remove('show');
   document.body.classList.remove('game-modal-open');
@@ -145,74 +177,19 @@ export function closeGameModal(opts) {
   document.dispatchEvent(new CustomEvent('giochi:tabs-refresh'));
 }
 
-// Swipe laterale (entrambe le direzioni) per chiudere. Vincoli:
-//  - solo da bordo (entro 24px dx/sx dello sheet) → swipe nel mezzo NON chiude
-//  - solo primary pointer → toccare con due dita non triggera
-//  - soglie alte (24px per partire, 160px o v>0.9 per committare) → un mini
-//    slide accidentale durante il gioco non annulla la partita
-function wireModalSwipe(sheet, overlay) {
-  let start = null, dragging = false;
-  const cancelDrag = () => {
-    start = null; dragging = false;
-    sheet.classList.remove('swiping');
-    sheet.style.transform = '';
-    overlay.style.background = '';
-  };
-  const onDown = e => {
-    if (e.button !== undefined && e.button !== 0) return;
-    if (!e.isPrimary) { cancelDrag(); return; }      // 2-finger touch → ignora
-    if (e.target.closest('button, input, textarea, select, .yz-scrim, .dadi-scrim, .strip-ov, .modal')) return;
-    const rect = sheet.getBoundingClientRect();
-    const fromL = e.clientX - rect.left < 24;
-    const fromR = rect.right - e.clientX < 24;
-    if (!fromL && !fromR) return;                    // edge-only: dentro non triggera
-    start = { x: e.clientX, y: e.clientY, t: Date.now() };
-    dragging = false;
-  };
-  const onMove = e => {
-    if (!start) return;
-    if (!e.isPrimary) { cancelDrag(); return; }
-    const dx = e.clientX - start.x;
-    const dy = e.clientY - start.y;
-    if (!dragging) {
-      if (Math.abs(dy) > 12 && Math.abs(dy) >= Math.abs(dx)) { start = null; return; }
-      if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-        dragging = true;
-        sheet.classList.add('swiping');
-        try { sheet.setPointerCapture(e.pointerId); } catch (_) {}
-      } else { return; }
-    }
-    e.preventDefault();
-    sheet.style.transform = 'translateX(' + dx + 'px)';
-    const alpha = Math.max(.25, .72 - Math.abs(dx) / 650);
-    overlay.style.background = 'rgba(8,2,4,' + alpha + ')';
-  };
-  const onUp = e => {
-    if (!start) return;
-    const dx = e.clientX - start.x;
-    const dt = Math.max(1, Date.now() - start.t);
-    const v = Math.abs(dx) / dt;
-    const wasDragging = dragging;
-    start = null; dragging = false;
-    sheet.classList.remove('swiping');
-    if (!wasDragging) { sheet.style.transform = ''; overlay.style.background = ''; return; }
-    if (Math.abs(dx) > 160 || v > 0.9) {
-      sheet.style.transform = 'translateX(' + (dx > 0 ? '110%' : '-110%') + ')';
-      overlay.style.opacity = '0';
-      setTimeout(() => closeGameModal(), 260);
-    } else {
-      sheet.style.transform = '';
-      overlay.style.background = '';
-    }
-  };
-  sheet.addEventListener('pointerdown', onDown);
-  sheet.addEventListener('pointermove', onMove, { passive: false });
-  sheet.addEventListener('pointerup', onUp);
-  sheet.addEventListener('pointercancel', onUp);
+// Swipe laterale per chiudere il game modal. Delega a attachSwipeBack la
+// gesture detection (edge 40px, soglia 25% width o velocità > 0.9). La
+// chiusura specifica (sheet slide-out + blur dissolve dello scrim) resta
+// in closeGameModal().
+function wireModalSwipe(sheet) {
+  attachSwipeBack(sheet, () => closeGameModal());
 }
 
 async function montaGiocoCorrente() {
   const host = ctx.panel.querySelector('.gioco-host');
+  // No-scroll: la pagina-ruota è full-viewport; gli altri giochi mantengono
+  // il comportamento di default (overflow:auto, padding-bottom per la nav).
+  ctx.panel.classList.toggle('ruota-active', giocoCorrente === 'ruota');
   if (giocoCorrente === 'ruota') {
     await renderRuota({ client: ctx.client, me: ctx.me, panel: host });
   } else {
@@ -230,12 +207,35 @@ async function montaDadi(host) {
     }
     facce = raggruppaFacce(rows);
   } catch (err) { toast('Errore caricamento dadi: ' + err.message, 'err'); return; }
+
+  // accredita tiri settimanali se eligible
+  try {
+    const movs = await listSlotMov(ctx.client, ctx.me.couple_id);
+    const elig = slotEleggibile(movs, ctx.me.id);
+    if (elig.ok) {
+      const saldo = saldoSlot(movs, ctx.me.id);
+      const delta = accreditoConCap(saldo, ECONOMIA_SLOT.TIRI_SETTIMANALI, ECONOMIA_SLOT.CAP_SALDO);
+      if (delta > 0) {
+        await accreditaSlot(ctx.client, {
+          couple_id: ctx.me.couple_id,
+          user_id: ctx.me.id,
+          motivo: 'settimanale',
+          delta,
+        });
+      }
+    }
+  } catch (err) { /* non bloccare l'UI se il ledger slot fallisce */ }
+
   draw();
+  await renderTopbarSlot();
 }
 
 function draw() {
   const p = dadiHost; clear(p);
   add(p, mk('h2', 'ptitle', '🎰 Slot'), mk('p', 'psub', 'Scegli i rulli e premi per tirare. Tocca ＋ per cambiare i contenuti.'));
+
+  // topbar saldo + countdown (aggiornata da renderTopbarSlot)
+  p.appendChild(mk('div', 'slot-topbar'));
 
   // picker: una chip per rullo, accesa/spenta
   const picker = mk('div', 'dadi-picker');
@@ -265,11 +265,36 @@ function draw() {
   buildField();
 }
 
+async function renderTopbarSlot() {
+  const bar = dadiHost && dadiHost.querySelector('.slot-topbar');
+  if (!bar) return;
+  let saldo = 0;
+  let elig = { ok: false, prossimoSblocco: null };
+  try {
+    const movs = await listSlotMov(ctx.client, ctx.me.couple_id);
+    saldo = saldoSlot(movs, ctx.me.id);
+    elig = slotEleggibile(movs, ctx.me.id);
+  } catch (_) { /* mostra saldo 0 se DB irraggiungibile */ }
+  clear(bar);
+  const saldoEl = mk('span', 'slot-saldo', `🎰 ${saldo} tir${saldo === 1 ? 'o' : 'i'}`);
+  const cdEl    = mk('span', 'slot-countdown', countdownText(elig));
+  add(bar, saldoEl, cdEl);
+  const btn = dadiHost.querySelector('.slot-tira');
+  if (btn) btn.disabled = saldo === 0;
+}
+
+function countdownText(elig) {
+  if (elig.ok) return 'gratis disponibile';
+  const giorni = Math.ceil((new Date(elig.prossimoSblocco) - Date.now()) / 864e5);
+  return `gratis tra ${giorni}g`;
+}
+
 function toggleDie(k) {
   const activeCount = DADI_ORDER.filter(x => attivi[x]).length;
   if (attivi[k] && activeCount === 1) return;   // almeno un rullo sempre acceso
   attivi[k] = !attivi[k];
   draw();
+  renderTopbarSlot();   // ripristina saldo/countdown dopo il redraw (fire-and-forget)
 }
 
 function buildField() {
@@ -297,9 +322,16 @@ function makeReel(k) {
   return reel;
 }
 
-function roll() {
+async function roll() {
   closePop();
   if (busy) return;
+  try {
+    await spendiSlot(ctx.client, { couple_id: ctx.me.couple_id, user_id: ctx.me.id });
+  } catch (e) {
+    console.error('spendiSlot failed', e);
+    toast('Tiri esauriti — torna tra qualche giorno 🎰', 'err');
+    return;
+  }
   busy = true;
   const picks = tiraDadi(attivi);
   const keys = Object.keys(picks);
@@ -322,6 +354,7 @@ function roll() {
   setTimeout(() => {
     showPop(componiFrase(facce, picks));
     busy = false;
+    renderTopbarSlot();   // aggiorna saldo dopo il tiro (fire-and-forget)
   }, settleMs);
 }
 

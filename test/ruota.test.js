@@ -84,21 +84,6 @@ import {
   FETTE, fetteRuota, estraiFetta, ultimiPremi,
 } from '../js/lib/logic.js';
 
-test('FETTE sono 7, con le chiavi attese', () => {
-  assert.equal(FETTE.length, 7);
-  assert.deepEqual(FETTE.map(f => f.key),
-    ['segreto','piccante','buono','desiderio','jolly','dadi','ancora']);
-});
-
-test('fetteRuota azzera le condizionali quando manca la condizione', () => {
-  const f = fetteRuota({ haSegreti: false, haProposte: false, haBuoni: false });
-  assert.equal(f.length, 7);
-  const peso = k => f.find(x => x.key === k).peso;
-  assert.equal(peso('segreto'), 0);
-  assert.equal(peso('piccante'), 0);
-  assert.equal(peso('buono'), 0);
-  assert.equal(peso('dadi'), 1); // non condizionale resta a 1
-});
 
 test('fetteRuota lascia attive le condizionali quando la condizione c\'è', () => {
   const f = fetteRuota({ haSegreti: true, haProposte: true, haBuoni: true });
@@ -115,9 +100,9 @@ test('estraiFetta non estrae mai una fetta a peso 0', () => {
 });
 
 test('estraiFetta con rnd deterministico atterra sulla fetta attesa', () => {
-  const fette = FETTE.map(f => ({ ...f, peso: 1 })); // 7 fette uguali
+  const fette = FETTE.map(f => ({ ...f, peso: 1 })); // 13 fette uguali
   assert.equal(estraiFetta(fette, () => 0).indice, 0);        // primo spicchio
-  assert.equal(estraiFetta(fette, () => 0.99).indice, 6);     // ultimo spicchio
+  assert.equal(estraiFetta(fette, () => 0.99).indice, 12);    // ultimo spicchio
 });
 
 test('estraiFetta restituisce null se tutti i pesi sono 0', () => {
@@ -284,4 +269,173 @@ test('listCarte seleziona dalla tabella carte per couple_id', async () => {
   const data = await listCarte(c, 'cpl');
   assert.equal(data.length, 1);
   assert.equal(c._calls[0].table, 'carte');
+});
+
+test('FETTE: 13 spicchi totali', () => {
+  assert.equal(FETTE.length, 13);
+});
+
+test('FETTE: 11 normali (peso 1) + 2 rari (peso 0.5)', () => {
+  const normali = FETTE.filter(f => f.peso === 1);
+  const rari    = FETTE.filter(f => f.peso === 0.5);
+  assert.equal(normali.length, 11);
+  assert.equal(rari.length, 2);
+  assert.equal(rari[0].key, 'doppio');
+  assert.equal(rari[1].key, 'jackpot');
+});
+
+test('FETTE: chiavi richieste presenti', () => {
+  const keys = FETTE.map(f => f.key);
+  for (const k of ['segreto','piccante','desiderio','bendare','wild','massaggio','doppio','polaroid','lampo','orale','ancora','jolly','jackpot']) {
+    assert.ok(keys.includes(k), `manca key ${k}`);
+  }
+});
+
+test('FETTE: ordine sulla ruota canonico', () => {
+  const expected = ['segreto','piccante','desiderio','bendare','wild','massaggio','doppio','polaroid','lampo','orale','ancora','jolly','jackpot'];
+  assert.deepEqual(FETTE.map(f => f.key), expected);
+});
+
+test('FETTE: differiti = desiderio, polaroid, lampo', () => {
+  const differiti = FETTE.filter(f => f.differito).map(f => f.key);
+  assert.deepEqual(differiti.sort(), ['desiderio','lampo','polaroid']);
+});
+
+test('FETTE: rari marcati con tag rare/ultra', () => {
+  assert.equal(FETTE.find(f => f.key === 'doppio').rare, 'rare');
+  assert.equal(FETTE.find(f => f.key === 'jackpot').rare, 'ultra');
+});
+
+test('fetteRuota: tutte le condizioni vere → tutti i pesi originali', () => {
+  const f = fetteRuota({ haSegreti: true, haProposte: true, haFantasie: true, haBuoni: true });
+  assert.equal(f.find(x => x.key === 'segreto').peso, 1);
+  assert.equal(f.find(x => x.key === 'piccante').peso, 1);
+  assert.equal(f.find(x => x.key === 'desiderio').peso, 1);
+  assert.equal(f.find(x => x.key === 'lampo').peso, 1);
+});
+
+test('fetteRuota: !haSegreti → segreto peso 0', () => {
+  const f = fetteRuota({ haSegreti: false, haProposte: true, haFantasie: true, haBuoni: true });
+  assert.equal(f.find(x => x.key === 'segreto').peso, 0);
+});
+
+test('fetteRuota: !haProposte → piccante peso 0', () => {
+  const f = fetteRuota({ haSegreti: true, haProposte: false, haFantasie: true, haBuoni: true });
+  assert.equal(f.find(x => x.key === 'piccante').peso, 0);
+});
+
+test('fetteRuota: !haFantasie → desiderio peso 0', () => {
+  const f = fetteRuota({ haSegreti: true, haProposte: true, haFantasie: false, haBuoni: true });
+  assert.equal(f.find(x => x.key === 'desiderio').peso, 0);
+});
+
+test('fetteRuota: !haBuoni → lampo peso 0', () => {
+  const f = fetteRuota({ haSegreti: true, haProposte: true, haFantasie: true, haBuoni: false });
+  assert.equal(f.find(x => x.key === 'lampo').peso, 0);
+});
+
+test('fetteRuota: rari (doppio, jackpot) sempre peso 0.5', () => {
+  const f = fetteRuota({ haSegreti: false, haProposte: false, haFantasie: false, haBuoni: false });
+  assert.equal(f.find(x => x.key === 'doppio').peso, 0.5);
+  assert.equal(f.find(x => x.key === 'jackpot').peso, 0.5);
+});
+
+import { applicaDoppio } from '../js/lib/logic.js';
+
+test('applicaDoppio massaggio: 10 → 20 minuti', () => {
+  const r = applicaDoppio({ key: 'massaggio' });
+  assert.equal(r.minuti, 20);
+  assert.equal(r.boosted, true);
+});
+
+test('applicaDoppio wild: 24h → 48h', () => {
+  const r = applicaDoppio({ key: 'wild' });
+  assert.equal(r.ore, 48);
+  assert.equal(r.boosted, true);
+});
+
+test('applicaDoppio lampo: quantita 2', () => {
+  const r = applicaDoppio({ key: 'lampo' });
+  assert.equal(r.quantita, 2);
+});
+
+test('applicaDoppio polaroid: quantita 2', () => {
+  const r = applicaDoppio({ key: 'polaroid' });
+  assert.equal(r.quantita, 2);
+});
+
+test('applicaDoppio segreto: quantita 2', () => {
+  const r = applicaDoppio({ key: 'segreto' });
+  assert.equal(r.quantita, 2);
+});
+
+test('applicaDoppio piccante: quantita 2', () => {
+  const r = applicaDoppio({ key: 'piccante' });
+  assert.equal(r.quantita, 2);
+});
+
+test('applicaDoppio desiderio: quantita 2', () => {
+  const r = applicaDoppio({ key: 'desiderio' });
+  assert.equal(r.quantita, 2);
+});
+
+test('applicaDoppio orale: testoExtra "due volte"', () => {
+  const r = applicaDoppio({ key: 'orale' });
+  assert.ok(r.testoExtra.toLowerCase().includes('due volte'));
+});
+
+test('applicaDoppio bendare: cosmeticOnly true', () => {
+  const r = applicaDoppio({ key: 'bendare' });
+  assert.equal(r.cosmeticOnly, true);
+});
+
+test('applicaDoppio jolly: flag passa allo spicchio scelto', () => {
+  const r = applicaDoppio({ key: 'jolly' });
+  assert.equal(r.deferToJolly, true);
+});
+
+import { getFlagDoppio, setFlagDoppio } from '../js/store.js';
+
+function fakeCouplesClient(coupleId, initialFlag = false) {
+  let flag = initialFlag;
+  return {
+    from(table) {
+      const state = { table, op: null, payload: null, filters: {} };
+      const api = {
+        select(cols) { state.op = 'select'; state.cols = cols; return api; },
+        update(p) { state.op = 'update'; state.payload = p; return api; },
+        eq(c, v) { state.filters[c] = v; return api; },
+        single() { state.single = true; return api; },
+        then(resolve) {
+          if (state.op === 'select') {
+            if (state.filters.id === coupleId) resolve({ data: { ruota_flag_doppio: flag }, error: null });
+            else resolve({ data: null, error: null });
+          } else if (state.op === 'update') {
+            if (state.filters.id === coupleId) flag = state.payload.ruota_flag_doppio;
+            resolve({ data: null, error: null });
+          }
+        }
+      };
+      return api;
+    },
+    _flag: () => flag,
+  };
+}
+
+test('getFlagDoppio ritorna il valore corrente', async () => {
+  const c = fakeCouplesClient('c1', true);
+  const f = await getFlagDoppio(c, 'c1');
+  assert.equal(f, true);
+});
+
+test('setFlagDoppio(true) imposta il flag', async () => {
+  const c = fakeCouplesClient('c1', false);
+  await setFlagDoppio(c, 'c1', true);
+  assert.equal(c._flag(), true);
+});
+
+test('setFlagDoppio(false) consuma il flag', async () => {
+  const c = fakeCouplesClient('c1', true);
+  await setFlagDoppio(c, 'c1', false);
+  assert.equal(c._flag(), false);
 });

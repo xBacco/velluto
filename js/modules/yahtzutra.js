@@ -176,6 +176,10 @@ export async function renderYahtzutra(context) {
     // (tavolo dadi aperto, body.yz-busy che blocca il pager).
     if (tableScrim) { tableScrim.remove(); tableScrim = null; }
     document.body.classList.remove('yz-busy');
+    // `rolling` e' un flag d'animazione effimero: se chiudi il modal mentre i
+    // dadi rotolano resterebbe true e, alla riapertura, bloccherebbe Ri-tira,
+    // Fermati-e-segna e i tap sui dadi. Va sempre azzerato alla chiusura.
+    rolling = false;
   });
 }
 
