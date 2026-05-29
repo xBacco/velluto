@@ -15,7 +15,7 @@ let state = null;      // { mov, cont, buoni, proposte, buoniS, desideri, saldo,
 let busy = false;
 let rot = 0;           // rotazione cumulativa della ruota (gradi)
 
-const SLICE = 360 / 7;
+// Geometria a 13 spicchi (11×30° + 2×15°): nessuna costante globale, degPerUnit calcolato da FETTE.
 
 export async function renderRuota(context) {
   ctx = context;
@@ -42,6 +42,7 @@ export async function renderRuota(context) {
   const fette = fetteRuota({
     haSegreti: segretiDaRivelare(buoni, me.id).length > 0,
     haProposte: proposte.length > 0,
+    haFantasie: desideri.filter(d => d.stato === 'da_provare').length > 0,
     haBuoni: buoniS.length > 0,
   });
 
@@ -102,12 +103,24 @@ function buildWheel() {
   const wrap = mk('div', 'wheel-wrap');
   wrap.appendChild(mk('div', 'pointer'));
   const wheel = mk('div', 'wheel'); wheel.style.transform = `rotate(${rot}deg)`;
+  const sumW = state.fette.reduce((s, f) => s + f.peso, 0);   // 12 (o meno se alcune spente)
+  const degPerUnit = 360 / sumW;
+  const slice0 = state.fette[0].peso * degPerUnit;              // gradi primo spicchio
+
+  const centers = [];
+  let acc = 0;
+  for (let i = 0; i < state.fette.length; i++) {
+    const slice = state.fette[i].peso * degPerUnit;
+    centers.push(acc + slice / 2 - slice0 / 2);
+    acc += slice;
+  }
+
   state.fette.forEach((f, i) => {
-    const center = i * SLICE + SLICE / 2;
+    const center = centers[i];
     const lbl = mk('div', 'slice-lbl');
     const inner = mk('div', 'in');
     inner.style.transform = `rotate(${center}deg) translateY(-98px)`;
-    const e = mk('span', 'e' + (f.peso === 0 ? ' spenta' : ''), f.emoji);
+    const e = mk('span', 'e' + (f.peso === 0 ? ' spenta' : '') + (f.rare ? ' ' + f.rare : ''), f.emoji);
     e.style.transform = `rotate(${-center - rot}deg)`;
     inner.appendChild(e); lbl.appendChild(inner); wheel.appendChild(lbl);
   });
@@ -131,13 +144,36 @@ async function spin() {
     await spendiGiro(ctx.client, { couple_id: ctx.me.couple_id, user_id: ctx.me.id, esito: pick.fetta.key });
   } catch (err) { busy = false; toast('Errore: ' + err.message, 'err'); return; }
 
-  const center = pick.indice * SLICE + SLICE / 2;
+  // Ricalcola geometria variabile identica a buildWheel
+  const sumW2 = state.fette.reduce((s, f) => s + f.peso, 0);
+  const degPerUnit2 = 360 / sumW2;
+  const slice0_2 = state.fette[0].peso * degPerUnit2;
+  const centers2 = [];
+  let acc2 = 0;
+  for (let i = 0; i < state.fette.length; i++) {
+    const slice = state.fette[i].peso * degPerUnit2;
+    centers2.push(acc2 + slice / 2 - slice0_2 / 2);
+    acc2 += slice;
+  }
+
+  const center = centers2[pick.indice];
+  const sliceWidth = state.fette[pick.indice].peso * degPerUnit2;  // 30 o 15
   rot += 360 * 5 + ((360 - (rot % 360) - center) % 360 + 360) % 360;
   wheelEl.style.transform = `rotate(${rot}deg)`;
   wheelEl.querySelectorAll('.slice-lbl .e').forEach((e, i) => {
-    const c = i * SLICE + SLICE / 2;
-    e.style.transform = `rotate(${-c - rot}deg)`;
+    e.style.transform = `rotate(${-centers2[i] - rot}deg)`;
   });
+
+  // Aggiorna spotlight con larghezza variabile dello spicchio vincente
+  if (winhiEl) {
+    winhiEl.style.setProperty('--slice-w', sliceWidth + 'deg');
+    winhiEl.dataset.sliceRare = sliceWidth < 25 ? 'true' : 'false';
+    const half = sliceWidth / 2;
+    winhiEl.style.background =
+      `conic-gradient(from ${-half}deg,` +
+      `transparent 0 ${sliceWidth}deg,` +
+      `rgba(8,2,5,.74) ${sliceWidth}deg 360deg)`;
+  }
 
   // dopo la rotazione (4.2s): accendi lo spotlight, poi mostra il pop-up
   setTimeout(() => {
