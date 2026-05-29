@@ -221,6 +221,23 @@ export async function concediGiro(client, { couple_id, user_id }) {
   return accreditaGiro(client, { couple_id, user_id, motivo: 'gioco', delta: ECONOMIA.GIRI_PER_VITTORIA });
 }
 
+// --- Slot (ledger simmetrico a giri_movimenti) ---
+
+export async function listSlotMov(client, coupleId) {
+  const { data, error } = await client.from('slot_movimenti').select().eq('couple_id', coupleId).order('creato', { ascending: false });
+  return check({ data, error });
+}
+
+export async function accreditaSlot(client, { couple_id, user_id, motivo, delta }) {
+  const { data, error } = await client.from('slot_movimenti').insert({ couple_id, user_id, motivo, delta }).select().single();
+  return check({ data, error });
+}
+
+export async function spendiSlot(client, { couple_id, user_id }) {
+  const { data, error } = await client.from('slot_movimenti').insert({ couple_id, user_id, motivo: 'tiro', delta: -1 }).select().single();
+  return check({ data, error });
+}
+
 // ---- CONTENUTI RUOTA (editabili per coppia) ----
 export async function listRuotaContenuti(client, coupleId) {
   const res = await client.from('ruota_contenuti').select('*')
