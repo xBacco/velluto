@@ -247,11 +247,8 @@ async function risolvi(fetta, ui, boostActive) {
     return;
   }
 
-  // 'jackpot': TODO Task 17 — gestirà boost a fine sequenza (non consumare flag qui)
-  if (fetta.key === 'jackpot') {
-    ui.body.textContent = 'JACKPOT! 🎉'; // TODO Task 17
-    return;
-  }
+  // 'jackpot': doppio sub-spin — boost gestito alla fine della sequenza
+  if (fetta.key === 'jackpot') return risolviJackpot(ui, boostActive);
 
   // --- Tutti gli altri esiti "veri": applica ×2 se attivo, poi consuma il flag ---
   const boost = boostActive ? applicaDoppio(fetta) : { boosted: false };
@@ -374,6 +371,131 @@ async function applicaEffettoEsito(fetta, ui, boost) {
     default:
       break;
   }
+}
+
+// ---- jackpot: doppio sub-spin + summary ----
+
+// Mostra il titolo "Jackpot — uno a testa" nel card esistente, poi risolve.
+// STUB: nessuna animazione extra, solo aggiorna il testo del card.
+// TODO: se in futuro si vorrà una transizione animate (fade/pulse), implementarla qui.
+async function revealJackpotHeader(ui) {
+  const prizeEl = ui.body.closest('.prize');
+  prizeEl.querySelector('.won').textContent  = '💎 Jackpot!';
+  prizeEl.querySelector('.big').textContent  = '💎';
+  prizeEl.querySelector('.name').textContent = 'Uno a testa';
+  ui.body.textContent = 'Due premi in arrivo…';
+  // Breve pausa perché l'utente legga l'header prima dei sub-spin
+  await new Promise(r => setTimeout(r, 900));
+}
+
+// Simula l'effetto di "spin verso uno spicchio" — STUB (la ruota vera è già ferma).
+// TODO: se si vorrà ri-animare la ruota durante il jackpot, estrarre la logica da spin().
+async function animaSpinVerso(_indice) {
+  // Stub: piccola pausa che dà il senso di "estrazione in corso"
+  await new Promise(r => setTimeout(r, 700));
+}
+
+async function risolviJackpot(ui, boostActive) {
+  const { client, me } = ctx;
+
+  // Prepara fette senza jackpot per i sub-spin
+  const fetteBase = state.fette.map(f => f.key === 'jackpot' ? { ...f, peso: 0 } : f);
+
+  // 1. Header jackpot
+  await revealJackpotHeader(ui);
+
+  // 2. Sub-spin per chi sta girando (Tomas 🐻)
+  const sub1 = estraiFetta(fetteBase);
+  await animaSpinVerso(sub1.indice);
+  const boost1 = boostActive ? applicaDoppio(sub1.fetta) : { boosted: false };
+  renderEsitoJackpot(sub1.fetta, boost1, { avatar: '🐻', name: 'Tomas' }, ui);
+  // TODO Task 18: persistEsito(sub1.fetta, boost1, { user_id: me.id })
+  await applicaEffettoEsito(sub1.fetta, ui, boost1);
+  // Pausa perché l'utente legga il primo esito
+  await new Promise(r => setTimeout(r, 1200));
+
+  // 3. Sub-spin per il partner (morosa 🧁)
+  // Eredita boost se il sub-spin 1 ha estratto 'doppio' (spec § 3.3)
+  const boost2carry = sub1.fetta.key === 'doppio';
+  const sub2 = estraiFetta(fetteBase);
+  await animaSpinVerso(sub2.indice);
+  const boost2 = (boostActive || boost2carry) ? applicaDoppio(sub2.fetta) : { boosted: false };
+  renderEsitoJackpot(sub2.fetta, boost2, { avatar: '🧁', name: 'morosa' }, ui);
+  // TODO Task 18: persistEsito(sub2.fetta, boost2, { user_id: partnerUserId })
+  //   dove partnerUserId = await partnerId()
+  await applicaEffettoEsito(sub2.fetta, ui, boost2);
+
+  // 4. Summary card
+  renderJackpotSummary([
+    { avatar: '🐻', who: 'Tomas',  esito: sub1.fetta },
+    { avatar: '🧁', who: 'morosa', esito: sub2.fetta },
+  ]);
+
+  // 5. Consuma il flag ×2 (se attivo) dopo il secondo reveal
+  if (boostActive) {
+    await setFlagDoppio(client, me.couple_id, false);
+    nascondiBadgeX2(spinBtnEl);
+  }
+}
+
+// Aggiorna il card del reveal per mostrare l'esito di un sub-spin jackpot,
+// indicando a chi spetta il premio (avatar + name).
+// XSS-safety: avatar e name sono valori hardcoded ('🐻'/'🧁', 'Tomas'/'morosa') — safe per innerHTML.
+function renderEsitoJackpot(esito, boost, partner, ui) {
+  const prizeEl = ui.body.closest('.prize');
+  prizeEl.classList.add('jackpot');
+  prizeEl.classList.toggle('boosted', !!boost.boosted);
+
+  // Striscia "Premio di <name>"
+  prizeEl.querySelector('.turn-strip')?.remove();
+  const strip = document.createElement('div');
+  strip.className = 'turn-strip';
+  strip.innerHTML = `<span class="av">${partner.avatar}</span><span>Premio di ${partner.name}</span>`;
+  prizeEl.prepend(strip);
+
+  // Aggiorna emoji, label e body text (riusa lo stesso pattern di renderEsitoNormale)
+  prizeEl.querySelector('.x2-banner')?.remove();
+  if (boost.boosted) {
+    const b = document.createElement('div');
+    b.className = 'x2-banner';
+    b.textContent = 'DOPPIO! ×2';
+    // Inserisci dopo .turn-strip
+    strip.insertAdjacentElement('afterend', b);
+  }
+  const bigEl = prizeEl.querySelector('.big');
+  bigEl.querySelector('.x2-chip')?.remove();
+  bigEl.textContent = esito.emoji;
+  if (boost.boosted) {
+    const c = document.createElement('span');
+    c.className = 'x2-chip';
+    c.textContent = '×2';
+    bigEl.appendChild(c);
+  }
+  prizeEl.querySelector('.name').textContent = esito.label;
+  ui.body.textContent = bodyText(esito, boost);
+}
+
+// Aggiunge una summary card sotto il reveal con i due premi estratti.
+// XSS-safety: avatar, who e esito.emoji/label sono tutti valori hardcoded/da FETTE — safe per innerHTML.
+function renderJackpotSummary(pairs) {
+  // Evita duplicati se chiamata più volte
+  document.querySelector('.ruota-jackpot-summary')?.remove();
+  const el = document.createElement('div');
+  el.className = 'ruota-jackpot-summary';
+  el.innerHTML = `
+    <div class="ti">💎 Jackpot — riepilogo</div>
+    ${pairs.map(p => `
+      <div class="pair">
+        <div class="av">${p.avatar}</div>
+        <div class="who">${p.who}</div>
+        <div class="prz"><span class="em">${p.esito.emoji}</span><span>${p.esito.label}</span></div>
+      </div>
+    `).join('')}
+  `;
+  // Aggiungi dopo la .stage (dentro lo scrim del reveal)
+  const stage = document.querySelector('.ruota-reveal .stage');
+  if (stage) stage.appendChild(el);
+  else document.querySelector('.ruota-page')?.appendChild(el);
 }
 
 async function partnerId() {
