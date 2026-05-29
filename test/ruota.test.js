@@ -285,3 +285,38 @@ test('listCarte seleziona dalla tabella carte per couple_id', async () => {
   assert.equal(data.length, 1);
   assert.equal(c._calls[0].table, 'carte');
 });
+
+test('FETTE: 13 spicchi totali', () => {
+  assert.equal(FETTE.length, 13);
+});
+
+test('FETTE: 11 normali (peso 1) + 2 rari (peso 0.5)', () => {
+  const normali = FETTE.filter(f => f.peso === 1);
+  const rari    = FETTE.filter(f => f.peso === 0.5);
+  assert.equal(normali.length, 11);
+  assert.equal(rari.length, 2);
+  assert.equal(rari[0].key, 'doppio');
+  assert.equal(rari[1].key, 'jackpot');
+});
+
+test('FETTE: chiavi richieste presenti', () => {
+  const keys = FETTE.map(f => f.key);
+  for (const k of ['segreto','piccante','desiderio','bendare','wild','massaggio','doppio','polaroid','lampo','orale','ancora','jolly','jackpot']) {
+    assert.ok(keys.includes(k), `manca key ${k}`);
+  }
+});
+
+test('FETTE: ordine sulla ruota canonico', () => {
+  const expected = ['segreto','piccante','desiderio','bendare','wild','massaggio','doppio','polaroid','lampo','orale','ancora','jolly','jackpot'];
+  assert.deepEqual(FETTE.map(f => f.key), expected);
+});
+
+test('FETTE: differiti = desiderio, polaroid, lampo', () => {
+  const differiti = FETTE.filter(f => f.differito).map(f => f.key);
+  assert.deepEqual(differiti.sort(), ['desiderio','lampo','polaroid']);
+});
+
+test('FETTE: rari marcati con tag rare/ultra', () => {
+  assert.equal(FETTE.find(f => f.key === 'doppio').rare, 'rare');
+  assert.equal(FETTE.find(f => f.key === 'jackpot').rare, 'ultra');
+});

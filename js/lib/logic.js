@@ -412,17 +412,23 @@ export function giriEleggibile(movimenti, userId, now = new Date()) {
 
 // ---- RUOTA (fette, estrazione, storico premi) ----
 
-// Le 7 fette, in ordine sulla ruota. peso = probabilità relativa (tutti 1 = uniforme).
-// Nota: la fetta 'tod' (Carta Obbligo o Verità) è stata rimossa il 2026-05-28
-// perché il gioco delle carte non è più presente nell'app.
+// Le 13 fette, in ordine sulla ruota (dal puntatore in senso orario).
+// 11 normali (peso 1 = 30°) + 2 rari (peso 0.5 = 15°).
+// Aggiornato 2026-05-28: nuovo set per ridisegno ruota (spec 2026-05-28-economia-giochi-design.md).
 export const FETTE = [
-  { key: 'segreto',   emoji: '💋', label: 'Apri un segreto',         peso: 1, differito: false },
-  { key: 'piccante',  emoji: '🔥', label: 'Proposta piccante',       peso: 1, differito: false },
-  { key: 'buono',     emoji: '🎁', label: 'Buono a sorpresa',        peso: 1, differito: true },
-  { key: 'desiderio', emoji: '💌', label: 'Pesca un desiderio',      peso: 1, differito: true },
-  { key: 'jolly',     emoji: '⭐', label: 'Jolly: scegli tu',        peso: 1, differito: false },
-  { key: 'dadi',      emoji: '🎲', label: 'Tiro di dadi',            peso: 1, differito: false },
-  { key: 'ancora',    emoji: '🔁', label: 'Gira ancora',             peso: 1, differito: false },
+  { key: 'segreto',   emoji: '💋', label: 'Apri un segreto',     peso: 1,   differito: false },
+  { key: 'piccante',  emoji: '🔥', label: 'Proposta piccante',   peso: 1,   differito: false },
+  { key: 'desiderio', emoji: '💌', label: 'Pesca una fantasia',  peso: 1,   differito: true  },
+  { key: 'bendare',   emoji: '🧣', label: 'Bendare',             peso: 1,   differito: false },
+  { key: 'wild',      emoji: '🃏', label: 'Carta wild',          peso: 1,   differito: false },
+  { key: 'massaggio', emoji: '💆', label: 'Massaggio',           peso: 1,   differito: false },
+  { key: 'doppio',    emoji: '🪄', label: 'Prossimo ×2',         peso: 0.5, differito: false, rare: 'rare'  },
+  { key: 'polaroid',  emoji: '📸', label: 'Foto osè 24h',        peso: 1,   differito: true  },
+  { key: 'lampo',     emoji: '🎟️', label: 'Buono lampo',         peso: 1,   differito: true  },
+  { key: 'orale',     emoji: '👅', label: 'Servizio orale',      peso: 1,   differito: false },
+  { key: 'ancora',    emoji: '🔁', label: 'Gira ancora',         peso: 1,   differito: false },
+  { key: 'jolly',     emoji: '⭐', label: 'Jolly: scegli tu',    peso: 1,   differito: false },
+  { key: 'jackpot',   emoji: '💎', label: 'Jackpot',             peso: 0.5, differito: false, rare: 'ultra' },
 ];
 
 // Copia di FETTE con i pesi delle fette condizionali azzerati quando manca la condizione.
