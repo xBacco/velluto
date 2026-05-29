@@ -195,15 +195,18 @@ async function spin() {
       `rgba(8,2,5,.74) ${sliceWidth}deg 360deg)`;
   }
 
+  // Leggi il flag ×2 prima della rotazione, così è già pronto al reveal
+  const boostActive = await getFlagDoppio(ctx.client, ctx.me.couple_id);
+
   // dopo la rotazione (4.2s): accendi lo spotlight, poi mostra il pop-up
   setTimeout(() => {
     if (winhiEl) winhiEl.classList.add('on');
-    setTimeout(() => { showPrize(pick.fetta); busy = false; }, 600);
+    setTimeout(() => { showPrize(pick.fetta, boostActive); busy = false; }, 600);
   }, 4300);
 }
 
 // ---- pop-up premio (riusa .dadi-scrim per lo scroll-lock automatico) ----
-function showPrize(fetta) {
+function showPrize(fetta, boostActive) {
   const scrim = mk('div', 'ruota-reveal dadi-scrim');
   const stage = mk('div', 'stage'); stage.appendChild(mk('div', 'beam'));
   const card = mk('div', 'prize');
@@ -219,21 +222,119 @@ function showPrize(fetta) {
   scrim.onclick = e => { if (e.target === scrim) close(); };
   document.body.appendChild(scrim);
   requestAnimationFrame(() => scrim.classList.add('show'));
-  risolvi(fetta, { body, azione, chiudi, scrim });
+  risolvi(fetta, { body, azione, chiudi, scrim }, boostActive);
 }
 
-async function risolvi(fetta, ui) {
+async function risolvi(fetta, ui, boostActive) {
   const { client, me } = ctx;
   ui.azione.style.display = 'none';
+
+  // --- Casi idempotenti / deferred: NON consumano il flag ×2 ---
+
+  // 'ancora': concede un giro extra, non consuma flag
+  if (fetta.key === 'ancora') {
+    ui.body.textContent = 'Giro gratis: ne hai guadagnato un altro!';
+    accreditaGiro(client, { couple_id: me.couple_id, user_id: me.id, motivo: 'ancora' })
+      .catch(err => toast('Errore: ' + err.message, 'err'));
+    return;
+  }
+
+  // 'doppio': imposta flag, idempotente (Task 15) — non consuma flag
+  if (fetta.key === 'doppio') {
+    await setFlagDoppio(client, me.couple_id, true);
+    mostraBadgeX2(spinBtnEl);
+    ui.body.textContent = 'Il tuo prossimo premio sarà raddoppiato.';
+    return;
+  }
+
+  // 'jackpot': TODO Task 17 — gestirà boost a fine sequenza (non consumare flag qui)
+  if (fetta.key === 'jackpot') {
+    ui.body.textContent = 'JACKPOT! 🎉'; // TODO Task 17
+    return;
+  }
+
+  // --- Tutti gli altri esiti "veri": applica ×2 se attivo, poi consuma il flag ---
+  const boost = boostActive ? applicaDoppio(fetta) : { boosted: false };
+  await renderEsitoNormale(fetta, ui, boost);
+  if (boostActive) {
+    await setFlagDoppio(client, me.couple_id, false);
+    nascondiBadgeX2(spinBtnEl);
+  }
+}
+
+// Aggiorna il reveal DOM con classi/dati boost e delega gli effetti collaterali.
+async function renderEsitoNormale(fetta, ui, boost) {
+  const prizeEl = ui.body.closest('.prize');
+
+  // Classe .boosted sul card
+  prizeEl.classList.toggle('boosted', !!boost.boosted);
+
+  // Banner DOPPIO! ×2 in cima al card
+  prizeEl.querySelector('.x2-banner')?.remove();
+  if (boost.boosted) {
+    const b = document.createElement('div');
+    b.className = 'x2-banner';
+    b.textContent = 'DOPPIO! ×2';
+    prizeEl.prepend(b);
+  }
+
+  // Chip ×2 accanto all'emoji nel .big
+  const bigEl = prizeEl.querySelector('.big');
+  bigEl.querySelector('.x2-chip')?.remove();
+  bigEl.textContent = fetta.emoji;
+  if (boost.boosted) {
+    const c = document.createElement('span');
+    c.className = 'x2-chip';
+    c.textContent = '×2';
+    bigEl.appendChild(c);
+  }
+
+  // Nome e body text
+  prizeEl.querySelector('.name').textContent = fetta.label;
+  ui.body.textContent = bodyText(fetta, boost);
+
+  // Effetti differiti / azioni per-spicchio
+  await applicaEffettoEsito(fetta, ui, boost);
+}
+
+// Testo descrittivo del premio in funzione dello spicchio e del boost.
+function bodyText(esito, boost) {
+  if (esito.key === 'massaggio') return boost.boosted ? `${boost.minuti} minuti, dove preferisce chi ha vinto.` : '10 minuti, dove preferisce chi ha vinto.';
+  if (esito.key === 'wild')      return boost.boosted ? `L'altro/a decide cosa farti per ${boost.ore} ore.`         : "L'altro/a decide cosa farti per 24h.";
+  if (esito.key === 'orale')     return boost.boosted ? boost.testoExtra                                            : 'Quando vuole chi ha vinto.';
+  if (esito.key === 'bendare')   return boost.boosted ? "Il doppio del tempo che decide l'altro/a."                 : "Lasciati bendare — l'altro/a decide quando finisce.";
+  if (esito.key === 'lampo')     return boost.boosted ? '2 buoni a sorpresa, ciascuno vale 24h.'                    : 'Un buono pescato a sorpresa, vale 24h.';
+  if (esito.key === 'polaroid')  return boost.boosted ? '2 foto osè da inviare entro 24h.'                          : 'Inviane una al partner entro 24 ore.';
+  if (esito.key === 'segreto')   return boost.boosted ? 'Apri 2 buste segrete consecutive.'                         : 'Apri una busta segreta.';
+  if (esito.key === 'piccante')  return boost.boosted ? '2 proposte piccanti da provare.'                           : 'Una proposta piccante da provare stasera.';
+  if (esito.key === 'desiderio') return boost.boosted ? 'Pesca 2 fantasie dalla bacheca.'                           : 'Dalla bacheca delle cose da provare.';
+  if (esito.key === 'jolly')     return 'Scegli tu il premio.';
+  return '';
+}
+
+// Effetti collaterali per-spicchio (DB writes, bottoni azione).
+// Le varianti boost per polaroid/lampo con scadenza_iso saranno completate in Task 18.
+async function applicaEffettoEsito(fetta, ui, boost) {
+  const { client, me } = ctx;
   switch (fetta.key) {
     case 'piccante': {
+      // bodyText già impostato da renderEsitoNormale; mostra la proposta pescata nel testo
       const pr = pescaContenuto(state.proposte);
-      ui.body.textContent = pr ? pr.testo : '—';
+      if (!boost.boosted) {
+        ui.body.textContent = pr ? pr.testo : '—';
+      } else {
+        // boost.quantita === 2: pesca una seconda proposta
+        const pr2 = pescaContenuto(state.proposte.filter(p => p !== pr));
+        ui.body.textContent = pr && pr2 ? `${pr.testo} / ${pr2.testo}` : (pr ? pr.testo : '—');
+      }
       break;
     }
     case 'buono': {
+      // 'buono' / 'lampo' — vecchio nome 'buono' nel switch originale
       const b = pescaContenuto(state.buoniS);
-      ui.body.textContent = b ? `${b.testo}: lo trovi nei Buoni.` : 'Un buono a sorpresa!';
+      if (!boost.boosted) {
+        ui.body.textContent = b ? `${b.testo}: lo trovi nei Buoni.` : 'Un buono a sorpresa!';
+      }
       if (b) {
         try {
           const partner = await partnerId();
@@ -247,33 +348,31 @@ async function risolvi(fetta, ui) {
     }
     case 'desiderio': {
       const dp = (state.desideri || []).filter(d => d.stato === 'da_provare');
-      const d = pescaContenuto(dp);
-      ui.body.textContent = d ? `Stasera: "${d.testo}".` : 'Aggiungi qualche desiderio da provare!';
+      if (!boost.boosted) {
+        const d = pescaContenuto(dp);
+        ui.body.textContent = d ? `Stasera: "${d.testo}".` : 'Aggiungi qualche desiderio da provare!';
+      } else {
+        // boost.quantita === 2: pesca due fantasie
+        const d1 = pescaContenuto(dp);
+        const d2 = pescaContenuto(dp.filter(d => d !== d1));
+        if (d1 && d2) ui.body.textContent = `Stasera: "${d1.testo}" e "${d2.testo}".`;
+        else if (d1)  ui.body.textContent = `Stasera: "${d1.testo}".`;
+        else          ui.body.textContent = 'Aggiungi qualche desiderio da provare!';
+      }
       break;
     }
     case 'dadi':
       ui.body.textContent = 'Tira i dadi! (vai al gioco Dadi)';
       break;
-    case 'ancora':
-      ui.body.textContent = 'Giro gratis: ne hai guadagnato un altro!';
-      accreditaGiro(client, { couple_id: me.couple_id, user_id: me.id, motivo: 'ancora' })
-        .catch(err => toast('Errore: ' + err.message, 'err'));
-      break;
-    case 'jolly':
-      ui.body.textContent = 'Jolly! Scegli tu il premio con il partner.';
-      break;
     case 'segreto':
-      ui.body.textContent = 'Hai vinto il diritto di aprire un segreto.';
       ui.azione.textContent = 'Scegli quale busta →';
       ui.azione.style.display = '';
       ui.azione.onclick = () => { ui.scrim.remove(); if (winhiEl) winhiEl.classList.remove('on'); apriSceltaSegreto(); };
       break;
-    case 'doppio': {
-      await setFlagDoppio(client, me.couple_id, true);
-      mostraBadgeX2(spinBtnEl);
-      ui.body.textContent = 'Il tuo prossimo premio sarà raddoppiato.';
+    // 'massaggio', 'wild', 'orale', 'bendare', 'lampo', 'polaroid', 'jolly':
+    // solo testo (già impostato da bodyText) — effetti differiti in Task 18
+    default:
       break;
-    }
   }
 }
 
