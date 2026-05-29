@@ -1,7 +1,7 @@
 :root{
   --bg:#160409; --bg2:#2a0813; --wine:#5c1026; --wine2:#7a1533;
   --gold:#d4a86c; --gold-soft:#e9c98f; --cream:#f3d9b0; --rose:#c2557a;
-  --ok:#7fb069; --err:#e0556a; --shadow:rgba(0,0,0,.55);
+  --ok:#7fb069; --err:#e0556a; --shadow:rgba(0,0,0,.55); --ember:#e0683a;
   --spin:cubic-bezier(.17,.67,.18,1);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -26,7 +26,10 @@ body{position:fixed;inset:0;font-family:Georgia,"Times New Roman",serif;color:va
   -webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:manipulation;
   padding:6px 16px calc(96px + env(safe-area-inset-bottom));scrollbar-width:none;}
 .page::-webkit-scrollbar{display:none;}
-.brand{font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);}
+/* wordmark "brace." — minuscolo serif Playfair, punto color brace/ember */
+.brand,.login-title,.lock-title{font-family:'Playfair Display',Georgia,serif;text-transform:none;}
+.brand{font-size:21px;letter-spacing:.005em;font-weight:500;color:var(--gold);}
+.wm-dot{color:var(--ember);-webkit-text-fill-color:var(--ember);}
 .topbar-right{display:flex;align-items:center;gap:8px;}
 .gear{background:rgba(255,255,255,.04);border:1px solid rgba(212,168,108,.3);border-radius:999px;
   width:40px;height:40px;font-size:18px;color:var(--gold-soft);cursor:pointer;}
