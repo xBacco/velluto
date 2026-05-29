@@ -13,6 +13,7 @@ import {
 import { listStripPartite, addStripPartita, getPartner, deleteStripPartiteForCouple } from '../store.js';
 import { openGameModal } from './giochi.js';
 import { attachSwipeBack } from '../lib/swipe-back.js';
+import { pushBack } from '../lib/back-stack.js';
 
 let ctx = null, host = null, partite = [];
 let partner = null;
@@ -501,19 +502,35 @@ function resetPolaroid() {
 // ---------------------------------------------------------------------------
 // overlay helper: nodo appeso a document.body con classe "dadi-scrim strip-ov"
 // (ui.js blocca lo scroll finché esiste). Ritorna il nodo radice.
+//
+// Back-stack: l'overlay registra una voce di history all'apertura. Cosi' il
+// tasto-back / edge-swipe del telefono (intercettato dal sistema PRIMA che il
+// JS lo veda) fa popstate → chiude SOLO questo overlay invece di uscire
+// dall'app o consumare la entry del game-modal sottostante.
 // ---------------------------------------------------------------------------
+let ovEntry = null;
+
 function closeOv() {
+  if (ovEntry && ovEntry.alive) ovEntry.close();   // → history.back → popstate → teardownOv
+  else teardownOv();
+}
+
+function teardownOv() {
+  ovEntry = null;
   const o = document.querySelector('.strip-ov');
   if (!o) return;
   o.classList.remove('show');                                   // fade-out (.dadi-scrim transition .3s)
   setTimeout(() => { if (o.parentNode) o.remove(); }, 300);
 }
+
 function openOv() {
   document.querySelectorAll('.strip-ov').forEach(n => n.remove()); // rimozione immediata: niente doppio overlay
+  ovEntry = null;
   const ov = mk('div', 'dadi-scrim strip-ov');
   document.body.appendChild(ov);
   requestAnimationFrame(() => ov.classList.add('show'));
-  attachSwipeBack(ov, () => closeOv());
+  ovEntry = pushBack(() => teardownOv());
+  attachSwipeBack(ov, () => ovEntry.close());
   return ov;
 }
 

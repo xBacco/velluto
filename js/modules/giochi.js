@@ -7,6 +7,7 @@ import { renderRuota, openEditorRuota } from './ruota.js';
 import { renderStrip, hasActiveGame as stripHasActiveGame } from './strip.js';
 import { renderYahtzutra, hasActiveGame as yzHasActiveGame } from './yahtzutra.js';
 import { attachSwipeBack } from '../lib/swipe-back.js';
+import { pushBack } from '../lib/back-stack.js';
 
 let giocoCorrente = 'dadi';   // 'dadi' | 'ruota'
 let ctx = null;          // { client, me, panel }
@@ -74,9 +75,10 @@ function buildSelettore() {
 // ===========================================================================
 let modalEl = null;
 let modalCloseHandler = null;
+let modalBackEntry = null;   // voce di history del game-modal (back-stack)
 
 export function openGameModal(title, mount, onClose) {
-  closeGameModal({ silent: true });
+  teardownGameModal({ silent: true });
   const overlay = mk('div', 'game-modal');
   const sheet = mk('div', 'game-modal-sheet');
   sheet.appendChild(mk('div', 'game-modal-edge'));
@@ -120,24 +122,45 @@ export function openGameModal(title, mount, onClose) {
   sheet.appendChild(body);
   overlay.appendChild(sheet);
   document.body.appendChild(overlay);
-  document.body.classList.add('game-modal-open');
-  requestAnimationFrame(() => overlay.classList.add('show'));
-  wireModalSwipe(sheet);
   modalEl = overlay;
   modalCloseHandler = onClose;
-  mount(body);
+  mount(body);                    // riempi il corpo PRIMA del reveal
+  wireModalSwipe(sheet);
+  // Forza il commit dello stato iniziale (overlay nascosto, contenuti
+  // opacity:0) PRIMA di attivare le classi. Senza questo, quando openGameModal
+  // e' chiamata da una continuazione async (Strip awaita la rete a OGNI
+  // apertura; Yahtzutra solo alla prima), un singolo requestAnimationFrame non
+  // basta a far partire la transizione → l'apertura "non si anima".
+  void overlay.offsetWidth;
+  document.body.classList.add('game-modal-open');
+  overlay.classList.add('show');
+  // Registra il game-modal nel back-stack: il tasto-back / edge-swipe del
+  // telefono chiude il modal invece di uscire dall'app.
+  modalBackEntry = pushBack(() => teardownGameModal({}));
 }
 
-export function closeGameModal(opts) {
+// Chiusura richiesta da utente/codice (freccia dal palco, swipe, abbandona
+// partita). Passa SEMPRE per la history (entry.close → history.back →
+// popstate) cosi' tasto-back del telefono, edge-swipe e bottoni fanno la stessa
+// identica cosa e il modal si chiude una sola volta.
+export function closeGameModal() {
+  if (modalBackEntry && modalBackEntry.alive) modalBackEntry.close();
+  else teardownGameModal({});
+}
+
+// Smontaggio vero del modal: eseguito da popstate (via back-stack) o
+// direttamente nel caso silent (sostituzione di un modal residuo). Anima la
+// chiusura morbida (Morbida+) e rimuove il nodo.
+function teardownGameModal(opts) {
   const silent = opts && opts.silent;
   if (!modalEl) return;
   const m = modalEl;
   const h = modalCloseHandler;
   modalEl = null;
   modalCloseHandler = null;
-  // Chiusura morbida (Morbida+): lo sheet SCIVOLA giù mentre scrim e blur si
-  // dissolvono e #app torna in primo piano. Rimozione del nodo solo a slide
-  // completato (640ms > .6s del transform di chiusura).
+  modalBackEntry = null;
+  // Lo sheet SCIVOLA giù mentre scrim e blur si dissolvono e #app torna in
+  // primo piano. Rimozione del nodo solo a slide completato (640ms > .6s).
   m.classList.add('closing');
   m.classList.remove('show');
   document.body.classList.remove('game-modal-open');
