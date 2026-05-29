@@ -43,26 +43,39 @@ function drawSelettore() {
 
 function refreshSelettore() {
   if (!ctx) return;
-  const existing = ctx.panel.querySelector('.gioco-selettore');
+  const existing = ctx.panel.querySelector('.giochi-nav');
   if (existing) existing.replaceWith(buildSelettore());
 }
 
+function makeTab(k, ico, lbl) {
+  const b = mk('button', 'gioco-tab' + (giocoCorrente === k ? ' on' : ''));
+  add(b, mk('span', 'ico', ico), mk('span', 'lab', lbl));
+  if (k === 'yz' && yzHasActiveGame()) b.appendChild(mk('span', 'gt-badge'));
+  if (k === 'strip' && stripHasActiveGame()) b.appendChild(mk('span', 'gt-badge'));
+  b.onclick = () => {
+    if (k === 'yz') { renderYahtzutra({ client: ctx.client, me: ctx.me }); return; }
+    if (k === 'strip') { renderStrip({ client: ctx.client, me: ctx.me }); return; }
+    giocoCorrente = k;
+    renderGiochi(ctx);
+  };
+  return b;
+}
+
 function buildSelettore() {
-  const sel = mk('div', 'gioco-selettore');
-  for (const [k, ico, lbl] of [['dadi', '🎰', 'Slot'], ['ruota', '🎡', 'Ruota'], ['yz', '🎲', 'Yahtzutra'], ['strip', '♠️', 'Strip']]) {
-    const b = mk('button', 'gioco-tab' + (giocoCorrente === k ? ' on' : ''));
-    add(b, mk('span', 'ico', ico), mk('span', 'lab', lbl));
-    if (k === 'yz' && yzHasActiveGame()) b.appendChild(mk('span', 'gt-badge'));
-    if (k === 'strip' && stripHasActiveGame()) b.appendChild(mk('span', 'gt-badge'));
-    b.onclick = () => {
-      if (k === 'yz') { renderYahtzutra({ client: ctx.client, me: ctx.me }); return; }
-      if (k === 'strip') { renderStrip({ client: ctx.client, me: ctx.me }); return; }
-      giocoCorrente = k;
-      renderGiochi(ctx);
-    };
-    sel.appendChild(b);
-  }
-  return sel;
+  const wrap = mk('div', 'giochi-nav');
+
+  const labTempo = mk('p', 'gruppo-lab', 'Giochi a tempo');
+  const dockTempo = mk('div', 'gioco-selettore'); dockTempo.dataset.gruppo = 'tempo';
+  dockTempo.appendChild(makeTab('ruota', '🎡', 'Ruota'));
+  dockTempo.appendChild(makeTab('dadi',  '🎰', 'Slot'));
+
+  const labLiberi = mk('p', 'gruppo-lab', 'Giochi liberi');
+  const dockLiberi = mk('div', 'gioco-selettore'); dockLiberi.dataset.gruppo = 'liberi';
+  dockLiberi.appendChild(makeTab('yz',    '🎲', 'Yahtzutra'));
+  dockLiberi.appendChild(makeTab('strip', '♠️', 'Strip'));
+
+  add(wrap, labTempo, dockTempo, labLiberi, dockLiberi);
+  return wrap;
 }
 
 // ===========================================================================
