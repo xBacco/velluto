@@ -1372,12 +1372,36 @@ body.pudica [data-spicy].revealed{filter:none;}
   font-size:13px;color:#fbe9cf;line-height:1.45;padding-left:2px;}
 .strip-ov.storia .cronaca-empty{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
   font-size:14px;color:#b79a86;text-align:center;margin:18px 0;}
+/* link "Tutte le serate →" sotto la cronaca breve: apre l'overlay storia-full */
+.strip-ov .btn-link{background:none;border:none;color:#c9a35f;font-family:'Cormorant Garamond',Georgia,serif;
+  font-style:italic;font-size:13px;text-decoration:underline;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;}
+.strip-ov .btn-link:hover{color:var(--gold-soft);}
+
+/* ============================================================
+   STRIP OVERLAY · STORIA FULL "Tutte le serate"
+   Popup secondo livello: stessa veste della Cronaca breve, ma il contenuto
+   parte dall'alto e scrolla (puo' essere lungo). Aperto dal link "Tutte le
+   serate →" sotto la cronaca breve, si chiude con tasto-back/edge-swipe.
+   ============================================================ */
+.strip-ov.storia-full{background:radial-gradient(ellipse at 50% 25%,#2a0a18 0%,#0a0205 80%);color:var(--cream);
+  justify-content:flex-start;padding-top:30px;overflow:auto;}
+.strip-ov.storia-full h3{font-family:'Bebas Neue','Impact',sans-serif;font-size:20px;letter-spacing:.32em;
+  color:#ffd97a;text-shadow:0 0 10px rgba(255,217,122,.4);margin:0;}
+.strip-ov.storia-full .ov-sub{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
+  font-size:12px;color:#c9a35f;letter-spacing:.04em;margin:0;}
+.strip-ov.storia-full .cronaca{max-width:340px;width:100%;display:flex;flex-direction:column;gap:6px;
+  padding:14px 16px;background:rgba(10,2,5,.4);border:1px dashed rgba(201,163,95,.25);
+  border-radius:6px;text-align:left;}
+.strip-ov.storia-full .serata-head{font:8px Arial,sans-serif;letter-spacing:.4em;color:#c9a35f;
+  text-align:center;margin:14px 0 4px;}
+.strip-ov.storia-full .serata-head:first-child{margin-top:0;}
+.strip-ov.storia-full .cronaca-line{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
+  font-size:13px;color:#fbe9cf;line-height:1.45;padding-left:2px;}
 
 /* ============================================================
    STRIP OVERLAY · REGOLE "Depliant + fisarmonica"
    ============================================================ */
-.strip-ov.regole{background:radial-gradient(ellipse at 50% 25%,#2a0a18 0%,#0a0205 80%);color:var(--cream);
-  justify-content:flex-start;padding-top:38px;}
+.strip-ov.regole{background:radial-gradient(ellipse at 50% 25%,#2a0a18 0%,#0a0205 80%);color:var(--cream);}
 .strip-ov.regole .depliant{width:100%;max-width:300px;display:flex;flex-direction:column;
   box-shadow:0 16px 40px rgba(0,0,0,.6);}
 .strip-ov.regole .fold{position:relative;overflow:hidden;padding:18px 18px 16px;
@@ -1412,8 +1436,7 @@ body.pudica [data-spicy].revealed{filter:none;}
 /* ============================================================
    STRIP OVERLAY · OPZIONI "Bacheca Velluto v3"
    ============================================================ */
-.strip-ov.opzioni{background:radial-gradient(ellipse at 50% 25%,#2a0a18 0%,#0a0205 80%);color:var(--cream);
-  justify-content:flex-start;padding-top:30px;}
+.strip-ov.opzioni{background:radial-gradient(ellipse at 50% 25%,#2a0a18 0%,#0a0205 80%);color:var(--cream);}
 .strip-ov.opzioni .drappo{position:relative;width:100%;max-width:300px;min-height:380px;
   padding:34px 12px 14px;
   background:linear-gradient(90deg,#1a0508 0%,#3a0c18 4%,#5a1528 9%,#7a2138 14%,#5a1528 20%,#3a0c18 26%,
@@ -1448,9 +1471,6 @@ body.pudica [data-spicy].revealed{filter:none;}
 .strip-ov.opzioni .swatch::after{content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);
   width:8px;height:8px;border-radius:50%;
   background:radial-gradient(circle at 30% 30%,#fff4c2,#8a6a14);box-shadow:0 1px 2px rgba(0,0,0,.6);}
-.strip-ov.opzioni .monogram{position:absolute;z-index:2;bottom:10px;left:10px;
-  font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;
-  color:rgba(255,217,170,.22);font-weight:bold;transform:rotate(-8deg);}
 
 .strip-ov.opzioni .pol-grid{position:relative;z-index:3;display:grid;
   grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px 14px;

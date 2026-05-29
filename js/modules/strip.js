@@ -349,33 +349,91 @@ function bsPill(id, emoji, label, onTap) {
 function chooseMode(m) { mode = m; drawSetup(); }
 
 // --- BACKSTAGE: STORIA ---
+// Cronaca breve: mostra le ultime 3 partite (in ordine cronologico inverso,
+// raggruppate per serata). Bottone link "Tutte le serate →" apre un secondo
+// overlay (storia-full) con history completa scrollabile.
 function openStoria() {
   const ov = openOv();
   ov.classList.add('storia');
   ov.appendChild(mk('div', 'ov-em', '📖'));
   ov.appendChild(mk('h3', null, 'CRONACA DELLA NOTTE'));
-  ov.appendChild(mk('p', 'ov-sub', 'tutte le serate, tutti gli atti'));
+  const serateTotali = raggruppaPartite(partite);
+  const partiteTotali = serateTotali.reduce((s, x) => s + x.partite.length, 0);
+  ov.appendChild(mk('p', 'ov-sub', partiteTotali > 3 ? 'le ultime 3 partite' : 'tutte le serate, tutti gli atti'));
   const wrap = mk('div', 'cronaca');
-  const serate = raggruppaPartite(partite);
-  if (!serate.length) {
+  if (!serateTotali.length) {
     wrap.appendChild(mk('p', 'cronaca-empty', '"La prima serata non è ancora cominciata."'));
   } else {
-    serate.forEach(s => {
-      wrap.appendChild(mk('div', 'serata-head', '— SERATA N° ' + roman(s.n) + ' —'));
-      s.partite.forEach(p => {
-        const winLui = p.vincitore_id === ctx.me.id;
-        const md = (p.modalita || '').toUpperCase();
-        const text = winLui
-          ? `🐻 Lui ha tenuto l'ultimo velo, vincitore del ${md}.`
-          : `🧁 Lei è rimasta vestita di sola luce; ha vinto al ${md}.`;
-        wrap.appendChild(mk('div', 'cronaca-line', '· ' + text));
-      });
-    });
+    ultimePartiteRaggruppate(serateTotali, 3).forEach(s => appendSerata(wrap, s));
   }
   ov.appendChild(wrap);
+  if (partiteTotali > 3) {
+    const all = mk('button', 'btn-link', 'Tutte le serate →');
+    all.onclick = () => openStoriaFull(serateTotali);
+    ov.appendChild(all);
+  }
   const back = mk('button', 'btn ghost', '← Torna al palco');
   back.onclick = closeOv;
   ov.appendChild(back);
+}
+
+// Cronaca completa: overlay secondo livello, annidato SOPRA la cronaca breve.
+// NON usa openOv (che rimuove gli altri .strip-ov): crea il suo nodo a mano
+// con entry/swipe-back propri, cosi' breve e full coesistono nello stack LIFO.
+// Back/swipe sulla full → chiude SOLO la full; la breve sotto resta viva.
+function openStoriaFull(serate) {
+  const ov = mk('div', 'dadi-scrim strip-ov storia-full');
+  document.body.appendChild(ov);
+  requestAnimationFrame(() => ov.classList.add('show'));
+  const teardown = () => {
+    ov.classList.remove('show');
+    setTimeout(() => { if (ov.parentNode) ov.remove(); }, 300);
+  };
+  const entry = pushBack(teardown);
+  const close = () => { if (entry.alive) entry.close(); else teardown(); };
+  attachSwipeBack(ov, close);
+  ov.appendChild(mk('h3', null, 'TUTTE LE SERATE'));
+  ov.appendChild(mk('p', 'ov-sub', 'dalla più recente'));
+  const wrap = mk('div', 'cronaca');
+  serate.forEach(s => appendSerata(wrap, s));
+  ov.appendChild(wrap);
+  const back = mk('button', 'btn ghost', '← Torna alla cronaca');
+  back.onclick = close;
+  ov.appendChild(back);
+}
+
+// Append di una serata (head + righe) dentro un wrap .cronaca. Centralizza il
+// formato "🐻 Lui ... / 🧁 Lei ..." cosi' openStoria e openStoriaFull usano la
+// stessa logica e non divergono.
+function appendSerata(wrap, s) {
+  wrap.appendChild(mk('div', 'serata-head', '— SERATA N° ' + roman(s.n) + ' —'));
+  s.partite.forEach(p => {
+    const winLui = p.vincitore_id === ctx.me.id;
+    const md = (p.modalita || '').toUpperCase();
+    const text = winLui
+      ? `🐻 Lui ha tenuto l'ultimo velo, vincitore del ${md}.`
+      : `🧁 Lei è rimasta vestita di sola luce; ha vinto al ${md}.`;
+    wrap.appendChild(mk('div', 'cronaca-line', '· ' + text));
+  });
+}
+
+// Riduce `serate` (gia' in ordine descendente) alle ultime `n` partite,
+// conservando la struttura raggruppata. La serata piu' recente puo' restare
+// parziale (solo le ultime partite). Se n >= totale, ritorna tutto invariato.
+function ultimePartiteRaggruppate(serate, n) {
+  const out = [];
+  let restano = n;
+  for (const s of serate) {
+    if (restano <= 0) break;
+    if (s.partite.length <= restano) {
+      out.push(s);
+      restano -= s.partite.length;
+    } else {
+      out.push({ day: s.day, n: s.n, partite: s.partite.slice(-restano) });
+      restano = 0;
+    }
+  }
+  return out;
 }
 
 function raggruppaPartite(arr) {
@@ -437,7 +495,6 @@ function openOpzioni() {
   const head = mk('div', 'drappo-head');
   add(head, mk('span', 'tape l'), mk('span', 'tape r'), mk('div', 'tag', '✦ CAMERINO · CABARET ✦'));
   drappo.appendChild(head);
-  drappo.appendChild(mk('span', 'monogram', 'M.'));
   drappo.appendChild(mk('span', 'swatch'));
   const grid = mk('div', 'pol-grid');
   ['suoni', 'vibra', 'privacy'].forEach(k => grid.appendChild(togglePolaroid(k)));
