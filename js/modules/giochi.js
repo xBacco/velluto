@@ -1,8 +1,9 @@
 import { mk, add, clear, toast, openSheet } from '../ui.js';
 import {
   DADI_ORDER, DADI_LABEL, DADI_CHIP, raggruppaFacce, facceDefaultRows, tiraDadi, componiFrase,
+  ECONOMIA_SLOT, saldoSlot, slotEleggibile,
 } from '../lib/logic.js';
-import { listDadiFacce, seedDadiFacce, updateDadiFaccia } from '../store.js';
+import { listDadiFacce, seedDadiFacce, updateDadiFaccia, listSlotMov, accreditaSlot, spendiSlot } from '../store.js';
 import { renderRuota, openEditorRuota } from './ruota.js';
 import { renderStrip, hasActiveGame as stripHasActiveGame, closeOv as closeStripOv } from './strip.js';
 import { renderYahtzutra, hasActiveGame as yzHasActiveGame } from './yahtzutra.js';
@@ -206,12 +207,31 @@ async function montaDadi(host) {
     }
     facce = raggruppaFacce(rows);
   } catch (err) { toast('Errore caricamento dadi: ' + err.message, 'err'); return; }
+
+  // accredita tiri settimanali se eligible
+  try {
+    const movs = await listSlotMov(ctx.client, ctx.me.couple_id);
+    const elig = slotEleggibile(movs, ctx.me.id);
+    if (elig.ok) {
+      await accreditaSlot(ctx.client, {
+        couple_id: ctx.me.couple_id,
+        user_id: ctx.me.id,
+        motivo: 'settimanale',
+        delta: ECONOMIA_SLOT.TIRI_SETTIMANALI,
+      });
+    }
+  } catch (err) { /* non bloccare l'UI se il ledger slot fallisce */ }
+
   draw();
+  await renderTopbarSlot();
 }
 
 function draw() {
   const p = dadiHost; clear(p);
   add(p, mk('h2', 'ptitle', '🎰 Slot'), mk('p', 'psub', 'Scegli i rulli e premi per tirare. Tocca ＋ per cambiare i contenuti.'));
+
+  // topbar saldo + countdown (aggiornata da renderTopbarSlot)
+  p.appendChild(mk('div', 'slot-topbar'));
 
   // picker: una chip per rullo, accesa/spenta
   const picker = mk('div', 'dadi-picker');
@@ -241,11 +261,36 @@ function draw() {
   buildField();
 }
 
+async function renderTopbarSlot() {
+  const bar = dadiHost && dadiHost.querySelector('.slot-topbar');
+  if (!bar) return;
+  let saldo = 0;
+  let elig = { ok: false, prossimoSblocco: null };
+  try {
+    const movs = await listSlotMov(ctx.client, ctx.me.couple_id);
+    saldo = saldoSlot(movs, ctx.me.id);
+    elig = slotEleggibile(movs, ctx.me.id);
+  } catch (_) { /* mostra saldo 0 se DB irraggiungibile */ }
+  clear(bar);
+  const saldoEl = mk('span', 'slot-saldo', `🎰 ${saldo} tir${saldo === 1 ? 'o' : 'i'}`);
+  const cdEl    = mk('span', 'slot-countdown', countdownText(elig));
+  add(bar, saldoEl, cdEl);
+  const btn = dadiHost.querySelector('.slot-tira');
+  if (btn) btn.disabled = saldo === 0;
+}
+
+function countdownText(elig) {
+  if (elig.ok) return 'gratis disponibile';
+  const giorni = Math.ceil((new Date(elig.prossimoSblocco) - Date.now()) / 864e5);
+  return `gratis tra ${giorni}g`;
+}
+
 function toggleDie(k) {
   const activeCount = DADI_ORDER.filter(x => attivi[x]).length;
   if (attivi[k] && activeCount === 1) return;   // almeno un rullo sempre acceso
   attivi[k] = !attivi[k];
   draw();
+  renderTopbarSlot();   // ripristina saldo/countdown dopo il redraw (fire-and-forget)
 }
 
 function buildField() {
@@ -273,9 +318,16 @@ function makeReel(k) {
   return reel;
 }
 
-function roll() {
+async function roll() {
   closePop();
   if (busy) return;
+  try {
+    await spendiSlot(ctx.client, { couple_id: ctx.me.couple_id, user_id: ctx.me.id });
+  } catch (e) {
+    console.error('spendiSlot failed', e);
+    toast('Tiri esauriti — torna tra qualche giorno 🎰', 'err');
+    return;
+  }
   busy = true;
   const picks = tiraDadi(attivi);
   const keys = Object.keys(picks);
@@ -298,6 +350,7 @@ function roll() {
   setTimeout(() => {
     showPop(componiFrase(facce, picks));
     busy = false;
+    renderTopbarSlot();   // aggiorna saldo dopo il tiro (fire-and-forget)
   }, settleMs);
 }
 
