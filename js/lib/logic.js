@@ -353,6 +353,18 @@ export const ECONOMIA = {
   ULTIMI_PREMI: 5,         // voci dello storico "Ultimi premi"
 };
 
+// Economia slot (Fase 4b, 2026-05-28). Indipendente dalla ruota.
+export const ECONOMIA_SLOT = {
+  COSTO_TIRO: 1,
+  GRATIS_OGNI_GIORNI: 7,
+  TIRI_SETTIMANALI: 5,
+  CAP_SALDO: 10,
+};
+
+// Time-to-live per buoni "lampo" (🎟️) e "polaroid" (📸). Ambedue 24h.
+export const LAMPO_TTL_MS    = 24 * 60 * 60 * 1000;
+export const POLAROID_TTL_MS = 24 * 60 * 60 * 1000;
+
 // Saldo = somma dei delta dei movimenti dell'utente (ledger insert-only).
 export function saldoGiri(movimenti, userId) {
   return movimenti.filter(m => m.user_id === userId).reduce((s, m) => s + m.delta, 0);
