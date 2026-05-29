@@ -238,6 +238,19 @@ export async function spendiSlot(client, { couple_id, user_id }) {
   return check({ data, error });
 }
 
+// --- Flag persistente "prossimo premio ×2" (couples.ruota_flag_doppio) ---
+
+export async function getFlagDoppio(client, coupleId) {
+  const { data, error } = await client.from('couples').select('ruota_flag_doppio').eq('id', coupleId).single();
+  if (error) check({ data, error });
+  return !!data?.ruota_flag_doppio;
+}
+
+export async function setFlagDoppio(client, coupleId, value) {
+  const { data, error } = await client.from('couples').update({ ruota_flag_doppio: !!value }).eq('id', coupleId);
+  return check({ data, error });
+}
+
 // ---- CONTENUTI RUOTA (editabili per coppia) ----
 export async function listRuotaContenuti(client, coupleId) {
   const res = await client.from('ruota_contenuti').select('*')

@@ -393,3 +393,49 @@ test('applicaDoppio jolly: flag passa allo spicchio scelto', () => {
   const r = applicaDoppio({ key: 'jolly' });
   assert.equal(r.deferToJolly, true);
 });
+
+import { getFlagDoppio, setFlagDoppio } from '../js/store.js';
+
+function fakeCouplesClient(coupleId, initialFlag = false) {
+  let flag = initialFlag;
+  return {
+    from(table) {
+      const state = { table, op: null, payload: null, filters: {} };
+      const api = {
+        select(cols) { state.op = 'select'; state.cols = cols; return api; },
+        update(p) { state.op = 'update'; state.payload = p; return api; },
+        eq(c, v) { state.filters[c] = v; return api; },
+        single() { state.single = true; return api; },
+        then(resolve) {
+          if (state.op === 'select') {
+            if (state.filters.id === coupleId) resolve({ data: { ruota_flag_doppio: flag }, error: null });
+            else resolve({ data: null, error: null });
+          } else if (state.op === 'update') {
+            if (state.filters.id === coupleId) flag = state.payload.ruota_flag_doppio;
+            resolve({ data: null, error: null });
+          }
+        }
+      };
+      return api;
+    },
+    _flag: () => flag,
+  };
+}
+
+test('getFlagDoppio ritorna il valore corrente', async () => {
+  const c = fakeCouplesClient('c1', true);
+  const f = await getFlagDoppio(c, 'c1');
+  assert.equal(f, true);
+});
+
+test('setFlagDoppio(true) imposta il flag', async () => {
+  const c = fakeCouplesClient('c1', false);
+  await setFlagDoppio(c, 'c1', true);
+  assert.equal(c._flag(), true);
+});
+
+test('setFlagDoppio(false) consuma il flag', async () => {
+  const c = fakeCouplesClient('c1', true);
+  await setFlagDoppio(c, 'c1', false);
+  assert.equal(c._flag(), false);
+});
