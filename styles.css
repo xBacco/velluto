@@ -968,6 +968,15 @@ body.locked{overflow:hidden;touch-action:none;}
 .strip-ov .btn.hid{display:none;}
 
 /* ===== MAPPA ===== */
+/* Pagina mappa full-viewport, no-scroll. Stesso pattern di .page.ruota-active:
+   page in flex column, header (titolo/sottotitolo/chip) a flex:0, mappa-area
+   prende tutto il residuo con flex:1. Niente scroll verticale, tutto in 1
+   schermata. Selettore #p-mappa per evitare di toccare il JS. */
+.page#p-mappa{overflow:hidden;padding:6px 16px 0;display:flex;flex-direction:column;}
+.page#p-mappa .ptitle{line-height:1.25;padding-top:2px;margin:0 0 1px;flex:0 0 auto;}
+.page#p-mappa .psub{margin:0 0 8px;flex:0 0 auto;}
+.page#p-mappa .mappa-chips{flex:0 0 auto;margin:2px 0 8px;}
+.page#p-mappa .mappa-area{flex:1 1 auto;height:auto;min-height:0;margin-bottom:calc(8px + env(safe-area-inset-bottom));}
 .mappa-area{position:relative;isolation:isolate;height:calc(100vh - 250px);min-height:430px;
   border:1px solid rgba(212,168,108,.25);border-radius:18px;overflow:hidden;}
 .mappa-map{position:absolute;inset:0;background:#0d0307;}
