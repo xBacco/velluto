@@ -1771,3 +1771,91 @@ body.game-modal-open .strip-ov{top:calc(env(safe-area-inset-top,0px) + 66px);}
   font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;
   color:#d4a86c;margin:14px 4px 8px;opacity:.85;
 }
+
+/* ===== Giochi / Ruota — badge ×2, prize states, jackpot summary ===== */
+
+/* Label sopra i dock del nav giochi (variante A) */
+.gruppo-lab{
+  font-family:Arial,sans-serif;
+  font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);
+  margin:18px 0 8px;padding:0 4px;
+  text-align:left;
+}
+
+/* Badge "PROSSIMO ×2" sopra il bottone GIRA quando il flag è armato */
+.ruota-x2-badge{
+  position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#2a0813;
+  font-family:Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.18em;
+  padding:4px 10px;border-radius:10px;
+  box-shadow:0 4px 10px rgba(212,168,108,.55);
+  white-space:nowrap;
+  animation:ruota-x2-pulse 1.4s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes ruota-x2-pulse{
+  0%,100%{transform:translateX(-50%) scale(1);}
+  50%    {transform:translateX(-50%) scale(1.06);}
+}
+
+/* Reveal premio quando il flag ×2 era attivo (consumato in questo spin) */
+.prize.boosted{
+  border-color:rgba(233,201,143,.7);
+  box-shadow:
+    0 0 0 1px rgba(233,201,143,.4),
+    0 18px 44px rgba(0,0,0,.6),
+    0 0 40px rgba(212,168,108,.25);
+}
+.prize .x2-banner{
+  position:absolute;top:-14px;left:50%;transform:translateX(-50%) rotate(-3deg);
+  background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#2a0813;
+  font-family:Arial,sans-serif;font-size:11px;font-weight:800;letter-spacing:.2em;
+  padding:5px 14px;border-radius:6px;
+  box-shadow:0 4px 14px rgba(212,168,108,.55);
+  white-space:nowrap;
+}
+.prize .big .x2-chip{
+  position:absolute;top:-6px;right:-22px;
+  font-size:18px;color:var(--gold-soft);
+  font-family:Arial,sans-serif;font-weight:700;
+  text-shadow:0 0 6px var(--gold);transform:rotate(-8deg);
+}
+
+/* Reveal premio jackpot (durante i sub-spin del 💎) */
+.prize.jackpot{
+  border-color:var(--rose);
+  box-shadow:
+    0 0 0 1px rgba(194,85,122,.4),
+    0 0 40px rgba(194,85,122,.25),
+    0 18px 44px rgba(0,0,0,.6);
+}
+.prize .turn-strip{
+  margin:-22px -18px 12px;padding:8px 10px;
+  font-family:Arial,sans-serif;font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  background:linear-gradient(90deg,rgba(212,168,108,.15),rgba(233,201,143,.3),rgba(212,168,108,.15));
+  border-bottom:1px solid rgba(233,201,143,.4);
+  color:var(--cream);
+  border-radius:18px 18px 0 0;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.prize .turn-strip .av{
+  width:22px;height:22px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,#3a1622,#1c0610);
+  border:1px solid rgba(212,168,108,.55);
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+
+/* Summary card di fine jackpot (due premi affiancati) */
+.ruota-jackpot-summary{
+  max-width:340px;margin:22px auto 0;
+  background:linear-gradient(180deg,#2a0813,#1c0610);
+  border:1px solid rgba(194,85,122,.4);border-radius:14px;padding:14px 16px;
+  font-family:Arial,sans-serif;font-size:12px;color:#cbab9e;line-height:1.5;
+}
+.ruota-jackpot-summary .ti{font-family:Georgia,serif;font-size:14px;color:var(--rose);margin-bottom:8px;letter-spacing:.04em;text-align:center;}
+.ruota-jackpot-summary .pair{display:flex;align-items:center;gap:10px;margin:8px 0;padding:8px 10px;background:rgba(0,0,0,.25);border-radius:8px;}
+.ruota-jackpot-summary .pair .av{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#3a1622,#1c0610);border:1px solid rgba(212,168,108,.45);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.ruota-jackpot-summary .pair .who{flex-shrink:0;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-soft);width:60px;}
+.ruota-jackpot-summary .pair .prz{flex:1;display:flex;align-items:center;gap:8px;color:var(--cream);font-family:Georgia,serif;font-size:13px;}
+.ruota-jackpot-summary .pair .prz .em{font-size:22px;}
