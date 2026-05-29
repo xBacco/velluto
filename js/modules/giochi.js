@@ -1,7 +1,7 @@
 import { mk, add, clear, toast, openSheet } from '../ui.js';
 import {
   DADI_ORDER, DADI_LABEL, DADI_CHIP, raggruppaFacce, facceDefaultRows, tiraDadi, componiFrase,
-  ECONOMIA_SLOT, saldoSlot, slotEleggibile,
+  ECONOMIA_SLOT, saldoSlot, slotEleggibile, accreditoConCap,
 } from '../lib/logic.js';
 import { listDadiFacce, seedDadiFacce, updateDadiFaccia, listSlotMov, accreditaSlot, spendiSlot } from '../store.js';
 import { renderRuota, openEditorRuota } from './ruota.js';
@@ -213,12 +213,16 @@ async function montaDadi(host) {
     const movs = await listSlotMov(ctx.client, ctx.me.couple_id);
     const elig = slotEleggibile(movs, ctx.me.id);
     if (elig.ok) {
-      await accreditaSlot(ctx.client, {
-        couple_id: ctx.me.couple_id,
-        user_id: ctx.me.id,
-        motivo: 'settimanale',
-        delta: ECONOMIA_SLOT.TIRI_SETTIMANALI,
-      });
+      const saldo = saldoSlot(movs, ctx.me.id);
+      const delta = accreditoConCap(saldo, ECONOMIA_SLOT.TIRI_SETTIMANALI, ECONOMIA_SLOT.CAP_SALDO);
+      if (delta > 0) {
+        await accreditaSlot(ctx.client, {
+          couple_id: ctx.me.couple_id,
+          user_id: ctx.me.id,
+          motivo: 'settimanale',
+          delta,
+        });
+      }
     }
   } catch (err) { /* non bloccare l'UI se il ledger slot fallisce */ }
 
