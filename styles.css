@@ -388,19 +388,21 @@ label.lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:upperc
 .viewer-big{width:100%;aspect-ratio:3/4;background-size:cover;background-position:center;border-radius:14px;}
 .viewer-cap{font-family:Arial,sans-serif;font-size:13px;color:var(--cream);margin:10px 2px 0;}
 
-/* ===== Giochi · selettore (dock con attiva espansa) ===== */
-.gioco-selettore{display:flex;gap:6px;justify-content:center;margin:0 0 18px;
+/* ===== Giochi · selettore (dock unico con separatore tra gruppi) ===== */
+.gioco-selettore{display:flex;gap:4px;justify-content:center;margin:0 0 18px;
   background:rgba(13,3,7,.6);border:1px solid rgba(212,168,108,.18);
   border-radius:18px;padding:6px;}
+.gioco-selettore .sep{width:1px;background:rgba(212,168,108,.28);
+  margin:8px 3px;align-self:stretch;flex:0 0 1px;}
 .gioco-tab{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:7px;
   border:1px solid transparent;background:transparent;color:rgba(243,217,176,.55);
-  border-radius:13px;padding:11px 6px;cursor:pointer;user-select:none;min-width:0;
-  font-family:Arial,sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  border-radius:13px;padding:11px 4px;cursor:pointer;user-select:none;min-width:0;
+  font-family:Arial,sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
   transition:flex .38s cubic-bezier(.34,1.15,.4,1),background .38s,color .38s,border-color .38s,padding .38s;}
 .gioco-tab .ico{font-size:18px;flex:0 0 auto;line-height:1;}
 .gioco-tab .lab{max-width:0;overflow:hidden;white-space:nowrap;opacity:0;
   transition:max-width .38s cubic-bezier(.34,1.15,.4,1),opacity .38s;}
-.gioco-tab.on{flex:2.4 1 0;color:var(--gold);
+.gioco-tab.on{flex:2 1 0;color:var(--gold);
   background:linear-gradient(180deg,rgba(212,168,108,.22),rgba(212,168,108,.06));
   border-color:rgba(212,168,108,.5);padding:10px 8px;}
 .gioco-tab.on .lab{max-width:140px;opacity:1;}
@@ -521,34 +523,53 @@ body.locked{overflow:hidden;touch-action:none;}
 .giri-card .right .mut{font-size:11px;color:#b9908f;}
 
 /* --- ruota (da ruota-popup-dallo-spicchio.html) --- */
-.wheel-wrap{position:relative;width:300px;height:300px;margin:18px auto 0;}
+/* Responsive: max 340px, ma scala fino a 100vw - 60px sui device più stretti.
+   aspect-ratio:1 mantiene il quadrato senza dover settare altezza esplicita. */
+.wheel-wrap{position:relative;width:min(340px,calc(100vw - 60px));aspect-ratio:1;height:auto;margin:0 auto;}
 .pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);z-index:7;width:0;height:0;
   border-left:14px solid transparent;border-right:14px solid transparent;border-top:25px solid var(--gold-soft);filter:drop-shadow(0 2px 4px rgba(0,0,0,.7));}
+/* Sfondo a 13 spicchi UGUALI (360/13 ≈ 27.692°) — palette a 4 toni bordeaux
+   in luminosità progressiva, sequenza ciclica c0,c1,c2,c3 con ULTIMO spicchio
+   = c1 per evitare adiacenze uguali sul wrap (N dispari romperebbe la bicromia).
+   Tutti i toni restano in scala "velluto" — nessuno è "quasi nero" che
+   sembrerebbe evidenziato. Niente calc() nei color-stop. */
 .wheel{position:absolute;inset:0;border-radius:50%;border:7px solid var(--gold);z-index:1;
   box-shadow:0 0 0 3px #2a0813,0 0 0 7px rgba(212,168,108,.35),0 16px 46px rgba(0,0,0,.65),inset 0 0 36px rgba(0,0,0,.5);
   transition:transform 4.2s var(--spin);
-  background:radial-gradient(circle,#7a1533 55%,#5c1026 100%);}
-/* 7 divisori a 360/7 (~51.43°): geometria allineata alle 7 fette del JS (SLICE = 360/7).
-   Valori espliciti senza calc(): repeating-conic-gradient + calc() nelle color-stop angles
-   non viene applicato da alcuni browser mobili (es. WebView Android), che fallback-ano a
-   ignorare la regola -> tornano 8 divisori dal cache visivo precedente. */
+  background:conic-gradient(from -13.8462deg,
+    #7a1f3a 0deg 27.6923deg,      /* 0  c0 vino chiaro */
+    #6a1830 27.6923deg 55.3846deg,/* 1  c1 vino medio  */
+    #5a1428 55.3846deg 83.0769deg,/* 2  c2 rubino scuro */
+    #4a1024 83.0769deg 110.7692deg,/*3  c3 vino profondo */
+    #7a1f3a 110.7692deg 138.4615deg,/*4 c0 */
+    #6a1830 138.4615deg 166.1538deg,/*5 c1 */
+    #5a1428 166.1538deg 193.8462deg,/*6 c2 */
+    #4a1024 193.8462deg 221.5385deg,/*7 c3 */
+    #7a1f3a 221.5385deg 249.2308deg,/*8 c0 */
+    #6a1830 249.2308deg 276.9231deg,/*9 c1 */
+    #5a1428 276.9231deg 304.6154deg,/*10 c2 */
+    #4a1024 304.6154deg 332.3077deg,/*11 c3 */
+    #6a1830 332.3077deg 360deg);   /*12 c1 (≠ c3 prev, ≠ c0 first) */
+}
+/* 13 divisori dorati ai confini tra spicchi. Il divisore al seam (stop 0/360)
+   viene splittato in due meta' per evitare stop negativi che non renderizzano. */
 .wheel::after{
   content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;z-index:2;
-  background:conic-gradient(from -15deg,
+  background:conic-gradient(from -13.8462deg,
     rgba(233,201,143,.7) 0deg 0.3deg,
-    transparent 0.3deg 29.7deg,   rgba(233,201,143,.7) 29.7deg 30.3deg,
-    transparent 30.3deg 59.7deg,  rgba(233,201,143,.7) 59.7deg 60.3deg,
-    transparent 60.3deg 89.7deg,  rgba(233,201,143,.7) 89.7deg 90.3deg,
-    transparent 90.3deg 119.7deg, rgba(233,201,143,.7) 119.7deg 120.3deg,
-    transparent 120.3deg 149.7deg,rgba(233,201,143,.7) 149.7deg 150.3deg,
-    transparent 150.3deg 179.7deg,rgba(233,201,143,.7) 179.7deg 180.3deg,
-    transparent 180.3deg 194.7deg,rgba(233,201,143,.7) 194.7deg 195.3deg,
-    transparent 195.3deg 224.7deg,rgba(233,201,143,.7) 224.7deg 225.3deg,
-    transparent 225.3deg 254.7deg,rgba(233,201,143,.7) 254.7deg 255.3deg,
-    transparent 255.3deg 284.7deg,rgba(233,201,143,.7) 284.7deg 285.3deg,
-    transparent 285.3deg 314.7deg,rgba(233,201,143,.7) 314.7deg 315.3deg,
-    transparent 315.3deg 344.7deg,rgba(233,201,143,.7) 344.7deg 345.3deg,
-    transparent 345.3deg 359.7deg,rgba(233,201,143,.7) 359.7deg 360deg);
+    transparent 0.3deg 27.3923deg,   rgba(233,201,143,.7) 27.3923deg 27.9923deg,
+    transparent 27.9923deg 55.0846deg, rgba(233,201,143,.7) 55.0846deg 55.6846deg,
+    transparent 55.6846deg 82.7769deg, rgba(233,201,143,.7) 82.7769deg 83.3769deg,
+    transparent 83.3769deg 110.4692deg, rgba(233,201,143,.7) 110.4692deg 111.0692deg,
+    transparent 111.0692deg 138.1615deg, rgba(233,201,143,.7) 138.1615deg 138.7615deg,
+    transparent 138.7615deg 165.8538deg, rgba(233,201,143,.7) 165.8538deg 166.4538deg,
+    transparent 166.4538deg 193.5462deg, rgba(233,201,143,.7) 193.5462deg 194.1462deg,
+    transparent 194.1462deg 221.2385deg, rgba(233,201,143,.7) 221.2385deg 221.8385deg,
+    transparent 221.8385deg 248.9308deg, rgba(233,201,143,.7) 248.9308deg 249.5308deg,
+    transparent 249.5308deg 276.6231deg, rgba(233,201,143,.7) 276.6231deg 277.2231deg,
+    transparent 277.2231deg 304.3154deg, rgba(233,201,143,.7) 304.3154deg 304.9154deg,
+    transparent 304.9154deg 332.0077deg, rgba(233,201,143,.7) 332.0077deg 332.6077deg,
+    transparent 332.6077deg 359.7deg, rgba(233,201,143,.7) 359.7deg 360deg);
 }
 .slice-lbl{position:absolute;top:50%;left:50%;width:0;height:0;}
 /* .in posiziona lo spicchio (statico, non transition-ato).
@@ -561,6 +582,14 @@ body.locked{overflow:hidden;touch-action:none;}
   filter:drop-shadow(0 2px 4px rgba(0,0,0,.85));
   transition:transform 4.2s var(--spin);transform-origin:center;}
 .slice-lbl .e.spenta{opacity:.32;} /* spicchi a peso zero, smorzati */
+/* Rari (doppio ×2, jackpot 💎): cornice oro sottile su disco scuro.
+   Emoji "incastonata" — la rarita' e' espressa graficamente, non geometricamente. */
+.slice-lbl .e.rare{display:inline-flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:50%;font-size:23px;
+  background:radial-gradient(circle at 35% 30%,#2a0a18,#0e0307);
+  border:1.5px solid var(--gold-soft);
+  box-shadow:0 0 0 1px rgba(13,3,7,.7),0 0 7px rgba(233,201,143,.35),
+    inset 0 1px 2px rgba(0,0,0,.5);}
 .hub{
   position:absolute;top:50%;left:50%;width:48px;height:48px;margin:-24px 0 0 -24px;z-index:5;
   display:grid;place-items:center;font-size:38px;line-height:1;
@@ -569,14 +598,123 @@ body.locked{overflow:hidden;touch-action:none;}
   pointer-events:none;
 }
 
-/* spotlight sullo spicchio vincente — background impostato inline da JS (Task 14) */
+/* spotlight sullo spicchio vincente — background impostato inline da JS.
+   Larghezza fissa (360/13 ≈ 27.692°) ora che tutti gli spicchi sono uguali. */
 .winhi{
-  --slice-w:30deg;
+  --slice-w:27.6923deg;
   position:absolute;inset:0;border-radius:50%;z-index:3;pointer-events:none;opacity:0;
   transition:opacity .3s;
 }
 .winhi.on{opacity:1;}
-.winhi[data-slice-rare="true"]{ --slice-w:15deg; }
+
+/* --- toolbar GIRA + info (bottone "i" che apre la legenda dei premi) --- */
+.ruota-toolbar{display:flex;align-items:stretch;gap:10px;flex:0 0 auto;}
+.ruota-toolbar .ruota-spin{margin-top:0;width:auto;flex:1 1 auto;}
+.ruota-info-btn{flex:0 0 56px;width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(180deg,rgba(122,21,51,.35),rgba(92,16,38,.2));
+  border:1.5px solid var(--gold);color:var(--gold-soft);cursor:pointer;
+  font-family:Georgia,serif;font-size:20px;font-style:italic;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .25s,border-color .25s;-webkit-tap-highlight-color:transparent;}
+.ruota-info-btn:hover{background:linear-gradient(180deg,rgba(122,21,51,.5),rgba(92,16,38,.3));}
+.ruota-info-btn:active{transform:translateY(1px);}
+
+/* --- Pagina Ruota no-scroll: il container .gioco-host all'interno della
+   .page#p-giochi diventa full-viewport con flex column. Toggle gestito da
+   js/modules/giochi.js (montaGiocoCorrente → classe 'ruota-active' sul page). */
+.page.ruota-active{overflow:hidden;padding:6px 16px 0;
+  display:flex;flex-direction:column;}
+.page.ruota-active .gioco-host{flex:1 1 auto;display:flex;flex-direction:column;
+  min-height:0;overflow:hidden;}
+/* Titolo: line-height 1.25 + padding-top:2px per evitare clipping dell'ascender
+   della Cormorant Garamond italic 26px sulla cima della pagina. */
+.page.ruota-active .ptitle{line-height:1.25;padding-top:2px;margin:0 0 1px;flex:0 0 auto;}
+.page.ruota-active .psub{margin:0 0 8px;flex:0 0 auto;}
+.page.ruota-active .giri-card{flex:0 0 auto;margin-top:0;padding:8px 14px;}
+
+/* Blocco coeso ruota+toolbar+storico-link: space-evenly distribuisce respiro
+   automatico (sopra ruota / ruota-toolbar / toolbar-storico / sotto storico:
+   4 spazi uguali). Niente attaccati, adatto a qualsiasi viewport. */
+.wheel-block{flex:1 1 auto;display:flex;flex-direction:column;
+  justify-content:space-evenly;align-items:stretch;min-height:0;}
+
+/* Link "📜 Ultimi premi" sotto la toolbar: apre l'overlay storico. */
+.storico-link{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:6px;
+  margin:0;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(212,168,108,.7);font-family:Arial,sans-serif;cursor:pointer;
+  background:none;border:none;padding:6px;min-height:36px;
+  -webkit-tap-highlight-color:transparent;}
+.storico-link:active{opacity:.7;}
+.storico-link .arr{font-size:13px;color:var(--gold);}
+
+/* --- legenda dei premi (overlay aperto dal bottone "i") — RAGGRUPPATA per
+   probabilità: 10% Comuni · 6,67% Medi · 3,33% Rari. Cornice oro solo sui
+   rari (×2 e Jackpot). Layout a griglia compatto: 3 colonne per i primi
+   due gruppi, 2 colonne per i rari (più aria). */
+.ruota-legenda-ov{padding:20px 16px;}
+.ruota-storico-ov{padding:20px 16px;}
+.ruota-legenda,.ruota-storico-box{max-width:340px;width:100%;
+  background:radial-gradient(ellipse at 50% 0%,#2a0a18 0%,#0e0307 100%);
+  border:1px solid rgba(212,168,108,.4);border-radius:14px;
+  padding:18px 16px 14px;color:var(--cream);
+  box-shadow:0 18px 50px rgba(0,0,0,.7);
+  max-height:calc(100vh - 40px);overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.ruota-legenda::-webkit-scrollbar,.ruota-storico-box::-webkit-scrollbar{display:none;}
+.ruota-legenda h3,.ruota-storico-box h3{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
+  color:var(--gold-soft);text-align:center;font-size:18px;margin:0 0 4px;letter-spacing:.04em;line-height:1.3;}
+.ruota-legenda .lg-sub,.ruota-storico-box .lg-sub{font-size:10px;color:rgba(251,233,207,.55);text-align:center;
+  margin:0 0 14px;font-style:italic;font-family:Georgia,serif;letter-spacing:.05em;}
+.ruota-legenda .lg-group{margin-bottom:12px;}
+.ruota-legenda .lg-group:last-of-type{margin-bottom:6px;}
+.ruota-legenda .lg-group-head{display:flex;align-items:baseline;gap:8px;
+  margin:0 0 6px;padding:0 2px 4px;border-bottom:1px solid rgba(212,168,108,.18);}
+.ruota-legenda .lg-group-head .pct{font-family:Georgia,serif;font-size:14px;
+  color:var(--gold-soft);font-weight:600;letter-spacing:.02em;}
+.ruota-legenda .lg-group-head .nm{font-size:9.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(251,233,207,.55);font-family:Arial,sans-serif;}
+.ruota-legenda .lg-group-head .cnt{margin-left:auto;font-size:9.5px;
+  color:rgba(212,168,108,.6);font-family:Arial,sans-serif;}
+.ruota-legenda .lg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.ruota-legenda .lg-grid.rari{grid-template-columns:repeat(2,1fr);}
+.ruota-legenda .lg-item{display:flex;align-items:center;gap:7px;
+  padding:5px 7px;background:rgba(255,255,255,.02);border-radius:8px;}
+.ruota-legenda .lg-item.rare{background:linear-gradient(90deg,rgba(212,168,108,.16),rgba(13,3,7,.45) 60%);
+  border:1px solid rgba(212,168,108,.3);}
+.ruota-legenda .lg-item .em{font-size:18px;width:22px;text-align:center;line-height:1;
+  font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif;}
+.ruota-legenda .lg-item.rare .em{font-size:15px;width:24px;height:24px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#2a0a18,#0e0307);
+  border:1.2px solid var(--gold-soft);display:grid;place-items:center;}
+.ruota-legenda .lg-item .lbl{flex:1;font-size:10.5px;font-family:Georgia,serif;
+  color:var(--cream);line-height:1.15;}
+.ruota-legenda .lg-item.rare .lbl{color:var(--gold-soft);}
+.ruota-legenda .lg-close,.ruota-storico-box .lg-close{
+  display:block;margin:14px auto 0;padding:8px 24px;min-height:0;
+  font-size:11px;letter-spacing:.15em;text-transform:uppercase;width:auto;border-radius:12px;}
+
+/* --- storico premi (overlay aperto da "📜 Ultimi premi") — tab utente
+   (io / partner) con cronologia recente filtrata. ultimiPremi chiamato due
+   volte (una per ctx.me.id, una per partner.id risolto da getPartner). */
+.ruota-storico-box .st-tabs{display:flex;gap:6px;margin:0 0 12px;
+  background:rgba(255,255,255,.02);padding:4px;border-radius:11px;
+  border:1px solid rgba(212,168,108,.15);}
+.ruota-storico-box .st-tabs button{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:6px;
+  background:none;border:none;color:#c8a89c;font-family:Arial,sans-serif;
+  font-size:12px;padding:8px 6px;border-radius:8px;cursor:pointer;
+  letter-spacing:.05em;min-height:36px;-webkit-tap-highlight-color:transparent;}
+.ruota-storico-box .st-tabs button.on{
+  background:linear-gradient(180deg,rgba(122,21,51,.8),rgba(92,16,38,.5));color:#fff;}
+.ruota-storico-box .st-tabs .av{font-size:14px;}
+.ruota-storico-box .st-list{display:flex;flex-direction:column;gap:4px;}
+.ruota-storico-box .st-row{display:flex;align-items:center;gap:9px;padding:7px 9px;
+  background:rgba(255,255,255,.02);border-radius:9px;font-family:Arial,sans-serif;
+  font-size:12.5px;color:#e7c9c9;}
+.ruota-storico-box .st-row .em{font-size:18px;width:22px;text-align:center;line-height:1;
+  font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif;}
+.ruota-storico-box .st-row .lbl{flex:1;}
+.ruota-storico-box .st-row .dt{font-size:10.5px;color:#a98;font-family:Georgia,serif;font-style:italic;}
+.ruota-storico-box .st-empty{text-align:center;font-size:12px;color:rgba(251,233,207,.4);
+  font-family:Georgia,serif;font-style:italic;padding:20px 0;}
 
 /* --- bottone ghost "GIRA LA RUOTA" (ghost velluto, da ruota-bottone-stili.html) --- */
 .ruota-spin{margin-top:16px;width:100%;min-height:56px;border-radius:14px;
@@ -1796,15 +1934,6 @@ body.game-modal-open .strip-ov{top:calc(env(safe-area-inset-top,0px) + 66px);}
 }
 
 /* ===== Giochi / Ruota — badge ×2, prize states, jackpot summary ===== */
-
-/* Label sopra i dock del nav giochi (variante A) */
-.gruppo-lab{
-  font-family:Arial,sans-serif;
-  font-size:11px;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--gold);
-  margin:18px 0 8px;padding:0 4px;
-  text-align:left;
-}
 
 /* Badge "PROSSIMO ×2" sopra il bottone GIRA quando il flag è armato */
 .ruota-x2-badge{

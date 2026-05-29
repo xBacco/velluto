@@ -413,22 +413,29 @@ export function giriEleggibile(movimenti, userId, now = new Date()) {
 // ---- RUOTA (fette, estrazione, storico premi) ----
 
 // Le 13 fette, in ordine sulla ruota (dal puntatore in senso orario).
-// 11 normali (peso 1 = 30°) + 2 rari (peso 0.5 = 15°).
-// Aggiornato 2026-05-28: nuovo set per ridisegno ruota (spec 2026-05-28-economia-giochi-design.md).
+// GEOMETRIA: 13 spicchi UGUALI (360/13 = 27.692°). I pesi NON influenzano la
+// larghezza visiva, solo la probabilita' di estrazione (vedi estraiFetta).
+// 3 tier di probabilita':
+//   - Comuni (peso 1):   6 fette  → 10.00% ciascuna
+//   - Medi   (peso 2/3): 5 fette  →  6.67% ciascuna
+//   - Rari   (peso 1/3): 2 fette  →  3.33% ciascuna  (cornice oro nel render)
+// Somma pesi base = 6×1 + 5×(2/3) + 2×(1/3) = 10. Le condizionali (segreto,
+// piccante, desiderio, lampo) azzerano il proprio peso quando manca la
+// risorsa, e gli altri salgono in percentuale.
 export const FETTE = [
-  { key: 'segreto',   emoji: '💋', label: 'Apri un segreto',     peso: 1,   differito: false },
-  { key: 'piccante',  emoji: '🔥', label: 'Proposta piccante',   peso: 1,   differito: false },
-  { key: 'desiderio', emoji: '💌', label: 'Pesca una fantasia',  peso: 1,   differito: true  },
-  { key: 'bendare',   emoji: '🧣', label: 'Bendare',             peso: 1,   differito: false },
-  { key: 'wild',      emoji: '🃏', label: 'Carta wild',          peso: 1,   differito: false },
-  { key: 'massaggio', emoji: '💆', label: 'Massaggio',           peso: 1,   differito: false },
-  { key: 'doppio',    emoji: '🪄', label: 'Prossimo ×2',         peso: 0.5, differito: false, rare: 'rare'  },
-  { key: 'polaroid',  emoji: '📸', label: 'Foto osè 24h',        peso: 1,   differito: true  },
-  { key: 'lampo',     emoji: '🎟️', label: 'Buono lampo',         peso: 1,   differito: true  },
-  { key: 'orale',     emoji: '👅', label: 'Servizio orale',      peso: 1,   differito: false },
-  { key: 'ancora',    emoji: '🔁', label: 'Gira ancora',         peso: 1,   differito: false },
-  { key: 'jolly',     emoji: '⭐', label: 'Jolly: scegli tu',    peso: 1,   differito: false },
-  { key: 'jackpot',   emoji: '💎', label: 'Jackpot',             peso: 0.5, differito: false, rare: 'ultra' },
+  { key: 'segreto',   emoji: '💋', label: 'Apri un segreto',     peso: 1,    differito: false },
+  { key: 'piccante',  emoji: '🔥', label: 'Proposta piccante',   peso: 1,    differito: false },
+  { key: 'desiderio', emoji: '💌', label: 'Pesca una fantasia',  peso: 1,    differito: true  },
+  { key: 'bendare',   emoji: '🧣', label: 'Bendare',             peso: 1,    differito: false },
+  { key: 'wild',      emoji: '🃏', label: 'Carta wild',          peso: 2/3,  differito: false },
+  { key: 'massaggio', emoji: '💆', label: 'Massaggio',           peso: 1,    differito: false },
+  { key: 'doppio',    emoji: '🪄', label: 'Prossimo ×2',         peso: 1/3,  differito: false, rare: true },
+  { key: 'polaroid',  emoji: '📸', label: 'Foto osè 24h',        peso: 2/3,  differito: true  },
+  { key: 'lampo',     emoji: '🎟️', label: 'Buono lampo',         peso: 2/3,  differito: true  },
+  { key: 'orale',     emoji: '👅', label: 'Servizio orale',      peso: 2/3,  differito: false },
+  { key: 'ancora',    emoji: '🔁', label: 'Gira ancora',         peso: 1,    differito: false },
+  { key: 'jolly',     emoji: '⭐', label: 'Jolly: scegli tu',    peso: 2/3,  differito: false },
+  { key: 'jackpot',   emoji: '💎', label: 'Jackpot',             peso: 1/3,  differito: false, rare: true },
 ];
 
 // Copia di FETTE con i pesi delle fette condizionali azzerati quando manca la condizione.

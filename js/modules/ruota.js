@@ -9,14 +9,20 @@ import {
   listRuotaContenuti, seedRuotaContenuti, addRuotaContenuto, updateRuotaContenuto, deleteRuotaContenuto,
   listBuoni, addBuono, listDesideri,
   getFlagDoppio, setFlagDoppio,
+  getPartner,
 } from '../store.js';
+import { FETTE } from '../lib/logic.js';
+import { attachSwipeBack } from '../lib/swipe-back.js';
+import { pushBack } from '../lib/back-stack.js';
 
 let ctx = null;        // { client, me, panel }
 let state = null;      // { mov, cont, buoni, proposte, buoniS, desideri, saldo, elegg, fette }
 let busy = false;
 let rot = 0;           // rotazione cumulativa della ruota (gradi)
 
-// Geometria a 13 spicchi (11×30° + 2×15°): nessuna costante globale, degPerUnit calcolato da FETTE.
+// Geometria a 13 spicchi UGUALI (360/13 ≈ 27.692°). I pesi di FETTE servono
+// solo per la probabilita' di estrazione; la larghezza visiva degli spicchi e'
+// costante (vedi spec ridisegno 2026-05-29).
 
 export async function renderRuota(context) {
   ctx = context;
@@ -75,7 +81,10 @@ function draw() {
   add(card, left, right);
   p.appendChild(card);
 
-  p.appendChild(buildWheel());
+  // Blocco coeso: ruota + toolbar (GIRA + "i") + storico-link. space-evenly
+  // nel CSS distribuisce respiro automatico nei pixel residui, niente attaccati.
+  const block = mk('div', 'wheel-block');
+  block.appendChild(buildWheel());
 
   const btn = mk('button', 'btn ghost-gold ruota-spin', 'GIRA LA RUOTA');
   btn.disabled = !puoGirare(state.saldo);
@@ -83,16 +92,28 @@ function draw() {
   btn.appendChild(cost);
   btn.onclick = spin;
   spinBtnEl = btn;
-  p.appendChild(btn);
+  const toolbar = mk('div', 'ruota-toolbar');
+  toolbar.appendChild(btn);
+  const infoBtn = mk('button', 'ruota-info-btn', 'i');
+  infoBtn.title = 'Legenda dei premi';
+  infoBtn.setAttribute('aria-label', 'Legenda dei premi');
+  infoBtn.onclick = openLegenda;
+  toolbar.appendChild(infoBtn);
+  block.appendChild(toolbar);
 
-  const ups = ultimiPremi(state.mov, ctx.me.id);
-  if (ups.length) {
-    p.appendChild(mk('p', 'section-label', 'Ultimi premi'));
-    const list = mk('div', 'ruota-storico');
-    for (const u of ups) list.appendChild(mk('div', 'ruota-storico-row',
-      (u.fetta ? u.fetta.emoji + ' ' + u.fetta.label : u.esito)));
-    p.appendChild(list);
-  }
+  // Storico premi: link compatto che apre overlay con tab per utente
+  const storicoLink = mk('button', 'storico-link');
+  storicoLink.appendChild(mk('span', 'lab', '📜 Ultimi premi'));
+  storicoLink.appendChild(mk('span', 'arr', '›'));
+  storicoLink.setAttribute('aria-label', 'Apri lo storico premi');
+  storicoLink.onclick = openStorico;
+  block.appendChild(storicoLink);
+
+  p.appendChild(block);
+
+  // posizione emoji (translateY adattivo al raggio reale della ruota)
+  placeEmojis();
+  ensureWheelResizeObserver();
 }
 
 function giorniA(iso) {
@@ -123,34 +144,48 @@ function buildWheel() {
   const wrap = mk('div', 'wheel-wrap');
   wrap.appendChild(mk('div', 'pointer'));
   const wheel = mk('div', 'wheel'); wheel.style.transform = `rotate(${rot}deg)`;
-  const sumW = state.fette.reduce((s, f) => s + f.peso, 0);   // 12 (o meno se alcune spente)
-  const degPerUnit = 360 / sumW;
-  const slice0 = state.fette[0].peso * degPerUnit;              // gradi primo spicchio
+  const N = state.fette.length;
+  const step = 360 / N;                                          // 27.692°
 
-  const centers = [];
-  let acc = 0;
-  for (let i = 0; i < state.fette.length; i++) {
-    const slice = state.fette[i].peso * degPerUnit;
-    centers.push(acc + slice / 2 - slice0 / 2);
-    acc += slice;
-  }
-
+  // Solo il rotate dello spicchio qui; translateY lo applica placeEmojis()
+  // in base al raggio reale (la ruota è responsive: min(340, 100vw-60)).
   state.fette.forEach((f, i) => {
-    const center = centers[i];
+    const center = i * step;
     const lbl = mk('div', 'slice-lbl');
     const inner = mk('div', 'in');
-    inner.style.transform = `rotate(${center}deg) translateY(-98px)`;
-    const e = mk('span', 'e' + (f.peso === 0 ? ' spenta' : '') + (f.rare ? ' ' + f.rare : ''), f.emoji);
+    inner.dataset.center = center;
+    const e = mk('span', 'e' + (f.peso === 0 ? ' spenta' : '') + (f.rare ? ' rare' : ''), f.emoji);
     e.style.transform = `rotate(${-center - rot}deg)`;
     inner.appendChild(e); lbl.appendChild(inner); wheel.appendChild(lbl);
   });
   wrap.appendChild(wheel);
-  // spotlight sullo spicchio vincente: overlay separato .winhi (vedi styles.css Task 7)
+  // spotlight sullo spicchio vincente: overlay separato .winhi (larghezza fissa)
   winhiEl = mk('div', 'winhi');
   wrap.appendChild(winhiEl);
   wrap.appendChild(mk('div', 'hub', '💋'));
   wheelEl = wheel;
   return wrap;
+}
+
+// Posiziona ogni emoji al raggio corretto basandosi sulla dimensione reale del
+// wheel. Chiamato dopo il mount e a ogni resize. Margine 52px ≈ "translateY
+// originale di -98 quando ruota=300" (98+52 = 150 = raggio della ruota da 300).
+function placeEmojis() {
+  if (!wheelEl) return;
+  const r = wheelEl.offsetWidth / 2 - 52;
+  if (r <= 0) return;
+  wheelEl.querySelectorAll('.slice-lbl .in').forEach(inner => {
+    const center = Number(inner.dataset.center) || 0;
+    inner.style.transform = `rotate(${center}deg) translateY(-${r}px)`;
+  });
+}
+
+// ResizeObserver attached once: aggiorna placeEmojis se la ruota cambia size.
+let wheelResizeObs = null;
+function ensureWheelResizeObserver() {
+  if (wheelResizeObs || !wheelEl || typeof ResizeObserver === 'undefined') return;
+  wheelResizeObs = new ResizeObserver(() => placeEmojis());
+  wheelResizeObs.observe(wheelEl);
 }
 
 async function spin() {
@@ -164,35 +199,24 @@ async function spin() {
     await spendiGiro(ctx.client, { couple_id: ctx.me.couple_id, user_id: ctx.me.id, esito: pick.fetta.key });
   } catch (err) { busy = false; toast('Errore: ' + err.message, 'err'); return; }
 
-  // Ricalcola geometria variabile identica a buildWheel
-  const sumW2 = state.fette.reduce((s, f) => s + f.peso, 0);
-  const degPerUnit2 = 360 / sumW2;
-  const slice0_2 = state.fette[0].peso * degPerUnit2;
-  const centers2 = [];
-  let acc2 = 0;
-  for (let i = 0; i < state.fette.length; i++) {
-    const slice = state.fette[i].peso * degPerUnit2;
-    centers2.push(acc2 + slice / 2 - slice0_2 / 2);
-    acc2 += slice;
-  }
-
-  const center = centers2[pick.indice];
-  const sliceWidth = state.fette[pick.indice].peso * degPerUnit2;  // 30 o 15
+  // Geometria fissa: tutti gli spicchi a 360/N gradi
+  const N = state.fette.length;
+  const step = 360 / N;
+  const center = pick.indice * step;
   rot += 360 * 5 + ((360 - (rot % 360) - center) % 360 + 360) % 360;
   wheelEl.style.transform = `rotate(${rot}deg)`;
   wheelEl.querySelectorAll('.slice-lbl .e').forEach((e, i) => {
-    e.style.transform = `rotate(${-centers2[i] - rot}deg)`;
+    e.style.transform = `rotate(${-(i * step) - rot}deg)`;
   });
 
-  // Aggiorna spotlight con larghezza variabile dello spicchio vincente
+  // Spotlight con larghezza costante (lo spicchio vincente illuminato, gli altri scuriti)
   if (winhiEl) {
-    winhiEl.style.setProperty('--slice-w', sliceWidth + 'deg');
-    winhiEl.dataset.sliceRare = sliceWidth < 25 ? 'true' : 'false';
-    const half = sliceWidth / 2;
+    winhiEl.style.setProperty('--slice-w', step + 'deg');
+    const half = step / 2;
     winhiEl.style.background =
       `conic-gradient(from ${-half}deg,` +
-      `transparent 0 ${sliceWidth}deg,` +
-      `rgba(8,2,5,.74) ${sliceWidth}deg 360deg)`;
+      `transparent 0 ${step}deg,` +
+      `rgba(8,2,5,.74) ${step}deg 360deg)`;
   }
 
   // Leggi il flag ×2 prima della rotazione, così è già pronto al reveal
@@ -203,6 +227,145 @@ async function spin() {
     if (winhiEl) winhiEl.classList.add('on');
     setTimeout(() => { showPrize(pick.fetta, boostActive); busy = false; }, 600);
   }, 4300);
+}
+
+// ---- legenda (info button accanto a GIRA) ----
+// Overlay centrato con i 13 premi raggruppati per probabilità (10% / 6,67% /
+// 3,33%). Integrato col back-stack + edge-swipe (pattern di strip-ov).
+function openLegenda() {
+  const ov = mk('div', 'dadi-scrim ruota-legenda-ov');
+  document.body.appendChild(ov);
+  requestAnimationFrame(() => ov.classList.add('show'));
+  const teardown = () => {
+    ov.classList.remove('show');
+    setTimeout(() => { if (ov.parentNode) ov.remove(); }, 300);
+  };
+  const entry = pushBack(teardown);
+  const close = () => { if (entry.alive) entry.close(); else teardown(); };
+  attachSwipeBack(ov, close);
+  ov.addEventListener('click', e => { if (e.target === ov) close(); });
+
+  const box = mk('div', 'ruota-legenda');
+  box.appendChild(mk('h3', null, 'Premi della ruota'));
+  box.appendChild(mk('p', 'lg-sub', '13 spicchi · 3 categorie di rarità'));
+
+  // pesi: 1 = comuni, 2/3 = medi, 1/3 = rari (cornice oro)
+  const comuni = FETTE.filter(f => f.peso === 1);
+  const medi   = FETTE.filter(f => f.peso > 0 && f.peso < 1 && !f.rare);
+  const rari   = FETTE.filter(f => f.rare);
+  box.appendChild(buildLegendaGroup('10%',   'Comuni', comuni, false));
+  box.appendChild(buildLegendaGroup('6,67%', 'Medi',   medi,   false));
+  box.appendChild(buildLegendaGroup('3,33%', 'Rari',   rari,   true));
+
+  const closeBtn = mk('button', 'btn ghost-gold lg-close', 'Chiudi');
+  closeBtn.onclick = close;
+  box.appendChild(closeBtn);
+  ov.appendChild(box);
+}
+
+function buildLegendaGroup(pct, name, fette, isRari) {
+  const group = mk('div', 'lg-group');
+  const head = mk('div', 'lg-group-head');
+  head.appendChild(mk('span', 'pct', pct));
+  head.appendChild(mk('span', 'nm', name));
+  head.appendChild(mk('span', 'cnt', fette.length + ' fette'));
+  group.appendChild(head);
+  const grid = mk('div', 'lg-grid' + (isRari ? ' rari' : ''));
+  fette.forEach(f => {
+    const item = mk('div', 'lg-item' + (isRari ? ' rare' : ''));
+    item.appendChild(mk('span', 'em', f.emoji));
+    item.appendChild(mk('span', 'lbl', f.label));
+    grid.appendChild(item);
+  });
+  group.appendChild(grid);
+  return group;
+}
+
+// ---- storico premi (link "📜 Ultimi premi" sotto la toolbar) ----
+// Overlay centrato con 2 tab (io / partner), ciascuna con la propria
+// cronologia recente. Pattern back-stack + swipe-back come la legenda.
+async function openStorico() {
+  let partner = null;
+  try { partner = await getPartner(ctx.client, ctx.me.couple_id, ctx.me.id); }
+  catch { /* tollerante: l'overlay si apre lo stesso con tab partner disabilitata */ }
+
+  const ov = mk('div', 'dadi-scrim ruota-storico-ov');
+  document.body.appendChild(ov);
+  requestAnimationFrame(() => ov.classList.add('show'));
+  const teardown = () => {
+    ov.classList.remove('show');
+    setTimeout(() => { if (ov.parentNode) ov.remove(); }, 300);
+  };
+  const entry = pushBack(teardown);
+  const close = () => { if (entry.alive) entry.close(); else teardown(); };
+  attachSwipeBack(ov, close);
+  ov.addEventListener('click', e => { if (e.target === ov) close(); });
+
+  const box = mk('div', 'ruota-storico-box');
+  box.appendChild(mk('h3', null, 'Ultimi premi'));
+  box.appendChild(mk('p', 'lg-sub', 'Cronologia recente · tap per cambiare utente'));
+
+  const meAv = ctx.me.avatar || '🐻';
+  const meNm = ctx.me.display_name || 'Io';
+  const partnerAv = partner?.avatar || '🧁';
+  const partnerNm = partner?.display_name || 'Lei';
+
+  const tabs = mk('div', 'st-tabs');
+  const btnMe = mk('button', 'on');
+  btnMe.appendChild(mk('span', 'av', meAv));
+  btnMe.appendChild(document.createTextNode(' ' + meNm));
+  const btnLei = mk('button');
+  btnLei.appendChild(mk('span', 'av', partnerAv));
+  btnLei.appendChild(document.createTextNode(' ' + partnerNm));
+  tabs.appendChild(btnMe); tabs.appendChild(btnLei);
+  box.appendChild(tabs);
+
+  const listMe  = buildStoricoList(ultimiPremi(state.mov, ctx.me.id, 8));
+  const listLei = partner
+    ? buildStoricoList(ultimiPremi(state.mov, partner.id, 8))
+    : (function(){ const d = mk('div','st-list'); d.appendChild(mk('div','st-empty','Partner non disponibile')); return d; })();
+  listLei.style.display = 'none';
+  box.appendChild(listMe);
+  box.appendChild(listLei);
+
+  btnMe.onclick = () => {
+    btnMe.classList.add('on'); btnLei.classList.remove('on');
+    listMe.style.display = ''; listLei.style.display = 'none';
+  };
+  btnLei.onclick = () => {
+    btnLei.classList.add('on'); btnMe.classList.remove('on');
+    listMe.style.display = 'none'; listLei.style.display = '';
+  };
+
+  const closeBtn = mk('button', 'btn ghost-gold lg-close', 'Chiudi');
+  closeBtn.onclick = close;
+  box.appendChild(closeBtn);
+  ov.appendChild(box);
+}
+
+function buildStoricoList(ups) {
+  const list = mk('div', 'st-list');
+  if (!ups.length) { list.appendChild(mk('div', 'st-empty', 'Nessun premio ancora')); return list; }
+  for (const u of ups) {
+    const row = mk('div', 'st-row');
+    row.appendChild(mk('span', 'em', u.fetta ? u.fetta.emoji : '?'));
+    row.appendChild(mk('span', 'lbl', u.fetta ? u.fetta.label : u.esito));
+    row.appendChild(mk('span', 'dt', dataRelativa(u.creato)));
+    list.appendChild(row);
+  }
+  return list;
+}
+
+function dataRelativa(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  if (diff < 36e5) return 'ora';
+  const h = Math.floor(diff / 36e5);
+  if (h < 24) return h + 'h fa';
+  const g = Math.floor(h / 24);
+  if (g === 1) return 'ieri';
+  if (g < 7) return g + 'g fa';
+  if (g < 30) return Math.floor(g / 7) + 'sett';
+  return Math.floor(g / 30) + 'mesi';
 }
 
 // ---- pop-up premio (riusa .dadi-scrim per lo scroll-lock automatico) ----

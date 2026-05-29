@@ -64,18 +64,15 @@ function makeTab(k, ico, lbl) {
 
 function buildSelettore() {
   const wrap = mk('div', 'giochi-nav');
-
-  const labTempo = mk('p', 'gruppo-lab', 'Giochi a tempo');
-  const dockTempo = mk('div', 'gioco-selettore'); dockTempo.dataset.gruppo = 'tempo';
-  dockTempo.appendChild(makeTab('ruota', '🎡', 'Ruota'));
-  dockTempo.appendChild(makeTab('dadi',  '🎰', 'Slot'));
-
-  const labLiberi = mk('p', 'gruppo-lab', 'Giochi liberi');
-  const dockLiberi = mk('div', 'gioco-selettore'); dockLiberi.dataset.gruppo = 'liberi';
-  dockLiberi.appendChild(makeTab('yz',    '🎲', 'Yahtzutra'));
-  dockLiberi.appendChild(makeTab('strip', '♠️', 'Strip'));
-
-  add(wrap, labTempo, dockTempo, labLiberi, dockLiberi);
+  const dock = mk('div', 'gioco-selettore');
+  // Gruppo "a tempo" (Ruota/Slot) e gruppo "liberi" (Yahtzutra/Strip) coabitano
+  // nello stesso dock: separatore verticale al centro al posto delle label.
+  dock.appendChild(makeTab('ruota', '🎡', 'Ruota'));
+  dock.appendChild(makeTab('dadi',  '🎰', 'Slot'));
+  dock.appendChild(mk('div', 'sep'));
+  dock.appendChild(makeTab('yz',    '🎲', 'Yahtzutra'));
+  dock.appendChild(makeTab('strip', '♠️', 'Strip'));
+  wrap.appendChild(dock);
   return wrap;
 }
 
@@ -190,6 +187,9 @@ function wireModalSwipe(sheet) {
 
 async function montaGiocoCorrente() {
   const host = ctx.panel.querySelector('.gioco-host');
+  // No-scroll: la pagina-ruota è full-viewport; gli altri giochi mantengono
+  // il comportamento di default (overflow:auto, padding-bottom per la nav).
+  ctx.panel.classList.toggle('ruota-active', giocoCorrente === 'ruota');
   if (giocoCorrente === 'ruota') {
     await renderRuota({ client: ctx.client, me: ctx.me, panel: host });
   } else {
