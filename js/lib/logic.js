@@ -432,13 +432,15 @@ export const FETTE = [
 ];
 
 // Copia di FETTE con i pesi delle fette condizionali azzerati quando manca la condizione.
-// Le fette restano tutte e 7 (la ruota ha geometria fissa).
-export function fetteRuota({ haSegreti, haProposte, haBuoni }) {
+// Le fette restano tutte e 13 (la ruota ha geometria fissa).
+// Condizionali: segreto (haSegreti), piccante (haProposte), desiderio (haFantasie), lampo (haBuoni).
+export function fetteRuota({ haSegreti, haProposte, haFantasie, haBuoni }) {
   return FETTE.map(f => {
     let peso = f.peso;
-    if (f.key === 'segreto'  && !haSegreti)  peso = 0;
-    if (f.key === 'piccante' && !haProposte) peso = 0;
-    if (f.key === 'buono'    && !haBuoni)    peso = 0;
+    if (f.key === 'segreto'   && !haSegreti)  peso = 0;
+    if (f.key === 'piccante'  && !haProposte) peso = 0;
+    if (f.key === 'desiderio' && !haFantasie) peso = 0;
+    if (f.key === 'lampo'     && !haBuoni)    peso = 0;
     return { ...f, peso };
   });
 }

@@ -84,21 +84,6 @@ import {
   FETTE, fetteRuota, estraiFetta, ultimiPremi,
 } from '../js/lib/logic.js';
 
-test('FETTE sono 7, con le chiavi attese', () => {
-  assert.equal(FETTE.length, 7);
-  assert.deepEqual(FETTE.map(f => f.key),
-    ['segreto','piccante','buono','desiderio','jolly','dadi','ancora']);
-});
-
-test('fetteRuota azzera le condizionali quando manca la condizione', () => {
-  const f = fetteRuota({ haSegreti: false, haProposte: false, haBuoni: false });
-  assert.equal(f.length, 7);
-  const peso = k => f.find(x => x.key === k).peso;
-  assert.equal(peso('segreto'), 0);
-  assert.equal(peso('piccante'), 0);
-  assert.equal(peso('buono'), 0);
-  assert.equal(peso('dadi'), 1); // non condizionale resta a 1
-});
 
 test('fetteRuota lascia attive le condizionali quando la condizione c\'è', () => {
   const f = fetteRuota({ haSegreti: true, haProposte: true, haBuoni: true });
@@ -115,9 +100,9 @@ test('estraiFetta non estrae mai una fetta a peso 0', () => {
 });
 
 test('estraiFetta con rnd deterministico atterra sulla fetta attesa', () => {
-  const fette = FETTE.map(f => ({ ...f, peso: 1 })); // 7 fette uguali
+  const fette = FETTE.map(f => ({ ...f, peso: 1 })); // 13 fette uguali
   assert.equal(estraiFetta(fette, () => 0).indice, 0);        // primo spicchio
-  assert.equal(estraiFetta(fette, () => 0.99).indice, 6);     // ultimo spicchio
+  assert.equal(estraiFetta(fette, () => 0.99).indice, 12);    // ultimo spicchio
 });
 
 test('estraiFetta restituisce null se tutti i pesi sono 0', () => {
@@ -319,4 +304,38 @@ test('FETTE: differiti = desiderio, polaroid, lampo', () => {
 test('FETTE: rari marcati con tag rare/ultra', () => {
   assert.equal(FETTE.find(f => f.key === 'doppio').rare, 'rare');
   assert.equal(FETTE.find(f => f.key === 'jackpot').rare, 'ultra');
+});
+
+test('fetteRuota: tutte le condizioni vere → tutti i pesi originali', () => {
+  const f = fetteRuota({ haSegreti: true, haProposte: true, haFantasie: true, haBuoni: true });
+  assert.equal(f.find(x => x.key === 'segreto').peso, 1);
+  assert.equal(f.find(x => x.key === 'piccante').peso, 1);
+  assert.equal(f.find(x => x.key === 'desiderio').peso, 1);
+  assert.equal(f.find(x => x.key === 'lampo').peso, 1);
+});
+
+test('fetteRuota: !haSegreti → segreto peso 0', () => {
+  const f = fetteRuota({ haSegreti: false, haProposte: true, haFantasie: true, haBuoni: true });
+  assert.equal(f.find(x => x.key === 'segreto').peso, 0);
+});
+
+test('fetteRuota: !haProposte → piccante peso 0', () => {
+  const f = fetteRuota({ haSegreti: true, haProposte: false, haFantasie: true, haBuoni: true });
+  assert.equal(f.find(x => x.key === 'piccante').peso, 0);
+});
+
+test('fetteRuota: !haFantasie → desiderio peso 0', () => {
+  const f = fetteRuota({ haSegreti: true, haProposte: true, haFantasie: false, haBuoni: true });
+  assert.equal(f.find(x => x.key === 'desiderio').peso, 0);
+});
+
+test('fetteRuota: !haBuoni → lampo peso 0', () => {
+  const f = fetteRuota({ haSegreti: true, haProposte: true, haFantasie: true, haBuoni: false });
+  assert.equal(f.find(x => x.key === 'lampo').peso, 0);
+});
+
+test('fetteRuota: rari (doppio, jackpot) sempre peso 0.5', () => {
+  const f = fetteRuota({ haSegreti: false, haProposte: false, haFantasie: false, haBuoni: false });
+  assert.equal(f.find(x => x.key === 'doppio').peso, 0.5);
+  assert.equal(f.find(x => x.key === 'jackpot').peso, 0.5);
 });
