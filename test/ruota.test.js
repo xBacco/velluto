@@ -339,3 +339,57 @@ test('fetteRuota: rari (doppio, jackpot) sempre peso 0.5', () => {
   assert.equal(f.find(x => x.key === 'doppio').peso, 0.5);
   assert.equal(f.find(x => x.key === 'jackpot').peso, 0.5);
 });
+
+import { applicaDoppio } from '../js/lib/logic.js';
+
+test('applicaDoppio massaggio: 10 → 20 minuti', () => {
+  const r = applicaDoppio({ key: 'massaggio' });
+  assert.equal(r.minuti, 20);
+  assert.equal(r.boosted, true);
+});
+
+test('applicaDoppio wild: 24h → 48h', () => {
+  const r = applicaDoppio({ key: 'wild' });
+  assert.equal(r.ore, 48);
+  assert.equal(r.boosted, true);
+});
+
+test('applicaDoppio lampo: quantita 2', () => {
+  const r = applicaDoppio({ key: 'lampo' });
+  assert.equal(r.quantita, 2);
+});
+
+test('applicaDoppio polaroid: quantita 2', () => {
+  const r = applicaDoppio({ key: 'polaroid' });
+  assert.equal(r.quantita, 2);
+});
+
+test('applicaDoppio segreto: quantita 2', () => {
+  const r = applicaDoppio({ key: 'segreto' });
+  assert.equal(r.quantita, 2);
+});
+
+test('applicaDoppio piccante: quantita 2', () => {
+  const r = applicaDoppio({ key: 'piccante' });
+  assert.equal(r.quantita, 2);
+});
+
+test('applicaDoppio desiderio: quantita 2', () => {
+  const r = applicaDoppio({ key: 'desiderio' });
+  assert.equal(r.quantita, 2);
+});
+
+test('applicaDoppio orale: testoExtra "due volte"', () => {
+  const r = applicaDoppio({ key: 'orale' });
+  assert.ok(r.testoExtra.toLowerCase().includes('due volte'));
+});
+
+test('applicaDoppio bendare: cosmeticOnly true', () => {
+  const r = applicaDoppio({ key: 'bendare' });
+  assert.equal(r.cosmeticOnly, true);
+});
+
+test('applicaDoppio jolly: flag passa allo spicchio scelto', () => {
+  const r = applicaDoppio({ key: 'jolly' });
+  assert.equal(r.deferToJolly, true);
+});

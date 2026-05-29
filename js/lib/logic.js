@@ -445,6 +445,36 @@ export function fetteRuota({ haSegreti, haProposte, haFantasie, haBuoni }) {
   });
 }
 
+// Effetto del flag persistente "prossimo ×2" su un esito della ruota.
+// Ritorna un oggetto con le proprietà raddoppiate, da consumare nel rendering del reveal
+// e/o nella creazione dei record differiti (buoni con quantita=2).
+//
+// Regole:
+// - massaggio: 10 → 20 minuti
+// - wild: 24h → 48h
+// - lampo / polaroid: quantita = 2 (crea due record)
+// - segreto / piccante / desiderio: quantita = 2 (apri/pesca due volte)
+// - orale: testoExtra "due volte, una ora e una quando vuole chi ha vinto"
+// - bendare: cosmeticOnly (label "il doppio del tempo")
+// - jolly: deferToJolly (il flag passa allo spicchio scelto dal selettore)
+// - ancora / doppio / jackpot: gestiti separatamente nel chiamante (non consumano flag o sono idempotenti)
+export function applicaDoppio(esito) {
+  const out = { boosted: true };
+  switch (esito.key) {
+    case 'massaggio':  return { ...out, minuti: 20 };
+    case 'wild':       return { ...out, ore: 48 };
+    case 'lampo':
+    case 'polaroid':   return { ...out, quantita: 2 };
+    case 'segreto':
+    case 'piccante':
+    case 'desiderio':  return { ...out, quantita: 2 };
+    case 'orale':      return { ...out, testoExtra: 'Due volte: una ora e una quando vuole chi ha vinto.' };
+    case 'bendare':    return { ...out, cosmeticOnly: true };
+    case 'jolly':      return { ...out, deferToJolly: true };
+    default:           return { ...out };
+  }
+}
+
 // Estrazione pesata. rnd ∈ [0,1) iniettabile. Salta i pesi 0. null se tutti 0.
 export function estraiFetta(fette, rnd = Math.random) {
   const tot = fette.reduce((s, f) => s + f.peso, 0);
