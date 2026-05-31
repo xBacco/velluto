@@ -6,7 +6,9 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#160409">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="brace.">
@@ -54,9 +56,48 @@
     <div id="lockErr" class="login-err"></div>
   </div>
 
+  <!-- HOME · stanza a sé (nav nascosta, compare solo nelle sezioni) -->
+  <div class="home" id="home" style="display:none">
+    <div class="home-bg"></div>
+    <div class="home-duo"></div>
+    <div class="home-lit"></div>
+    <div class="home-deepen"></div>
+    <div class="home-vig"></div>
+
+    <div class="home-topbar">
+      <div class="brand">brace<span class="wm-dot">.</span></div>
+      <button class="me-chip" id="homeMeChip"></button>
+    </div>
+
+    <div class="home-greet">
+      <div class="home-kick" id="homeKick"></div>
+      <div class="home-h">Resta,<br>la stanza è viva.</div>
+    </div>
+
+    <div class="home-wlab" id="homeWlab">ti aspetta, stasera</div>
+    <div class="home-pins" id="homePins"></div>
+
+    <div class="home-scrim" id="homeScrim"></div>
+    <div class="home-radial" id="homeRadial"></div>
+    <button class="home-fab" id="homeFab">＋</button>
+    <button class="home-help" id="homeHelp">?</button>
+
+    <div class="home-coach hide" id="homeCoach">
+      <div class="home-coach-candle">🕯️</div>
+      <h3>Benvenuto<br>nella nostra stanza</h3>
+      <p>Qui vedi solo cosa vi aspetta stasera. Niente menù in vista: la stanza è la home.</p>
+      <div class="home-coach-hint">
+        <div class="hrow"><span class="b">✨</span><span>Tocca una <b>notifica</b> per aprirla</span></div>
+        <div class="hrow"><span class="b">＋</span><span>Il <b>＋</b> in basso apre le sezioni</span></div>
+      </div>
+      <div class="home-coach-tap">tocca per iniziare</div>
+    </div>
+  </div>
+
   <!-- APP -->
   <div class="wrap" id="app" style="display:none">
     <div class="topbar">
+      <button class="home-btn" id="homeBtn" title="Torna alla stanza">⌂</button>
       <div class="brand">brace<span class="wm-dot">.</span></div>
       <div class="topbar-right">
         <button class="me-chip" id="meChip"></button>
