@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { calcolaCalore, CALORE } from '../js/lib/logic.js';
+import { calcolaCalore, eventiCalore, CALORE, PESI_CALORE } from '../js/lib/logic.js';
 
 // "Adesso" fisso per i test; gli eventi si posizionano N giorni fa.
 const NOW = new Date('2026-06-01T12:00:00Z');
@@ -71,4 +71,47 @@ test('accetta sia Date sia stringa ISO per quando', () => {
   const conISO  = calcolaCalore([{ quando: giorniFa(0), peso: 6 }], NOW);
   const conDate = calcolaCalore([{ quando: new Date(NOW.getTime()), peso: 6 }], NOW);
   assert.equal(conISO.gradi, conDate.gradi);
+});
+
+// ---- eventiCalore: normalizza [{tipo, quando}] → [{quando, peso}] ----
+
+test('eventiCalore mappa ogni tipo noto al suo peso', () => {
+  const out = eventiCalore([
+    { tipo: 'esperienza', quando: giorniFa(0) },
+    { tipo: 'desiderio',  quando: giorniFa(1) },
+    { tipo: 'foto',       quando: giorniFa(2) },
+  ]);
+  assert.deepEqual(out.map(e => e.peso), [
+    PESI_CALORE.esperienza, PESI_CALORE.desiderio, PESI_CALORE.foto,
+  ]);
+  assert.equal(out[0].quando, giorniFa(0));
+});
+
+test('eventiCalore scarta i tipi sconosciuti', () => {
+  const out = eventiCalore([
+    { tipo: 'esperienza', quando: giorniFa(0) },
+    { tipo: 'sconosciuto', quando: giorniFa(0) },
+  ]);
+  assert.equal(out.length, 1);
+  assert.equal(out[0].peso, PESI_CALORE.esperienza);
+});
+
+test('eventiCalore scarta gli eventi senza quando', () => {
+  const out = eventiCalore([
+    { tipo: 'esperienza', quando: null },
+    { tipo: 'buono', quando: undefined },
+    { tipo: 'buono', quando: giorniFa(0) },
+  ]);
+  assert.equal(out.length, 1);
+  assert.equal(out[0].peso, PESI_CALORE.buono);
+});
+
+test('eventiCalore su lista vuota torna []', () => {
+  assert.deepEqual(eventiCalore([]), []);
+});
+
+test('eventiCalore alimenta calcolaCalore end-to-end', () => {
+  const eventi = eventiCalore([{ tipo: 'esperienza', quando: giorniFa(0) }]);
+  const r = calcolaCalore(eventi, NOW);
+  assert.ok(r.gradi > r.pavimento); // un'esperienza di oggi accende le braci
 });

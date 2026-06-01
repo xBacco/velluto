@@ -760,6 +760,19 @@ export const PESI_CALORE = {
   desiderio: 5, esperienza: 6, buono: 4, foto: 3, luogo: 6, gioco: 2,
 };
 
+// Normalizza eventi già tipizzati `[{ tipo, quando }]` → `[{ quando, peso }]` per
+// calcolaCalore. Il peso viene da PESI_CALORE; tipi sconosciuti e `quando` mancanti
+// si scartano. La scelta di QUALI righe e QUALE timestamp resta al chiamante (home.js).
+export function eventiCalore(items) {
+  const out = [];
+  for (const it of items) {
+    const peso = PESI_CALORE[it.tipo];
+    if (peso == null || !it.quando) continue;
+    out.push({ quando: it.quando, peso });
+  }
+  return out;
+}
+
 function clampCalore(lo, x, hi) { return Math.max(lo, Math.min(hi, x)); }
 function msDi(quando) { return quando instanceof Date ? quando.getTime() : new Date(quando).getTime(); }
 
