@@ -8,6 +8,7 @@ import { renderBuoni } from './modules/buoni.js';
 import { renderGalleria } from './modules/galleria.js';
 import { renderGiochi } from './modules/giochi.js';
 import { renderMappa } from './modules/mappa.js';
+import { renderHome } from './modules/home.js';
 import { isLockEnabled, verifyPin, getPudica, isBioEnabled, bioSupported, unlockBio } from './lib/lock.js';
 
 const TABS = [
@@ -92,8 +93,25 @@ async function enterApp() {
   $('fab').style.display = '';
   refreshChip();
   $('meChip').onclick = () => openImpostazioni({ client, me, onProfileChange: () => refreshChip() });
+  $('homeMeChip').onclick = () => openImpostazioni({ client, me, onProfileChange: () => { refreshChip(); showHome(); } });
+  $('homeBtn').onclick = () => showHome();
   buildNav();
-  go('desideri');
+  go('desideri');   // inizializza il pager (dietro la home)
+  showHome();       // la stanza è la schermata d'apertura
+}
+
+// La home è una schermata a sé: nav e FAB di sezione spariscono (body.on-home).
+function showHome() {
+  document.body.classList.add('on-home');
+  $('home').style.display = '';
+  renderHome({ client, me }).catch(err => toast('Errore home: ' + err.message, 'err'));
+}
+
+// Entra in una sezione: chiude la home e mostra il pager con la nav.
+function enterSection(k) {
+  document.body.classList.remove('on-home');
+  $('home').style.display = 'none';
+  go(k);
 }
 
 function requireUnlock() {
@@ -268,8 +286,8 @@ window.addEventListener('pageshow', refreshPrivacyBlur);
 // il FAB delega al modulo corrente tramite evento
 $('fab').onclick = () => document.dispatchEvent(new CustomEvent('fab:' + cur));
 
-// la Galleria chiede di navigare alla sezione d'origine di una foto
-document.addEventListener('goto', e => go(e.detail));
+// la Galleria (o la home) chiede di navigare a una sezione
+document.addEventListener('goto', e => enterSection(e.detail));
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

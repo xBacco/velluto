@@ -77,6 +77,29 @@
     <div class="home-wlab" id="homeWlab">ti aspetta, stasera</div>
     <div class="home-pins" id="homePins"></div>
 
+    <!-- CALORE di coppia (reale): gauge cliccabile → pop-up "la vostra brace" -->
+    <button class="home-heat" id="homeHeat" style="display:none">
+      <span class="hh-label">calore</span>
+      <span class="hh-gauge"><span class="hh-fill" id="homeHeatFill"></span></span>
+      <span class="hh-val" id="homeHeatVal">—°</span>
+      <span class="hh-up" id="homeHeatUp"></span>
+      <span class="hh-more">dettagli ›</span>
+    </button>
+
+    <div class="heat-pop" id="homeHeatPop">
+      <div class="hp-backdrop"></div>
+      <div class="hp-card">
+        <div class="hp-top">
+          <button class="hp-x" id="homeHeatClose">✕</button>
+          <div class="hp-kicker">la vostra brace</div>
+          <div class="hp-h" id="homeHpH">è calda, e resta accesa</div>
+          <div class="hp-big" id="homeHpBig">—°<small></small></div>
+        </div>
+        <div class="hp-rule"></div>
+        <div class="hp-body" id="homeHpBody"></div>
+      </div>
+    </div>
+
     <div class="home-scrim" id="homeScrim"></div>
     <div class="home-radial" id="homeRadial"></div>
     <button class="home-fab" id="homeFab">＋</button>

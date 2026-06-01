@@ -1,4 +1,4 @@
-const CACHE = 'brace-v25';
+const CACHE = 'brace-v26';
 const SHELL = ['./', './index.html', './styles.css', './js/app.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
