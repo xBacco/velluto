@@ -1098,9 +1098,9 @@ body.locked{overflow:hidden;touch-action:none;}
 .mappa-btn-spacer{height:8px;}
 
 /* ===== IMPOSTAZIONI (Task 9) ===== */
-.set-scrim{position:fixed;inset:0;z-index:55;background:rgba(8,2,5,.66);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s;}
+.set-scrim{position:fixed;inset:0;z-index:64;background:rgba(8,2,5,.66);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s;}
 .set-scrim.show{opacity:1;pointer-events:auto;}
-.set-sheet{position:fixed;inset:0;z-index:56;display:flex;flex-direction:column;overflow:hidden;
+.set-sheet{position:fixed;inset:0;z-index:65;display:flex;flex-direction:column;overflow:hidden;
   background:linear-gradient(175deg,#1d0610,#11040a);transform:translateY(100%);transition:transform .42s var(--spin);}
 .set-sheet.show{transform:translateY(0);}
 .set-head{display:flex;align-items:center;justify-content:space-between;padding:max(18px,env(safe-area-inset-top)) 18px 14px;
