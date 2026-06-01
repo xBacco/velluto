@@ -93,25 +93,32 @@ async function enterApp() {
   $('fab').style.display = '';
   refreshChip();
   $('meChip').onclick = () => openImpostazioni({ client, me, onProfileChange: () => refreshChip() });
-  $('homeMeChip').onclick = () => openImpostazioni({ client, me, onProfileChange: () => { refreshChip(); showHome(); } });
-  $('homeBtn').onclick = () => showHome();
+  $('coupleHome').onclick = () => openImpostazioni({ client, me, onProfileChange: () => { refreshChip(); showHome(); } });
+  $('homeBtn').onclick = () => goHub();
   buildNav();
   go('desideri');   // inizializza il pager (dietro la home)
   showHome();       // la stanza è la schermata d'apertura
 }
 
-// La home è una schermata a sé: nav e FAB di sezione spariscono (body.on-home).
+// La home (porta-zoom) è un overlay a sé: nav e FAB di sezione spariscono (body.on-home).
 function showHome() {
   document.body.classList.add('on-home');
-  $('home').style.display = '';
+  $('homeRoot').style.display = '';
   renderHome({ client, me }).catch(err => toast('Errore home: ' + err.message, 'err'));
 }
 
-// Entra in una sezione: chiude la home e mostra il pager con la nav.
+// Entra in una sezione: nasconde la home/hub e mostra il pager con la nav.
 function enterSection(k) {
   document.body.classList.remove('on-home');
-  $('home').style.display = 'none';
+  $('homeRoot').style.display = 'none';
   go(k);
+}
+
+// Torna dall'interno di una sezione all'hub (⌂): riapre l'overlay sulla camera.
+function goHub() {
+  document.body.classList.add('on-home');
+  $('homeRoot').style.display = '';
+  document.dispatchEvent(new CustomEvent('gohub'));
 }
 
 function requireUnlock() {
