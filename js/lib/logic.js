@@ -812,3 +812,45 @@ export function etichettaData(iso, { conGiorno = false } = {}) {
   if (conGiorno) return `${Number(dd)} ${mese} ${y}`;
   return `${mese.charAt(0).toUpperCase() + mese.slice(1)} ${y}`;
 }
+
+// ---- RIEPILOGO SEZIONI (home/hub) — puro ----
+// Da liste gia fetchate → array delle 6 sezioni reali { key, count, novita }.
+// novita: 'hot' (novita per te) | 'warn' (da agire/scadenza) | 'none'.
+// Il teaser narrativo e scelto dal chiamante (home.js). `me` = profilo { id }.
+const SEZIONI_KEYS = ['desideri', 'giochi', 'calendario', 'mappa', 'buoni', 'galleria'];
+
+function eRecente(iso, now, giorni = 3) {
+  if (!iso) return false;
+  const t = new Date(iso).getTime();
+  return t <= now.getTime() && (now.getTime() - t) < giorni * 864e5;
+}
+
+export function riepilogoSezioni(liste, me, now = new Date()) {
+  const { desideri = [], esperienze = [], luoghi = [], buoni = [], foto = [], giri = [], slot = [] } = liste || {};
+  const meId = me && me.id;
+  const todayISO = now.toISOString().slice(0, 10);
+
+  const nuoveFant = desideri.filter(d => d.autore_id !== meId && d.stato === 'da_provare');
+  const desideriR = { key: 'desideri', count: nuoveFant.length,
+    novita: nuoveFant.some(d => eRecente(d.creato, now)) ? 'hot' : (nuoveFant.length ? 'warn' : 'none') };
+
+  const nGiochi = saldoGiri(giri, meId) + saldoSlot(slot, meId);
+  const giochiR = { key: 'giochi', count: Math.max(0, nGiochi), novita: nGiochi > 0 ? 'warn' : 'none' };
+
+  const inArrivo = esperienze.filter(e => e.data && e.data >= todayISO);
+  const calR = { key: 'calendario', count: inArrivo.length, novita: inArrivo.length ? 'warn' : 'none' };
+
+  const mappaR = { key: 'mappa', count: luoghi.length,
+    novita: luoghi.some(l => eRecente(l.creato, now)) ? 'hot' : 'none' };
+
+  const attivi = buoni.filter(b => b.a_id === meId && b.tipo === 'regalo' && b.stato === 'attivo');
+  const inScadenza = attivi.some(b => b.scadenza_iso && (new Date(b.scadenza_iso).getTime() - now.getTime()) < 3 * 864e5);
+  const buoniR = { key: 'buoni', count: attivi.length,
+    novita: attivi.length === 0 ? 'none' : (inScadenza ? 'warn' : 'hot') };
+
+  const galR = { key: 'galleria', count: foto.length,
+    novita: foto.some(f => f.autore_id !== meId && eRecente(f.creato, now)) ? 'hot' : 'none' };
+
+  const byKey = { desideri: desideriR, giochi: giochiR, calendario: calR, mappa: mappaR, buoni: buoniR, galleria: galR };
+  return SEZIONI_KEYS.map(k => byKey[k]);
+}
