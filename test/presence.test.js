@@ -37,3 +37,6 @@ test('tempoRelativo: un giorno → "ieri"', () => {
 test('tempoRelativo: più giorni → "Ng fa"', () => {
   assert.equal(tempoRelativo(secFa(3 * 86400), NOW), '3g fa');
 });
+test('tempoRelativo: ~23h50m → "ieri" (niente "0g fa")', () => {
+  assert.equal(tempoRelativo(secFa(23 * 3600 + 50 * 60), NOW), 'ieri');
+});

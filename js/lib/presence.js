@@ -20,7 +20,7 @@ export function tempoRelativo(lastSeenISO, now = new Date()) {
   if (min < 60) return min + '′ fa';
   const ore = Math.round(sec / 3600);
   if (ore < 24) return ore + 'h fa';
-  const giorni = Math.floor(sec / 86400);
+  const giorni = Math.round(sec / 86400);
   return giorni === 1 ? 'ieri' : giorni + 'g fa';
 }
 
