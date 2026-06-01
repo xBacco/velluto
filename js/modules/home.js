@@ -1,95 +1,231 @@
-// Home "stanza": schermata a sé. Niente nav bar (compare solo entrando in
-// una sezione). Mostra le notifiche di cosa "ti aspetta stasera" come chip
-// fluttuanti nella stanza, con conteggi REALI, e un FAB che apre il menù
-// delle sezioni. La navigazione avviene via evento 'goto' (vedi app.js).
+// Home "porta-zoom + hub": macchina a 3 stati (#home HUD, #camera hub, sezione/pager).
+// #home/#camera vivono qui; #app/pager vive in app.js. Navigazione cross-modulo via
+// eventi: 'goto' (entra in sezione) e 'gohub' (torna all'hub). Best-effort: se una
+// fonte dati fallisce si logga e quella parte si degrada, ma la stanza resta viva.
 
 import { mk, add, clear } from '../ui.js';
-import { listGiri, listSlotMov, listBuoni, listDesideri, listEsperienze, listLuoghi, listFotoGalleria } from '../store.js';
-import { saldoGiri, saldoSlot, buoniRicevuti, calcolaCalore, eventiCalore, CALORE, PESI_CALORE } from '../lib/logic.js';
+import {
+  listGiri, listSlotMov, listBuoni, listDesideri, listEsperienze, listLuoghi, listFotoGalleria, getPartner,
+} from '../store.js';
+import {
+  calcolaCalore, eventiCalore, PESI_CALORE, CALORE, riepilogoSezioni,
+} from '../lib/logic.js';
+import { isOnline, tempoRelativo, avviaHeartbeat } from '../lib/presence.js';
 
 const $ = (id) => document.getElementById(id);
 
-// Ultimo calore calcolato { items, r, now }, per riaprire il pop-up senza rifetch.
-let calore = null;
+// Le 6 sezioni reali (key = key di TABS/goto in app.js) + la 7ª placeholder.
+const SEZIONI = [
+  { key: 'desideri',   em: '🔥', nm: 'fantasie',   c: '#ff6f3c' },
+  { key: 'giochi',     em: '🎲', nm: 'giochi',     c: '#f2738f' },
+  { key: 'calendario', em: '📅', nm: 'esperienze', c: '#ffb454' },
+  { key: 'mappa',      em: '🗺️', nm: 'mappa',      c: '#7ee0a8' },
+  { key: 'buoni',      em: '🎟️', nm: 'buoni',      c: '#e8455f' },
+  { key: 'galleria',   em: '🖼️', nm: 'galleria',   c: '#9c2150' },
+];
+const TRAGUARDI = { key: 'traguardi', em: '🏅', nm: 'traguardi', c: '#ffb454' };
+const SEC_BY_KEY = Object.fromEntries(SEZIONI.map(s => [s.key, s]));
 
-// Etichette/emoji per le righe del pop-up calore (lato utente).
+// teaser per stato (scelto da novita; fallback 'none').
+const TEASER = {
+  desideri:   { hot: 'qualcosa di bollente ti aspetta…', warn: 'una fantasia in sospeso', none: 'lasciale una fantasia, stasera' },
+  giochi:     { warn: 'hai giri da spendere, tenta la sorte', none: 'tira un dado, decide il caso' },
+  calendario: { warn: 'qualcosa in arrivo sul calendario', none: 'segnate la prossima volta insieme' },
+  mappa:      { hot: 'un posto nuovo da scoprire', none: 'i vostri posti, tutti qui' },
+  buoni:      { warn: 'un buono sta per scadere, riscuotilo', hot: 'hai un buono da riscuotere', none: 'regalale un buono a sorpresa' },
+  galleria:   { hot: "l'ultima polaroid è ancora calda", none: 'i vostri ricordi, tutti qui' },
+};
+function teaserDi(key, nov) { const t = TEASER[key] || {}; return t[nov] || t.none || ''; }
+
+// LED novità → classe della logline HUD.
+const LED_LOG = { hot: 'r', warn: 'g', none: 'n' };
+
+// Etichette/emoji righe del pop-up calore.
 const CALORE_LBL = {
   esperienza: "un'esperienza insieme", desiderio: 'una fantasia', buono: 'un buono',
   foto: 'una foto nuova', luogo: 'un luogo nuovo', gioco: 'un gioco giocato',
 };
 const CALORE_EMO = { esperienza: '📅', desiderio: '🔥', buono: '🎟️', foto: '🖼️', luogo: '🗺️', gioco: '🎲' };
 
-// Le sezioni del menù (stesse di TABS in app.js).
-const SEZIONI = [
-  ['desideri',   '🔥', 'Fantasie'],
-  ['giochi',     '🎲', 'Giochi'],
-  ['calendario', '📅', 'Esperienze'],
-  ['mappa',      '🗺️', 'Mappa'],
-  ['buoni',      '🎟️', 'Buoni'],
-  ['galleria',   '🖼️', 'Galleria'],
-];
-
 let wired = false;
+let busy = false;
+let current = 'desideri';
+let calore = null;           // ultimo calcolo { items, r, now }
+let stopHeartbeat = null;    // avviato una sola volta
+let riepilogo = [];          // ultimo riepilogoSezioni
 
-function goto(sezione) {
-  document.dispatchEvent(new CustomEvent('goto', { detail: sezione }));
+function dispatch(name, detail) {
+  document.dispatchEvent(new CustomEvent(name, detail != null ? { detail } : undefined));
+}
+function reduceMotion() { return window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches; }
+
+// ============ TRANSIZIONI HUD <-> CAMERA ============
+function enterRoom() {
+  if (busy) return; busy = true;
+  const home = $('home'), camera = $('camera'), door = $('door'), doorway = $('doorway'), peeknote = $('peeknote');
+  peeknote.classList.remove('show');
+  door.classList.add('open');
+  doorway.classList.add('opening');
+  setTimeout(() => home.classList.add('dolly'), 360);
+  setTimeout(() => camera.classList.add('in'), 780);
+  setTimeout(() => { home.classList.add('hidden'); resetHub(); busy = false; }, 1300);
+}
+function exitRoom() {
+  if (busy) return; busy = true;
+  const home = $('home'), camera = $('camera'), door = $('door'), doorway = $('doorway'), peeknote = $('peeknote');
+  camera.classList.remove('in');
+  camera.classList.add('out');
+  home.classList.remove('hidden');
+  void home.offsetWidth;
+  home.classList.remove('dolly');
+  door.classList.remove('open');
+  doorway.classList.remove('opening');
+  setTimeout(() => { camera.classList.remove('out'); peeknote.classList.add('show'); busy = false; }, 900);
+}
+// Mostra la camera SENZA dolly (ritorno da una sezione via 'gohub').
+function showCamera() {
+  const home = $('home'), camera = $('camera');
+  home.classList.add('hidden');
+  home.classList.remove('dolly');
+  camera.classList.remove('out');
+  camera.classList.add('in');
+  resetHub();
+}
+// Nasconde la camera (quando si entra in una sezione/pager).
+function hideStates() {
+  const camera = $('camera');
+  camera.classList.remove('in');
+  camera.classList.add('out');
 }
 
-// "martedì notte · siamo solo noi"
-function kicker(now = new Date()) {
-  const giorni = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
-  const h = now.getHours();
-  const momento = h < 6 ? 'notte' : h < 12 ? 'mattino' : h < 18 ? 'pomeriggio' : h < 23 ? 'sera' : 'notte';
-  return giorni[now.getDay()] + ' ' + momento + ' · siamo solo noi';
+// ============ HUB: porta in evidenza ============
+function spawnEmbers() {
+  if (reduceMotion()) return;
+  const hero = $('hero'); const hr = hero.getBoundingClientRect();
+  const ox = hr.left + hr.width * 0.5, oy = hr.top + hr.height * 0.82;
+  for (let i = 0; i < 4; i++) {
+    const p = mk('div', 'ember');
+    p.style.left = ox + 'px'; p.style.top = oy + 'px';
+    p.style.setProperty('--dx', ((i % 2 ? 1 : -1) * (10 + i * 8)) + 'px');
+    p.style.setProperty('--dy', (-(20 + i * 8)) + 'px');
+    document.getElementById('homeRoot').appendChild(p);
+    setTimeout(() => p.remove(), 620);
+  }
+}
+function etichettaCount(key, n) {
+  if (key === 'giochi')     return n > 0 ? n + ' da giocare' : 'nessun giro';
+  if (key === 'desideri')   return n > 0 ? n + (n > 1 ? ' nuove' : ' nuova') : 'nessuna nuova';
+  if (key === 'buoni')      return n > 0 ? n + ' attivi' : 'nessuno attivo';
+  if (key === 'calendario') return n > 0 ? n + ' in arrivo' : 'niente in agenda';
+  if (key === 'mappa')      return n > 0 ? n + ' luoghi' : 'nessun luogo';
+  if (key === 'galleria')   return n > 0 ? n + ' ricordi' : 'nessun ricordo';
+  return String(n);
+}
+function paintHero(key) {
+  const s = SEC_BY_KEY[key]; if (!s) return;
+  const info = riepilogo.find(r => r.key === key) || { count: 0, novita: 'none' };
+  const hero = $('hero');
+  hero.classList.add('swap');
+  spawnEmbers();
+  setTimeout(() => {
+    hero.style.setProperty('--accent', s.c);
+    $('hSign').textContent = s.em;
+    $('hTeaser').innerHTML = '<i>» ' + teaserDi(key, info.novita) + '</i>';
+    $('hNm').textContent = s.nm;
+    $('hSub').innerHTML = '<b>' + etichettaCount(key, info.count) + '</b>';
+    $('heroEnter').style.setProperty('--accent', s.c);
+    $('fNm').textContent = 'in evidenza · ' + s.em + ' ' + s.nm;
+    $('fMeta').textContent = 'tocca il dock per cambiare';
+    hero.classList.remove('swap');
+  }, 150);
+}
+function selectSlot(key) {
+  current = key;
+  document.querySelectorAll('#dock .slot').forEach(x => x.classList.toggle('on', x.dataset.sec === key));
+  paintHero(key);
+}
+function resetHub() { selectSlot('desideri'); }
+
+// ============ DOCK ============
+function buildDock() {
+  const rail = $('dockRail'); clear(rail);
+  [...SEZIONI, TRAGUARDI].forEach(s => {
+    const b = mk('button', 'slot'); b.dataset.sec = s.key; b.style.setProperty('--accent', s.c);
+    const ct = mk('span', 'ct zero', '·');
+    const nv = mk('span', 'nv none');
+    const arch = mk('span', 'arch'); arch.appendChild(mk('span', 'ico', s.em));
+    add(b, ct, nv, arch, mk('span', 'lab', s.nm));
+    b.onclick = () => onSlot(s.key);
+    rail.appendChild(b);
+  });
+}
+function onSlot(key) {
+  if (key === 'traguardi') { apriTraguardi(); return; }
+  if (key === current) { apriSezione(key); return; }   // 2ª toccata sulla porta attiva = entra
+  selectSlot(key);
+  const el = document.querySelector('#dock .slot[data-sec="' + key + '"]');
+  if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+}
+function apriSezione(key) {
+  if (key === 'traguardi') { apriTraguardi(); return; }
+  const s = SEC_BY_KEY[key];
+  $('fNm').textContent = 'apertura · ' + (s ? s.nm : key) + '…';
+  $('fMeta').textContent = '';
+  hideStates();
+  dispatch('goto', key);
+}
+function apriTraguardi() { const pop = $('traguardiPop'); if (pop) pop.classList.add('open'); }
+
+function applicaRiepilogoAlDock() {
+  riepilogo.forEach(info => {
+    const slot = document.querySelector('#dock .slot[data-sec="' + info.key + '"]');
+    if (!slot) return;
+    const ct = slot.querySelector('.ct'), nv = slot.querySelector('.nv');
+    ct.textContent = info.count > 0 ? String(info.count) : '·';
+    ct.classList.toggle('zero', info.count <= 0);
+    nv.className = 'nv ' + info.novita;
+  });
+}
+function buildNotifLog() {
+  const box = $('notifLog'); clear(box);
+  const badge = $('notifBadge');
+  const attive = riepilogo.filter(r => r.novita !== 'none');
+  if (!attive.length) {
+    box.appendChild(mk('div', 'logline', '> tutto tranquillo, per ora'));
+    badge.style.display = 'none';
+    return;
+  }
+  badge.style.display = ''; badge.textContent = attive.length + (attive.length > 1 ? ' nuove' : ' nuova');
+  const ORD = { hot: 0, warn: 1, none: 2 };
+  attive.sort((a, b) => ORD[a.novita] - ORD[b.novita]).slice(0, 3).forEach(info => {
+    const s = SEC_BY_KEY[info.key];
+    const line = mk('button', 'logline');
+    add(line,
+      mk('span', 'led ' + LED_LOG[info.novita]),
+      mk('span', 'txt', teaserDi(info.key, info.novita) + ' ' + s.em),
+      mk('span', 'src', '~/' + s.nm));
+    line.onclick = () => apriSezione(info.key);
+    box.appendChild(line);
+  });
 }
 
-function chip({ emoji, titolo, sotto, count, sezione }) {
-  const c = mk('button', 'home-chip');
-  const ic = mk('span', 'home-chip-ic', emoji);
-  ic.appendChild(mk('span', 'ring'));
-  const tx = mk('span', 'home-chip-tx');
-  add(tx, mk('b', null, titolo), mk('i', null, sotto));
-  add(c, ic, tx);
-  if (count > 0) c.appendChild(mk('span', 'home-chip-n', String(count)));
-  c.onclick = () => goto(sezione);
-  return c;
+// ============ PRESENZA ============
+function aggiornaPresenza(partner) {
+  const now = new Date();
+  const online = !!partner && isOnline(partner.last_seen, now);
+  const coupleHome = $('coupleHome'); if (coupleHome) coupleHome.classList.toggle('solo', !online);
+  const coupleCam = $('coupleCam'); if (coupleCam) coupleCam.classList.toggle('solo', !online);
+  $('camPresLabel').textContent = online ? 'online · insieme' : "lei non c'è ora";
+  $('camLastSeen').textContent = partner ? tempoRelativo(partner.last_seen, now) : '—';
+  const dot = $('camDot'); if (dot) dot.style.background = online ? 'var(--green)' : 'var(--off)';
 }
 
-async function caricaNotifiche(client, me) {
-  // Best-effort: se una fonte fallisce, lancia (no fallimento silenzioso).
-  const [giri, slot, buoni, desideri] = await Promise.all([
-    listGiri(client, me.couple_id),
-    listSlotMov(client, me.couple_id),
-    listBuoni(client, me.couple_id),
-    listDesideri(client, me.couple_id),
-  ]);
-
-  const nGiri = saldoGiri(giri, me.id);
-  const nSlot = saldoSlot(slot, me.id);
-  const nBuoni = buoniRicevuti(buoni, me.id).filter(b => b.stato === 'attivo').length;
-  // "nuove fantasie" = proposte dalla partner ancora da provare
-  const nFantasie = desideri.filter(d => d.autore_id !== me.id && d.stato === 'da_provare').length;
-
-  const out = [];
-  if (nGiri > 0)     out.push({ emoji: '🎡', titolo: nGiri > 1 ? 'Giri di ruota' : 'Un giro di ruota', sotto: nGiri > 1 ? 'pronti da girare' : 'pronto da girare', count: nGiri, sezione: 'giochi' });
-  if (nSlot > 0)     out.push({ emoji: '🎰', titolo: nSlot > 1 ? 'Giri di slot' : 'Un giro di slot', sotto: nSlot > 1 ? 'pronti da tirare' : 'pronto da tirare', count: nSlot, sezione: 'giochi' });
-  if (nFantasie > 0) out.push({ emoji: '🔥', titolo: nFantasie > 1 ? 'Nuove fantasie' : 'Una nuova fantasia', sotto: '«non te l’aspetti…»', count: nFantasie, sezione: 'desideri' });
-  if (nBuoni > 0)    out.push({ emoji: '🎟️', titolo: nBuoni > 1 ? 'Buoni per te' : 'Un buono per te', sotto: 'da riscattare', count: nBuoni, sezione: 'buoni' });
-  return out;
-}
-
-// ---- CALORE di coppia (reale) ----
-// Sorgenti → eventi [{tipo, quando}]. QUALI righe e QUALE timestamp sono scelte qui
-// (placeholder calibrati a occhio, vedi PESI_CALORE in logic.js — da verificare sui dati reali).
+// ============ CALORE (gauge HUD + statusbar + pop-up) ============
 async function caricaItemsCalore(client, coupleId) {
   const [esperienze, desideri, buoni, foto, luoghi, giri, slot] = await Promise.all([
-    listEsperienze(client, coupleId),
-    listDesideri(client, coupleId),
-    listBuoni(client, coupleId),
-    listFotoGalleria(client, coupleId),
-    listLuoghi(client, coupleId),
-    listGiri(client, coupleId),
-    listSlotMov(client, coupleId),
+    listEsperienze(client, coupleId), listDesideri(client, coupleId), listBuoni(client, coupleId),
+    listFotoGalleria(client, coupleId), listLuoghi(client, coupleId),
+    listGiri(client, coupleId), listSlotMov(client, coupleId),
   ]);
   return [
     ...esperienze.map(e => ({ tipo: 'esperienza', quando: e.data })),
@@ -97,13 +233,10 @@ async function caricaItemsCalore(client, coupleId) {
     ...buoni.map(b => ({ tipo: 'buono', quando: b.creato })),
     ...foto.map(f => ({ tipo: 'foto', quando: f.creato })),
     ...luoghi.map(l => ({ tipo: 'luogo', quando: l.data_evento || l.creato })),
-    // un "gioco" = un giro di ruota o un tiro di slot effettivamente giocato
     ...giri.filter(m => m.motivo === 'giro').map(m => ({ tipo: 'gioco', quando: m.creato })),
     ...slot.filter(m => m.motivo === 'tiro').map(m => ({ tipo: 'gioco', quando: m.creato })),
   ];
 }
-
-// Gesti dentro la finestra, dal più recente: alimentano "cos'ha acceso la brace".
 function contributiRecenti(items, now) {
   const ora = now.getTime();
   return items
@@ -112,23 +245,23 @@ function contributiRecenti(items, now) {
     .filter(x => x.t <= ora && (ora - x.t) / 864e5 < CALORE.finestraGiorni)
     .sort((a, b) => b.t - a.t);
 }
-
-function fmtDelta(el, delta, { conOggi = false } = {}) {
+function fmtDelta(el, delta) {
+  if (!el) return;
   const d = Math.round(delta);
-  const suff = conOggi ? ' oggi' : '';
-  if (d > 0) { el.className = el.className.replace(/\b(dn|fl)\b/g, '').trim(); el.textContent = '▲ +' + d + suff; }
-  else if (d < 0) { el.classList.add('dn'); el.textContent = '▼ ' + d + suff; }
+  el.classList.remove('dn', 'fl');
+  if (d > 0) el.textContent = '▲ +' + d;
+  else if (d < 0) { el.classList.add('dn'); el.textContent = '▼ ' + d; }
   else { el.classList.add('fl'); el.textContent = '· stabile'; }
 }
-
 function renderHeatGauge(r) {
   const g = Math.round(r.gradi);
-  $('homeHeatFill').style.width = g + '%';
-  $('homeHeatVal').textContent = g + '°';
-  const up = $('homeHeatUp'); up.className = 'hh-up'; fmtDelta(up, r.delta);
-  $('homeHeat').style.display = '';
+  $('heatFill').style.width = g + '%';
+  $('heatVal').textContent = g + '°';
+  fmtDelta($('heatUp'), r.delta);
+  $('heatBtn').style.display = '';
+  $('camHeatVal').textContent = g + '°';
+  fmtDelta($('camHeatUp'), r.delta);
 }
-
 function buildHeatLines(items, r, now) {
   const contrib = contributiRecenti(items, now);
   const lines = [];
@@ -145,11 +278,9 @@ function buildHeatLines(items, r, now) {
   lines.push('> <span class="o">invito</span>: una serata insieme <span class="g">+6</span> <span class="nw">(se vi va)</span>');
   return lines;
 }
-
 let heatTimer = null;
-function reduceMotion() { return window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches; }
 function renderHeatPop(items, r, now) {
-  const big = $('homeHpBig'), body = $('homeHpBody'), h = $('homeHpH');
+  const big = $('hpBig'), body = $('hpBody'), h = $('hpH');
   const g = Math.round(r.gradi), d = Math.round(r.delta);
   const sm = d > 0 ? '<small>▲ +' + d + ' oggi</small>'
     : d < 0 ? '<small class="dn">▼ ' + d + ' oggi</small>'
@@ -166,59 +297,7 @@ function renderHeatPop(items, r, now) {
     i++; heatTimer = setTimeout(step, 110);
   })();
 }
-
-function buildRadial(radial) {
-  clear(radial);
-  SEZIONI.forEach(([k, e, l]) => {
-    const item = mk('button', 'home-ritem');
-    add(item, mk('span', 'nm', l), mk('span', 'ic', e));
-    item.onclick = () => goto(k);
-    radial.appendChild(item);
-  });
-}
-
-function wireOnce() {
-  if (wired) return; wired = true;
-  const fab = $('homeFab'), radial = $('homeRadial'), scrim = $('homeScrim');
-  const coach = $('homeCoach'), help = $('homeHelp'), pins = $('homePins'), wlab = $('homeWlab'), heat = $('homeHeat');
-  const openMenu = () => { fab.classList.add('open'); radial.classList.add('on'); scrim.classList.add('on'); pins.classList.add('dim'); if (wlab) wlab.classList.add('dim'); if (heat) heat.classList.add('dim'); };
-  const closeMenu = () => { fab.classList.remove('open'); radial.classList.remove('on'); scrim.classList.remove('on'); pins.classList.remove('dim'); if (wlab) wlab.classList.remove('dim'); if (heat) heat.classList.remove('dim'); };
-  fab.onclick = () => fab.classList.contains('open') ? closeMenu() : openMenu();
-  scrim.onclick = closeMenu;
-  if (coach && help) {
-    help.onclick = () => coach.classList.remove('hide');
-    coach.onclick = () => { coach.classList.add('hide'); try { localStorage.setItem('brace:home-coach-visto', '1'); } catch (_) {} };
-  }
-
-  // pop-up calore: si riapre dall'ultimo calcolo (`calore`), niente rifetch
-  const heatPop = $('homeHeatPop'), heatClose = $('homeHeatClose');
-  if (heat && heatPop) {
-    const openHeat = () => { if (!calore) return; heatPop.classList.add('open'); renderHeatPop(calore.items, calore.r, calore.now); };
-    const closeHeat = () => heatPop.classList.remove('open');
-    heat.onclick = openHeat;
-    if (heatClose) heatClose.onclick = closeHeat;
-    const backdrop = heatPop.querySelector('.hp-backdrop');
-    if (backdrop) backdrop.onclick = closeHeat;
-  }
-}
-
-export async function renderHome({ client, me }) {
-  wireOnce();
-  buildRadial($('homeRadial'));
-
-  // saluto + profilo
-  $('homeKick').textContent = kicker();
-  const meChip = $('homeMeChip'); clear(meChip);
-  add(meChip, mk('span', null, me.avatar || '🐻'), mk('span', null, me.display_name || 'Tu'));
-
-  // coach: solo al primo avvio
-  const coach = $('homeCoach');
-  let visto = false;
-  try { visto = localStorage.getItem('brace:home-coach-visto') === '1'; } catch (_) {}
-  if (coach) coach.classList.toggle('hide', visto);
-
-  // calore di coppia (reale). Best-effort: se una fonte fallisce, log + niente gauge,
-  // ma la home resta viva (il calore è un di più, non deve bloccare la stanza).
+async function aggiornaCalore(client, me) {
   try {
     const now = new Date();
     const itemsCal = await caricaItemsCalore(client, me.couple_id);
@@ -229,22 +308,76 @@ export async function renderHome({ client, me }) {
     renderHeatGauge(calore.r);
   } catch (e) {
     console.error('[home] calore non disponibile:', e);
-    const heat = $('homeHeat'); if (heat) heat.style.display = 'none';
+    const h = $('heatBtn'); if (h) h.style.display = 'none';
+  }
+}
+
+// ============ WIRING (una volta) ============
+function wireOnce() {
+  if (wired) return; wired = true;
+  $('enterBtn').onclick = enterRoom;
+  $('door').onclick = enterRoom;
+  $('backBtn').onclick = exitRoom;
+  $('heroEnter').onclick = () => apriSezione(current);
+  $('hero').onclick = () => apriSezione(current);
+
+  // pop-up calore (riapre l'ultimo calcolo, niente rifetch)
+  const heatBtn = $('heatBtn'), heatPop = $('heatPop'), heatClose = $('heatClose');
+  const openHeat = () => { if (!calore) return; heatPop.classList.add('open'); renderHeatPop(calore.items, calore.r, calore.now); };
+  const closeHeat = () => heatPop.classList.remove('open');
+  if (heatBtn) heatBtn.onclick = openHeat;
+  if (heatClose) heatClose.onclick = closeHeat;
+  const bd = heatPop.querySelector('.hp-backdrop'); if (bd) bd.onclick = closeHeat;
+
+  // pop-up traguardi (placeholder)
+  const tPop = $('traguardiPop'), tClose = $('traguardiClose');
+  if (tClose) tClose.onclick = () => tPop.classList.remove('open');
+  if (tPop) { const tb = tPop.querySelector('.hp-backdrop'); if (tb) tb.onclick = () => tPop.classList.remove('open'); }
+
+  // navigazione cross-modulo
+  document.addEventListener('gohub', showCamera);
+  document.addEventListener('goto', hideStates);
+}
+
+export async function renderHome({ client, me }) {
+  wireOnce();
+  buildDock();
+
+  $('homeMeAv').textContent = me.avatar || '🐻';
+  $('peeknote').classList.add('show');
+
+  // dati reali in parallelo (best-effort)
+  let liste = null, partner = null;
+  try {
+    const [desideri, esperienze, buoni, foto, luoghi, giri, slot, p] = await Promise.all([
+      listDesideri(client, me.couple_id),
+      listEsperienze(client, me.couple_id),
+      listBuoni(client, me.couple_id),
+      listFotoGalleria(client, me.couple_id),
+      listLuoghi(client, me.couple_id),
+      listGiri(client, me.couple_id),
+      listSlotMov(client, me.couple_id),
+      getPartner(client, me.couple_id, me.id).catch(() => null),
+    ]);
+    liste = { desideri, esperienze, buoni, foto, luoghi, giri, slot };
+    partner = p;
+  } catch (e) {
+    console.error('[home] dati non disponibili:', e);
   }
 
-  // notifiche reali
-  const pins = $('homePins'); clear(pins);
-  const wlab = $('homeWlab');
-  const items = await caricaNotifiche(client, me);
-  if (!items.length) {
-    if (wlab) wlab.style.display = 'none';
-    pins.appendChild(mk('div', 'home-calmo', 'Tutto tranquillo, per ora.\nApri una stanza con ＋'));
-    return;
+  riepilogo = liste ? riepilogoSezioni(liste, me, new Date()) : [];
+  applicaRiepilogoAlDock();
+  buildNotifLog();
+
+  if (partner) $('homePartnerAv').textContent = partner.avatar || '🧁';
+  aggiornaPresenza(partner);
+
+  await aggiornaCalore(client, me);
+
+  selectSlot('desideri');
+
+  if (!stopHeartbeat) {
+    try { stopHeartbeat = avviaHeartbeat({ client, me }); }
+    catch (e) { console.error('[home] heartbeat non avviato:', e); }
   }
-  if (wlab) wlab.style.display = '';
-  items.forEach((it, i) => {
-    const wrap = mk('div', 'home-pin home-pin-' + (i % 4));
-    wrap.appendChild(chip(it));
-    pins.appendChild(wrap);
-  });
 }
