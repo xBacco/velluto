@@ -116,6 +116,8 @@
 #homeRoot .heat .fill{height:100%;width:70%;background:linear-gradient(90deg,var(--gold),var(--ember),var(--red));box-shadow:0 0 12px rgba(255,111,60,.5);}
 #homeRoot .heat .val{font-family:var(--mono);font-size:13px;font-weight:800;color:var(--gold);}
 #homeRoot .heat .up{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--green);}
+#homeRoot .heat .up.dn{color:var(--rose);}
+#homeRoot .heat .up.fl{color:var(--ink-dim);}
 
 /* PROMPT BAR (IDENTICA) */
 #homeRoot .promptbar{margin:0 14px 16px;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 8px 8px 12px;position:relative;z-index:40;}
@@ -190,6 +192,8 @@
 #homeRoot .statusbar .spacer{flex:1;}
 #homeRoot .statusbar .heatmini{color:var(--ember);font-weight:800;}
 #homeRoot .statusbar .heatmini .up{color:var(--green);font-size:9px;}
+#homeRoot .heatmini .up.dn{color:var(--rose);}
+#homeRoot .heatmini .up.fl{color:var(--ink-dim);}
 
 /* ====================================================== */
 /* === HUB: UNA PORTA GRANDE "IN EVIDENZA" =============== */
