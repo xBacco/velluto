@@ -312,6 +312,12 @@ export async function updateProfile(client, id, { display_name, avatar } = {}) {
   return check(res);
 }
 
+// Battito di presenza: aggiorna last_seen del profilo (vedi js/lib/presence.js).
+export async function updateLastSeen(client, id, nowISO) {
+  const res = await client.from('profiles').update({ last_seen: nowISO }).eq('id', id);
+  return check(res);
+}
+
 // ---- LUOGHI (Mappa) ----
 export async function listLuoghi(client, coupleId) {
   const res = await client.from('luoghi').select('*')

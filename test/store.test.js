@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { listDesideri, addDesiderio, markRealizzato, deleteDesiderio, listStripPartite, addStripPartita, getPartner } from '../js/store.js';
+import { listDesideri, addDesiderio, markRealizzato, deleteDesiderio, listStripPartite, addStripPartita, getPartner, updateLastSeen } from '../js/store.js';
 
 // --- fake client supabase ---
 function fakeClient(initialRows = []) {
@@ -114,4 +114,13 @@ test('getPartner ritorna null se non c\'è partner', async () => {
   const c = fakeClient([{ id: 'me', couple_id: 'cpl', display_name: 'Io' }]);
   const p = await getPartner(c, 'cpl', 'me');
   assert.equal(p, null);
+});
+
+test('updateLastSeen scrive last_seen sul profilo per id', async () => {
+  const c = fakeClient();
+  await updateLastSeen(c, 'u1', '2026-06-01T12:00:00.000Z');
+  const upd = c._calls.find(x => x.op === 'update');
+  assert.equal(upd.table, 'profiles');
+  assert.equal(upd.filters.id, 'u1');
+  assert.equal(upd.payload.last_seen, '2026-06-01T12:00:00.000Z');
 });
