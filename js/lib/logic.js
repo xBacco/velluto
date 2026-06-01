@@ -826,8 +826,9 @@ function eRecente(iso, now, giorni = 3) {
 }
 
 export function riepilogoSezioni(liste, me, now = new Date()) {
+  if (!me || !me.id) return SEZIONI_KEYS.map(k => ({ key: k, count: 0, novita: 'none' }));
   const { desideri = [], esperienze = [], luoghi = [], buoni = [], foto = [], giri = [], slot = [] } = liste || {};
-  const meId = me && me.id;
+  const meId = me.id;
   const todayISO = now.toISOString().slice(0, 10);
 
   const nuoveFant = desideri.filter(d => d.autore_id !== meId && d.stato === 'da_provare');
@@ -843,8 +844,8 @@ export function riepilogoSezioni(liste, me, now = new Date()) {
   const mappaR = { key: 'mappa', count: luoghi.length,
     novita: luoghi.some(l => eRecente(l.creato, now)) ? 'hot' : 'none' };
 
-  const attivi = buoni.filter(b => b.a_id === meId && b.tipo === 'regalo' && b.stato === 'attivo');
-  const inScadenza = attivi.some(b => b.scadenza_iso && (new Date(b.scadenza_iso).getTime() - now.getTime()) < 3 * 864e5);
+  const attivi = buoniRicevuti(buoni, meId).filter(b => b.stato === 'attivo');
+  const inScadenza = attivi.some(b => b.scadenza_iso && (new Date(b.scadenza_iso).getTime() - now.getTime()) < 3 * 864e5); // avvisa se scade entro 3 giorni
   const buoniR = { key: 'buoni', count: attivi.length,
     novita: attivi.length === 0 ? 'none' : (inScadenza ? 'warn' : 'hot') };
 

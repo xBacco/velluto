@@ -77,3 +77,18 @@ test('liste mancanti → tutto a count 0, novita none', () => {
   const out = riepilogoSezioni({}, ME, NOW);
   assert.ok(out.every(r => r.count === 0 && r.novita === 'none'));
 });
+
+test('me mancante → tutte le sezioni a zero, niente falsi positivi', () => {
+  const liste = { desideri: [{ autore_id: 'lei', stato: 'da_provare', creato: giorniFa(0) }] };
+  const out = riepilogoSezioni(liste, null, NOW);
+  assert.deepEqual(out.map(r => r.key),
+    ['desideri', 'giochi', 'calendario', 'mappa', 'buoni', 'galleria']);
+  assert.ok(out.every(r => r.count === 0 && r.novita === 'none'));
+});
+
+test('esperienze: data == oggi conta come in arrivo (boundary inclusivo)', () => {
+  const liste = { esperienze: [{ data: '2026-06-01' }] };
+  const r = get(riepilogoSezioni(liste, ME, NOW), 'calendario');
+  assert.equal(r.count, 1);
+  assert.equal(r.novita, 'warn');
+});
