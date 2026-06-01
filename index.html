@@ -58,66 +58,147 @@
     <div id="lockErr" class="login-err"></div>
   </div>
 
-  <!-- HOME · stanza a sé (nav nascosta, compare solo nelle sezioni) -->
-  <div class="home" id="home" style="display:none">
-    <div class="home-bg"></div>
-    <div class="home-duo"></div>
-    <div class="home-lit"></div>
-    <div class="home-deepen"></div>
-    <div class="home-vig"></div>
+  <!-- HOME DEFINITIVA · porta-zoom (HUD) → hub 7 porte → sezioni -->
+  <div id="homeRoot" style="display:none">
+   <div class="frame">
 
-    <div class="home-topbar">
-      <div class="brand">brace<span class="wm-dot">.</span></div>
-      <button class="me-chip" id="homeMeChip"></button>
-    </div>
+    <!-- STATO 1 · HUD porta -->
+    <div class="home" id="home">
+      <div class="topbar chrome up">
+        <div class="brand">brace<span class="dot">.</span></div>
+        <div class="presence">
+          <button class="couple" id="coupleHome" title="noi">
+            <span class="cav b" id="homeMeAv">🐻</span><span class="cav c" id="homePartnerAv">🧁</span>
+            <span class="nm">noi</span><span class="cled" id="homeCled"></span>
+          </button>
+          <button class="chip-q" id="homeHelp">?</button>
+        </div>
+      </div>
 
-    <div class="home-greet">
-      <div class="home-kick" id="homeKick"></div>
-      <div class="home-h">Resta,<br>la stanza è viva.</div>
-    </div>
+      <div class="notif chrome up">
+        <div class="notif-head">
+          <span class="cmd mono">$ notifiche <b>--tail 3</b></span>
+          <span class="badge" id="notifBadge" style="display:none"></span>
+        </div>
+        <div class="logbox" id="notifLog"></div>
+      </div>
 
-    <div class="home-wlab" id="homeWlab">ti aspetta, stasera</div>
-    <div class="home-pins" id="homePins"></div>
+      <div class="door-wrap">
+        <div class="doorway" id="doorway">
+          <div class="jamb">
+            <div class="peeplight"></div>
+            <div class="door" id="door">
+              <div class="panel top"></div>
+              <div class="panel bot"></div>
+              <div class="knob"><span class="plate"></span></div>
+              <div class="seam"></div>
+            </div>
+            <div class="threshold"></div>
+          </div>
+          <div class="peeknote" id="peeknote">c'è qualcosa per te 🔥</div>
+          <div class="enter-cta">
+            <div class="hint mono">uno spiraglio di luce filtra dalla porta…</div>
+            <button class="btn mono" id="enterBtn">❯ entra nella stanza</button>
+          </div>
+        </div>
+      </div>
 
-    <!-- CALORE di coppia (reale): gauge cliccabile → pop-up "la vostra brace" -->
-    <button class="home-heat" id="homeHeat" style="display:none">
-      <span class="hh-label">calore</span>
-      <span class="hh-gauge"><span class="hh-fill" id="homeHeatFill"></span></span>
-      <span class="hh-val" id="homeHeatVal">—°</span>
-      <span class="hh-up" id="homeHeatUp"></span>
-      <span class="hh-more">dettagli ›</span>
-    </button>
+      <button class="heat chrome down" id="heatBtn" style="display:none">
+        <span class="label mono">calore</span>
+        <div class="gauge"><div class="fill" id="heatFill"></div></div>
+        <span class="val mono" id="heatVal">—°</span>
+        <span class="up mono" id="heatUp"></span>
+        <span class="heat-more mono">dettagli ›</span>
+      </button>
 
-    <div class="heat-pop" id="homeHeatPop">
+      <div class="promptbar chrome down">
+        <span class="add mono">+fantasia</span>
+        <span class="ph mono">lasciale qualcosa al volo…<span class="cur"></span></span>
+        <button class="send" id="promptSend">↑</button>
+      </div>
+    </div><!-- /home -->
+
+    <!-- STATO 2 · CAMERA hub 7 porte -->
+    <div class="camera" id="camera">
+      <div class="amb"></div><div class="embers"></div><div class="floor"></div>
+
+      <div class="cam-top">
+        <button class="backbtn mono" id="backBtn">↩ home</button>
+        <div class="cam-title">
+          <div class="ttl">la nostra stanza</div>
+          <div class="sub mono">~/la_nostra_stanza <b>❯</b> un soffio · cambia stanza</div>
+        </div>
+        <div class="cam-presence">
+          <button class="couple sm" id="coupleCam" title="noi">
+            <span class="cav b">🐻</span><span class="cav c">🧁</span><span class="cled" id="camCled"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="statusbar mono">
+        <span class="seg"><span class="dot" id="camDot"></span> <span id="camPresLabel">—</span></span>
+        <span class="spacer"></span>
+        <span class="seg">ult. <b id="camLastSeen">—</b></span>
+        <span class="seg heatmini">calore <span id="camHeatVal">—°</span> <span class="up" id="camHeatUp"></span></span>
+      </div>
+
+      <div class="stage">
+        <div class="hero" id="hero" style="--accent:#ff6f3c">
+          <span class="halo"></span>
+          <div class="jamb2"><div class="inside2"></div><div class="leaf2"></div><span class="sill2"></span></div>
+          <div class="sign" id="hSign">🔥</div>
+          <div class="teaser2" id="hTeaser"></div>
+        </div>
+        <div class="herometa" id="heroMeta">
+          <div class="h-nm" id="hNm">fantasie</div>
+          <div class="h-sub mono" id="hSub"></div>
+        </div>
+        <button class="hero-cta mono" id="heroEnter">❯ entra nel varco</button>
+      </div>
+
+      <div class="cam-console">
+        <div class="focus mono" id="focusLine">
+          <span class="prompt">❯</span>
+          <span class="nm" id="fNm">in evidenza</span><span class="cur"></span>
+          <span class="meta" id="fMeta">tocca il dock per cambiare</span>
+        </div>
+      </div>
+
+      <nav class="dock" id="dock"><div class="dock-rail" id="dockRail"></div></nav>
+    </div><!-- /camera -->
+
+    <!-- POP-UP CALORE -->
+    <div class="heat-pop" id="heatPop">
       <div class="hp-backdrop"></div>
       <div class="hp-card">
         <div class="hp-top">
-          <button class="hp-x" id="homeHeatClose">✕</button>
+          <button class="hp-x" id="heatClose">✕</button>
           <div class="hp-kicker">la vostra brace</div>
-          <div class="hp-h" id="homeHpH">è calda, e resta accesa</div>
-          <div class="hp-big" id="homeHpBig">—°<small></small></div>
+          <div class="hp-h" id="hpH">è calda, e resta accesa</div>
+          <div class="hp-big" id="hpBig">—°<small></small></div>
         </div>
         <div class="hp-rule"></div>
-        <div class="hp-body" id="homeHpBody"></div>
+        <div class="hp-body" id="hpBody"></div>
       </div>
     </div>
 
-    <div class="home-scrim" id="homeScrim"></div>
-    <div class="home-radial" id="homeRadial"></div>
-    <button class="home-fab" id="homeFab">＋</button>
-    <button class="home-help" id="homeHelp">?</button>
-
-    <div class="home-coach hide" id="homeCoach">
-      <div class="home-coach-candle">🕯️</div>
-      <h3>Benvenuto<br>nella nostra stanza</h3>
-      <p>Qui vedi solo cosa vi aspetta stasera. Niente menù in vista: la stanza è la home.</p>
-      <div class="home-coach-hint">
-        <div class="hrow"><span class="b">✨</span><span>Tocca una <b>notifica</b> per aprirla</span></div>
-        <div class="hrow"><span class="b">＋</span><span>Il <b>＋</b> in basso apre le sezioni</span></div>
+    <!-- POP-UP TRAGUARDI (7ª porta · placeholder) -->
+    <div class="heat-pop" id="traguardiPop">
+      <div class="hp-backdrop"></div>
+      <div class="hp-card">
+        <div class="hp-top">
+          <button class="hp-x" id="traguardiClose">✕</button>
+          <div class="hp-kicker">traguardi</div>
+          <div class="hp-h">presto, insieme</div>
+        </div>
+        <div class="hp-rule"></div>
+        <div class="hp-body">&gt; piccoli traguardi di coppia
+&gt; <span class="dim">in arrivo… nessuna fretta</span></div>
       </div>
-      <div class="home-coach-tap">tocca per iniziare</div>
     </div>
-  </div>
+
+   </div><!-- /frame -->
+  </div><!-- /homeRoot -->
 
   <!-- APP -->
   <div class="wrap" id="app" style="display:none">
