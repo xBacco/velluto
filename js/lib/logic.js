@@ -737,6 +737,59 @@ export function cuoriLabel(voto) {
   return '❤'.repeat(v) + '♡'.repeat(5 - v);
 }
 
+// ---- CALORE di coppia — modello "pavimento + braci recenti" (puro) ----
+// Approvato 2026-06-01 (mockups/calore-lab.html, modello A). Filosofia ANTI-ANSIA:
+// premia, non punisce. Il calore non si spegne mai sotto il "pavimento", che cresce
+// lentamente con la storia della coppia; le "braci" sono il contributo caldo degli
+// eventi recenti — sale a ogni gesto e decade dolce dentro la finestra.
+//
+// Taratura fissata (placeholder calibrati a occhio, DA VERIFICARE sui dati reali).
+export const CALORE = {
+  pavBase: 50,         // pavimento di partenza (gradi)
+  pavMax: 60,          // tetto del pavimento: non sale oltre, per quanto lunga la storia
+  pavStep: 0.45,       // quanto alza il pavimento ogni evento della storia
+  finestraGiorni: 14,  // un evento contribuisce alle braci finché è in questa finestra (decadimento lineare)
+  kA: 15,              // saturazione: più alto = ultimi gradi più duri da conquistare
+  Rfull: 50,           // "sforzo-vetta": raw di braci necessario a toccare la vetta
+  vetta: 100,          // massimo (gradi)
+};
+
+// Pesi placeholder per sorgente-evento (mockups/calore-lab.html, oggetto EV).
+// DA VERIFICARE sui dati reali — calibrati a occhio.
+export const PESI_CALORE = {
+  desiderio: 5, esperienza: 6, buono: 4, foto: 3, luogo: 6, gioco: 2,
+};
+
+function clampCalore(lo, x, hi) { return Math.max(lo, Math.min(hi, x)); }
+function msDi(quando) { return quando instanceof Date ? quando.getTime() : new Date(quando).getTime(); }
+
+// Calore attuale dagli `eventi` ([{ quando: Date|ISO, peso }]). `now` (Date) iniettabile.
+// → { gradi, pavimento, braci }, con gradi ∈ [pavimento, vetta]. Eventi futuri ignorati.
+export function calcolaCalore(eventi, now = new Date()) {
+  const ora = now instanceof Date ? now.getTime() : new Date(now).getTime();
+  const C = CALORE;
+
+  // Il pavimento cresce con il numero di eventi della storia (capato a pavMax).
+  const passati = eventi.filter(e => msDi(e.quando) <= ora);
+  const pavimento = Math.min(C.pavMax, C.pavBase + passati.length * C.pavStep);
+
+  // Braci: somma pesata degli eventi nella finestra, peso lineare con l'età.
+  let raw = 0;
+  for (const e of passati) {
+    const eta = (ora - msDi(e.quando)) / 864e5; // età in giorni
+    if (eta >= C.finestraGiorni) continue;
+    raw += e.peso * (1 - eta / C.finestraGiorni);
+  }
+  // Saturazione normalizzata: concava (ultimi gradi i più duri) ma che TOCCA la vetta
+  // quando raw = Rfull. La curva 1-e^(-raw/k) è un asintoto che non arriva mai a 1:
+  // la si normalizza dividendo per il suo valore in Rfull, così sat=1 esattamente lì.
+  const denom = 1 - Math.exp(-C.Rfull / C.kA);
+  const sat = clampCalore(0, (1 - Math.exp(-raw / C.kA)) / denom, 1);
+  const braci = (C.vetta - pavimento) * sat;
+  const gradi = clampCalore(pavimento, pavimento + braci, C.vetta);
+  return { gradi, pavimento, braci };
+}
+
 // Etichetta data breve italiana. conGiorno=false → "Ago 2025"; true → "21 ago 2025".
 const MESI_BREVI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
 export function etichettaData(iso, { conGiorno = false } = {}) {
