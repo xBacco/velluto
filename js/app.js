@@ -1,5 +1,6 @@
 import { client } from './supabase.js';
-import { login, logout, currentProfile } from './auth.js';
+import { login, logout, currentProfile, signUp, resetPasswordForEmail } from './auth.js';
+import { renderOnboarding } from './modules/onboarding.js';
 import { mk, add, clear, toast } from './ui.js';
 import { renderDesideri } from './modules/desideri.js';
 import { renderCalendario } from './modules/calendario.js';
@@ -39,8 +40,36 @@ async function boot() {
   if (session) await enterApp();
   else $('login').style.display = '';
   $('loginForm').addEventListener('submit', onLogin);
+  wireAuthLinks();
   const wait = Math.max(0, 400 - (Date.now() - t0));
   setTimeout(openIntroCurtains, wait);
+}
+
+// Link "Registrati" e "Password dimenticata?" sotto il form di login.
+function wireAuthLinks() {
+  $('goSignup').onclick = onSignup;
+  $('goReset').onclick = onReset;
+}
+
+async function onSignup() {
+  const email = $('email').value.trim();
+  const password = $('password').value;
+  $('loginErr').textContent = '';
+  if (!email || !password) { $('loginErr').textContent = 'Inserisci email e password per registrarti.'; return; }
+  try {
+    await signUp(client, email, password);
+    $('loginErr').textContent = 'Ti abbiamo inviato una mail di conferma: aprila per attivare l\'account, poi accedi.';
+  } catch (e) { $('loginErr').textContent = e.message; }
+}
+
+async function onReset() {
+  const email = $('email').value.trim();
+  $('loginErr').textContent = '';
+  if (!email) { $('loginErr').textContent = 'Scrivi la tua email, poi tocca "Password dimenticata?".'; return; }
+  try {
+    await resetPasswordForEmail(client, email);
+    $('loginErr').textContent = 'Se l\'email è registrata, riceverai un link per reimpostare la password.';
+  } catch (e) { $('loginErr').textContent = e.message; }
 }
 
 let introOpened = false;
@@ -85,7 +114,7 @@ function refreshChip() {
 
 async function enterApp() {
   me = await currentProfile();
-  if (!me) { location.reload(); return; } // token scaduto/non valido → torna al login
+  if (!me) { showOnboarding(); return; } // sessione valida ma nessun profilo → onboarding
   if (isLockEnabled()) { await requireUnlock(); }
   if (getPudica()) document.body.classList.add('pudica');
   $('login').classList.add('gone');
@@ -98,6 +127,20 @@ async function enterApp() {
   buildNav();
   go('desideri');   // inizializza il pager (dietro la home)
   showHome();       // la stanza è la schermata d'apertura
+}
+
+// Registrato senza coppia: mostra la scelta crea/unisci. Al termine rientra in enterApp.
+function showOnboarding() {
+  $('login').style.display = 'none';
+  $('login').classList.add('gone');
+  renderOnboarding({
+    client,
+    root: $('onboardingRoot'),
+    onDone: async () => {
+      $('onboardingRoot').style.display = 'none';
+      await enterApp();
+    },
+  });
 }
 
 // La home (porta-zoom) è un overlay a sé: nav e FAB di sezione spariscono (body.on-home).
