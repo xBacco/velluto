@@ -855,3 +855,23 @@ export function riepilogoSezioni(liste, me, now = new Date()) {
   const byKey = { desideri: desideriR, giochi: giochiR, calendario: calR, mappa: mappaR, buoni: buoniR, galleria: galR };
   return SEZIONI_KEYS.map(k => byKey[k]);
 }
+
+// ---- ONBOARDING / CODICE INVITO (puro) ----
+// Alfabeto senza simboli ambigui (esclusi 0 O 1 I L) per codici dettabili a voce.
+export const ALFABETO_CODICE = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
+// Genera un codice invito di `len` caratteri dall'ALFABETO_CODICE. `rnd` (∈[0,1)) iniettabile.
+// L'unicità è garantita a valle (retry nella RPC); qui è solo formato.
+export function generaCodiceInvito(rnd = Math.random, len = 6) {
+  let out = '';
+  for (let i = 0; i < len; i++) out += ALFABETO_CODICE[Math.floor(rnd() * ALFABETO_CODICE.length)];
+  return out;
+}
+
+// True se il codice è scaduto. `scadenza` ISO string o null (null = non scade mai).
+// `now` Date o ISO string iniettabile.
+export function codiceScaduto(scadenza, now = new Date()) {
+  if (!scadenza) return false;
+  const oraMs = now instanceof Date ? now.getTime() : new Date(now).getTime();
+  return new Date(scadenza).getTime() <= oraMs;
+}
