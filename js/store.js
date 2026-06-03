@@ -401,5 +401,5 @@ export async function getInvitoAttivo(client, coupleId) {
   const { data, error } = await client.from('codici_invito')
     .select('*').eq('couple_id', coupleId).is('usato_da', null).maybeSingle();
   if (error) throw new Error(error.message || 'Errore lettura codice');
-  return data || null;
+  return data;  // maybeSingle() ritorna già la riga o null
 }
