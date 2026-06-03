@@ -2,7 +2,10 @@
 // e crea il client dai valori di config.js.
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../config.js';
 
-export const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Guard per ambienti senza window (es. Node.js durante i test)
+export const client = typeof window !== 'undefined'
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
 
 export async function getSession() {
   const { data } = await client.auth.getSession();

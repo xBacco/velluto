@@ -111,3 +111,62 @@ test('getInvitoAttivo ritorna null se non c\'è codice attivo', async () => {
   const row = await getInvitoAttivo(c, 'cpl-1');
   assert.equal(row, null);
 });
+
+import { currentProfile, signUp, resetPasswordForEmail } from '../js/auth.js';
+
+// fake client per auth: getUser + select profiles.maybeSingle + auth.signUp/reset
+function fakeAuthClient({ user = null, profile = null, profileError = null } = {}) {
+  const calls = [];
+  return {
+    _calls: calls,
+    auth: {
+      getUser: () => Promise.resolve({ data: { user } }),
+      signUp: (args) => { calls.push({ fn: 'signUp', args }); return Promise.resolve({ data: { user: { id: 'new' } }, error: null }); },
+      resetPasswordForEmail: (email) => { calls.push({ fn: 'reset', email }); return Promise.resolve({ data: {}, error: null }); },
+    },
+    from() {
+      const api = {
+        select() { return api; },
+        eq() { return api; },
+        maybeSingle: () => Promise.resolve({ data: profile, error: profileError }),
+      };
+      return api;
+    },
+  };
+}
+
+// alias: i test passano il fake come PRIMO argomento esplicito alle funzioni auth
+const fakeAuthClientWrap = (opts) => fakeAuthClient(opts);
+
+test('currentProfile ritorna null se non c\'è utente', async () => {
+  assert.equal(await currentProfile(fakeAuthClientWrap({ user: null })), null);
+});
+
+test('currentProfile ritorna null se l\'utente non ha ancora un profilo', async () => {
+  assert.equal(await currentProfile(fakeAuthClientWrap({ user: { id: 'u1' }, profile: null })), null);
+});
+
+test('currentProfile ritorna il profilo quando esiste', async () => {
+  const p = { id: 'u1', couple_id: 'cpl', display_name: 'Lei', avatar: '🌹' };
+  const got = await currentProfile(fakeAuthClientWrap({ user: { id: 'u1' }, profile: p }));
+  assert.deepEqual(got, p);
+});
+
+test('currentProfile lancia su errore di rete', async () => {
+  await assert.rejects(
+    () => currentProfile(fakeAuthClientWrap({ user: { id: 'u1' }, profileError: { message: 'network down' } })),
+    /network down/);
+});
+
+test('signUp inoltra email e password a auth.signUp', async () => {
+  const c = fakeAuthClientWrap({});
+  await signUp(c, 'a@b.it', 'segreta');
+  const call = c._calls.find(x => x.fn === 'signUp');
+  assert.deepEqual(call.args, { email: 'a@b.it', password: 'segreta' });
+});
+
+test('resetPasswordForEmail inoltra l\'email', async () => {
+  const c = fakeAuthClientWrap({});
+  await resetPasswordForEmail(c, 'a@b.it');
+  assert.ok(c._calls.find(x => x.fn === 'reset' && x.email === 'a@b.it'));
+});
