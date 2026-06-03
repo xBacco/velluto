@@ -109,6 +109,7 @@ declare
   v_membro_b uuid;
   v_usato uuid;
   v_scad timestamptz;
+  v_rows int;
 begin
   if v_uid is null then
     raise exception 'Non autenticato';
@@ -134,10 +135,19 @@ begin
     raise exception 'Questa coppia è già completa';
   end if;
 
+  -- Consuma il codice in modo ATOMICO: la condizione usato_da is null fa da gate
+  -- contro due join concorrenti con lo stesso codice (chiude la finestra TOCTOU tra
+  -- il check iniziale e il lock). Se 0 righe → un altro l'ha già usato.
+  update codici_invito set usato_da = v_uid, usato_il = now()
+    where codice = upper(p_codice) and usato_da is null;
+  get diagnostics v_rows = row_count;
+  if v_rows = 0 then
+    raise exception 'Codice non valido o scaduto';
+  end if;
+
   update couples set membro_b = v_uid where id = v_couple;
   insert into profiles (id, couple_id, display_name, avatar)
     values (v_uid, v_couple, p_nome, coalesce(nullif(p_avatar, ''), '❤️'));
-  update codici_invito set usato_da = v_uid, usato_il = now() where codice = upper(p_codice);
 
   return v_couple;
 end;
