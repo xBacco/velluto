@@ -114,8 +114,8 @@ export function renderOnboarding({ client, root, onDone }) {
     clear(root);
     const card = mk('div', 'ob-card');
     add(card, mk('div', 'ob-kick', 'Unisciti con un codice'));
-    const cod = mk('input', 'ob-fld'); cod.placeholder = 'Codice (6 caratteri)'; cod.maxLength = 6;
-    cod.autocapitalize = 'characters'; cod.style.textTransform = 'uppercase';
+    const cod = mk('input', 'ob-fld codice'); cod.placeholder = 'Codice (6 caratteri)'; cod.maxLength = 6;
+    cod.autocapitalize = 'characters';
     const f = profiloFields();
     add(card, cod, f.wrap);
     const err = mk('div', 'login-err');

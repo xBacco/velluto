@@ -54,6 +54,9 @@ begin
 end;
 $$;
 
+-- funzione interna: nessun bisogno che PUBLIC la chiami direttamente.
+revoke execute on function _genera_codice_invito() from public;
+
 -- crea_coppia: l'utente crea la propria coppia (resta solo finché il partner non si unisce)
 -- e ottiene un codice invito. Ritorna il codice.
 create or replace function crea_coppia(p_nome text, p_avatar text)
@@ -70,6 +73,9 @@ begin
   if v_uid is null then
     raise exception 'Non autenticato';
   end if;
+  -- Serializza per-utente: chiude la race tra due crea_coppia/unisci_coppia concorrenti
+  -- dello stesso utente (eviterebbe il check "già in una coppia" e lascerebbe couples orfane).
+  perform pg_advisory_xact_lock(hashtextextended(v_uid::text, 0));
   if exists (select 1 from couples where membro_a = v_uid or membro_b = v_uid)
      or exists (select 1 from profiles where id = v_uid) then
     raise exception 'Sei già in una coppia';
@@ -114,6 +120,8 @@ begin
   if v_uid is null then
     raise exception 'Non autenticato';
   end if;
+  -- stessa serializzazione per-utente di crea_coppia (vedi commento là).
+  perform pg_advisory_xact_lock(hashtextextended(v_uid::text, 0));
   if exists (select 1 from couples where membro_a = v_uid or membro_b = v_uid)
      or exists (select 1 from profiles where id = v_uid) then
     raise exception 'Sei già in una coppia';
@@ -170,7 +178,7 @@ begin
     raise exception 'Non autenticato';
   end if;
   select id, membro_b into v_couple, v_membro_b
-    from couples where membro_a = v_uid or membro_b = v_uid;
+    from couples where membro_a = v_uid or membro_b = v_uid for update;
   if v_couple is null then
     raise exception 'Non sei in una coppia';
   end if;
@@ -205,6 +213,10 @@ drop policy if exists profiles_upd on profiles;
 create policy profiles_upd on profiles for update
   using (id = auth.uid())
   with check (id = auth.uid() and is_member(couple_id));
+
+-- last_seen è introdotta da presence.sql; la creiamo qui se assente per rendere
+-- questa migrazione autosufficiente (il grant per-colonna sotto la richiede).
+alter table profiles add column if not exists last_seen timestamptz;
 
 revoke update on profiles from authenticated;
 grant update (display_name, avatar, last_seen) on profiles to authenticated;
