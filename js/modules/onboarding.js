@@ -1,7 +1,21 @@
 import { mk, add, clear, toast } from '../ui.js';
 import { createCouple, joinCouple } from '../store.js';
 
-const EMOJI = ['🐻','🧁','🦊','🦋','🐰','🐱','🐺','🦌','🌹','🍑','🔥','💋','🍒','🌙','⭐','🥃','🍫','🐝','🦢','🕯️','🍓','💎'];
+const EMOJI = [
+  '🐻','🧁','🦊','🦋','🐰','🐱','🐺','🦌','🦁','🐯','🐶','🐼','🐨','🦄','🐙','🦉',
+  '🌹','🌸','🍑','🍒','🍓','🍫','🍯','🥃','🍷','🍸','☕','🌙','⭐','✨','💫','🔥',
+  '❤️','💋','💎','🎲','🎭','🕯️','🐝','🦢',
+];
+
+// Primo grafema (emoji intera, incluse le sequenze ZWJ come 👨‍👩‍👧). Intl.Segmenter dove
+// disponibile, altrimenti fallback su spread (può spezzare le emoji composte).
+function primoGrafema(str) {
+  if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+    for (const s of new Intl.Segmenter('it', { granularity: 'grapheme' }).segment(str)) return s.segment;
+    return '';
+  }
+  return [...str][0] || '';
+}
 
 // Campo nome + selettore avatar emoji. Ritorna { wrap, getNome, getAvatar }.
 function profiloFields(avatarIniziale = '❤️') {
@@ -13,6 +27,14 @@ function profiloFields(avatarIniziale = '❤️') {
     b.onclick = () => { av.textContent = e; picker.classList.remove('show'); };
     add(picker, b);
   });
+  // Cella "emoji libera": apre la tastiera del telefono e prende l'emoji digitata.
+  const custom = mk('input', 'ob-emoji-custom'); custom.type = 'text'; custom.maxLength = 8;
+  custom.placeholder = '➕'; custom.setAttribute('aria-label', 'Emoji a tua scelta');
+  custom.oninput = () => {
+    const g = primoGrafema(custom.value.trim());
+    if (g) av.textContent = g;
+  };
+  add(picker, custom);
   av.onclick = () => picker.classList.toggle('show');
   const nome = mk('input', 'ob-fld'); nome.placeholder = 'Il tuo nome'; nome.maxLength = 40;
   add(wrap, av, picker, nome);
@@ -55,6 +77,7 @@ export function renderOnboarding({ client, root, onDone }) {
 
   // STATO scelta
   const scelta = mk('div', 'ob-card');
+  add(scelta, mk('div', 'ob-candle', '🕯️'));
   add(scelta, mk('div', 'ob-kick', 'Benvenuti'));
   add(scelta, mk('div', 'ob-title', 'brace.'));
   const bCrea = mk('button', 'btn', 'Create la vostra coppia');

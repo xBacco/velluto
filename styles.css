@@ -2031,3 +2031,65 @@ body.on-home #fab{display:none !important;}
   border-radius:999px;width:38px;height:38px;font-size:18px;color:var(--gold-soft);cursor:pointer;margin-right:8px;}
 body.on-home .home-btn{display:none;}
 .home{position:fixed;inset:0;z-index:40;overflow:hidden;}
+
+/* ============================================================
+   ONBOARDING multi-coppia (registrato senza coppia) + link login.
+   Riusa .btn/.btn.ghost e l'estetica candela·brace del gate login.
+   ============================================================ */
+#onboardingRoot{position:fixed;inset:0;z-index:42;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:30px;overflow-y:auto;
+  background:radial-gradient(120% 80% at 50% 22%,#3d0a1a,var(--bg) 66%);}
+.ob-card{width:100%;max-width:330px;display:flex;flex-direction:column;align-items:center;
+  animation:obFade .5s ease;}
+@keyframes obFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.ob-candle{font-size:42px;margin-bottom:4px;filter:drop-shadow(0 0 16px rgba(212,168,108,.5));
+  animation:flick 3s ease-in-out infinite;}
+.ob-kick{letter-spacing:.42em;text-transform:uppercase;font-size:10.5px;color:var(--gold);margin-bottom:10px;}
+.ob-title{font-family:'Playfair Display',Georgia,serif;font-size:40px;margin:0 0 26px;line-height:1;
+  background:linear-gradient(180deg,var(--cream),var(--gold-soft));
+  -webkit-background-clip:text;background-clip:text;color:transparent;}
+.ob-card .btn{width:100%;margin-top:10px;}
+/* campo nome + selettore avatar */
+.ob-fields{width:100%;display:flex;flex-direction:column;align-items:center;margin:6px 0 0;}
+.ob-avatar{width:78px;height:78px;border-radius:50%;font-size:38px;cursor:pointer;
+  background:radial-gradient(120% 120% at 50% 30%,rgba(212,168,108,.18),rgba(255,255,255,.04));
+  border:1.5px solid rgba(212,168,108,.4);display:grid;place-items:center;
+  margin-bottom:14px;transition:border-color .2s,transform .15s;}
+.ob-avatar:active{transform:scale(.95);}
+.ob-picker{display:none;grid-template-columns:repeat(6,1fr);gap:4px;width:100%;
+  background:rgba(255,255,255,.04);border:1px solid rgba(212,168,108,.25);border-radius:12px;
+  padding:8px;margin-bottom:12px;}
+.ob-picker.show{display:grid;animation:obFade .25s ease;}
+.ob-picker button{appearance:none;border:none;background:transparent;cursor:pointer;
+  font-size:22px;padding:5px 0;border-radius:8px;min-height:0;}
+.ob-picker button:active{background:rgba(212,168,108,.2);}
+.ob-emoji-custom{appearance:none;font-size:20px;text-align:center;padding:5px 0;border-radius:8px;
+  background:rgba(212,168,108,.1);border:1px dashed rgba(212,168,108,.45);color:var(--cream);
+  width:100%;min-height:0;margin:0;cursor:pointer;}
+.ob-emoji-custom::placeholder{color:var(--gold-soft);opacity:.7;}
+.ob-fld{text-align:center;}
+.ob-fld.codice{font-family:'Playfair Display',Georgia,serif;letter-spacing:.3em;font-size:22px;
+  font-weight:600;text-transform:uppercase;color:var(--gold-soft);}
+.ob-back{appearance:none;background:none;border:none;cursor:pointer;color:var(--gold);
+  opacity:.7;font-size:13px;margin-top:16px;letter-spacing:.04em;}
+.ob-back:active{opacity:1;}
+/* reveal codice */
+.ob-codice{font-family:'Playfair Display',Georgia,serif;font-size:46px;font-weight:600;
+  letter-spacing:.22em;margin:8px 0 6px;padding:10px 6px 10px 16px;width:100%;
+  color:var(--gold-soft);background:rgba(212,168,108,.08);
+  border:1px solid rgba(212,168,108,.3);border-radius:14px;
+  text-shadow:0 0 24px rgba(212,168,108,.35);}
+.ob-sub{font-size:13px;color:#c9a9b2;line-height:1.5;margin:4px 4px 18px;}
+.ob-azioni{display:flex;gap:10px;width:100%;}
+.ob-azioni .btn{flex:1;width:auto;margin-top:0;}
+.ob-entra{appearance:none;background:none;border:none;cursor:pointer;color:var(--gold);
+  font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:17px;margin-top:20px;}
+.ob-entra:active{color:var(--gold-soft);}
+
+/* link sotto il form di login (Registrati · Password dimenticata?) */
+.login-links{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;}
+.login-link{appearance:none;background:none;border:none;cursor:pointer;color:var(--gold);
+  font-family:Arial,sans-serif;font-size:13px;letter-spacing:.02em;opacity:.85;
+  border-bottom:1px solid transparent;padding:2px 0;transition:opacity .2s,border-color .2s;}
+.login-link:active{opacity:1;border-bottom-color:rgba(212,168,108,.5);}
+.login-sep{color:rgba(212,168,108,.4);font-size:12px;}
