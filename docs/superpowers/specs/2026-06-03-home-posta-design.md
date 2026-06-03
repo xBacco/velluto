@@ -2,9 +2,12 @@
 
 **Data:** 2026-06-03
 **Branch:** `feat/home-definitiva`
-**Stato:** design approvato, pronto per il piano di implementazione
-**Supera:** `2026-06-01-home-definitiva-port-design.md` (home a porta→camera→hub). La
-cerimonia varco/camera viene ritirata in favore di una home piatta con dock diretto.
+**Stato:** ⛔ ABBANDONATO (2026-06-03). Esplorazione non implementata. La home
+**definitiva resta quella a porta→camera→hub** già nel codice (`js/modules/home.js`,
+`#homeRoot` in `index.html`, `home.css`), specificata in
+`2026-06-01-home-definitiva-port-design.md`. Questo documento NON la supera: è tenuto
+solo come traccia dell'esplorazione "biglietti/posta" (mockup `mockups/home-D2-*.html`),
+scartata. Non implementare da qui senza una nuova decisione esplicita.
 
 ## Obiettivo
 
