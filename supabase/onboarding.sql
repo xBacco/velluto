@@ -197,3 +197,14 @@ begin
   return v_codice;
 end;
 $$;
+
+-- 4. Hardening profiles: couple_id immutabile dal client.
+-- with check su profiles_upd impedisce di spostarsi in un'altra coppia;
+-- i grant per-colonna impediscono di scrivere couple_id del tutto.
+drop policy if exists profiles_upd on profiles;
+create policy profiles_upd on profiles for update
+  using (id = auth.uid())
+  with check (id = auth.uid() and is_member(couple_id));
+
+revoke update on profiles from authenticated;
+grant update (display_name, avatar, last_seen) on profiles to authenticated;
