@@ -56,20 +56,24 @@ async function onSignup() {
   const password = $('password').value;
   $('loginErr').textContent = '';
   if (!email || !password) { $('loginErr').textContent = 'Inserisci email e password per registrarti.'; return; }
+  $('goSignup').disabled = true;
   try {
     await signUp(client, email, password);
     $('loginErr').textContent = 'Ti abbiamo inviato una mail di conferma: aprila per attivare l\'account, poi accedi.';
   } catch (e) { $('loginErr').textContent = e.message; }
+  finally { $('goSignup').disabled = false; }
 }
 
 async function onReset() {
   const email = $('email').value.trim();
   $('loginErr').textContent = '';
   if (!email) { $('loginErr').textContent = 'Scrivi la tua email, poi tocca "Password dimenticata?".'; return; }
+  $('goReset').disabled = true;
   try {
     await resetPasswordForEmail(client, email);
     $('loginErr').textContent = 'Se l\'email è registrata, riceverai un link per reimpostare la password.';
   } catch (e) { $('loginErr').textContent = e.message; }
+  finally { $('goReset').disabled = false; }
 }
 
 let introOpened = false;
@@ -118,6 +122,7 @@ async function enterApp() {
   if (isLockEnabled()) { await requireUnlock(); }
   if (getPudica()) document.body.classList.add('pudica');
   $('login').classList.add('gone');
+  $('onboardingRoot').style.display = 'none'; // niente onboarding sovrapposto quando si entra in app
   $('app').style.display = '';
   $('fab').style.display = '';
   refreshChip();
@@ -133,6 +138,7 @@ async function enterApp() {
 function showOnboarding() {
   $('login').style.display = 'none';
   $('login').classList.add('gone');
+  $('onboardingRoot').style.display = ''; // esplicito: non dipende dal modulo per mostrarsi
   renderOnboarding({
     client,
     root: $('onboardingRoot'),
