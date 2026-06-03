@@ -375,3 +375,31 @@ export async function wipeLuoghi(client, coupleId) {
 export async function wipeTipi(client, coupleId) {
   return check(await client.from('tipi').delete().eq('couple_id', coupleId));
 }
+
+// ---- ONBOARDING / PAIRING (RPC security definer) ----
+// La logica vera vive in Postgres; questi sono wrapper sottili che propagano gli errori.
+
+function checkRpc({ data, error }) {
+  if (error) throw new Error(error.message || 'Errore RPC');
+  return data;
+}
+
+export async function createCouple(client, { nome, avatar }) {
+  return checkRpc(await client.rpc('crea_coppia', { p_nome: nome, p_avatar: avatar }));
+}
+
+export async function joinCouple(client, { codice, nome, avatar }) {
+  return checkRpc(await client.rpc('unisci_coppia', { p_codice: codice, p_nome: nome, p_avatar: avatar }));
+}
+
+export async function regenInvite(client) {
+  return checkRpc(await client.rpc('rigenera_codice', {}));
+}
+
+// Codice invito ancora valido (usato_da null) della coppia, o null. Per il banner "attesa partner".
+export async function getInvitoAttivo(client, coupleId) {
+  const { data, error } = await client.from('codici_invito')
+    .select('*').eq('couple_id', coupleId).is('usato_da', null).maybeSingle();
+  if (error) throw new Error(error.message || 'Errore lettura codice');
+  return data || null;
+}
