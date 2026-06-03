@@ -113,3 +113,17 @@ Migrazione: `supabase/foto.sql` eseguita dall'utente; tabella `foto` + RLS attiv
 - [ ] Contenuti giochi (da Impostazioni → Personalizza): apre tab Giochi sulla Ruota e mostra l'editor proposte/buoni.
 - [ ] Svuota dati: checklist → conferma → la sezione scelta risulta vuota (Tag torna ai default).
 - [ ] Cambia password: aggiornata, login con la nuova.
+
+## Onboarding multi-coppia (smoke a due account) — 2026-06-03
+> Prerequisito: aver applicato `supabase/onboarding.sql` nel SQL Editor di Supabase.
+- [ ] Account A: "Registrati" (email+password) → mail di conferma → conferma → accedi.
+- [ ] Account A: link "Registrati"/"Password dimenticata?" visibili sotto il form di login.
+- [ ] Account A: dopo l'accesso senza profilo parte l'onboarding (non il vecchio reload).
+- [ ] Account A: "Create la vostra coppia" → nome+avatar → appare il codice di 6 caratteri.
+- [ ] Account A: nella Home il banner "$ coppia --attesa" mostra il codice + "↻ rigenera".
+- [ ] Account A: "↻ rigenera" → il codice cambia, il vecchio non funziona più.
+- [ ] Account B (altro device/browser): Registrati → conferma → accedi → "Ho un codice" → codice + nome+avatar → entra.
+- [ ] Account B vede lo storico di A; al refresh la presenza mostra entrambi; il banner attesa sparisce per entrambi.
+- [ ] Account C con un codice già usato/scaduto → errore chiaro, nessuno stato sporco.
+- [ ] Account A prova a unirsi al proprio codice → "Non puoi unirti alla tua stessa coppia".
+- [ ] Doppio tap rapido su "Registrati"/"Password dimenticata?" non invia due richieste (bottone disabilitato).

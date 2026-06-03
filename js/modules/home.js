@@ -3,9 +3,10 @@
 // eventi: 'goto' (entra in sezione) e 'gohub' (torna all'hub). Best-effort: se una
 // fonte dati fallisce si logga e quella parte si degrada, ma la stanza resta viva.
 
-import { mk, add, clear } from '../ui.js';
+import { mk, add, clear, toast } from '../ui.js';
 import {
   listGiri, listSlotMov, listBuoni, listDesideri, listEsperienze, listLuoghi, listFotoGalleria, getPartner,
+  getInvitoAttivo, regenInvite,
 } from '../store.js';
 import {
   calcolaCalore, eventiCalore, PESI_CALORE, CALORE, riepilogoSezioni,
@@ -220,6 +221,39 @@ function aggiornaPresenza(partner) {
   const dot = $('camDot'); if (dot) dot.style.background = online ? 'var(--green)' : 'var(--off)';
 }
 
+// ============ ATTESA PARTNER (coppia non ancora completa) ============
+// Banner discreto nella HUD: visibile solo finché esiste un codice invito attivo
+// (non ancora usato) → cioè finché il partner non si è unito. Best-effort: un errore
+// qui non deve rompere la home. `getInvitoAttivo` è il gate autoritativo (il codice
+// attivo sparisce al pairing), quindi è più affidabile del solo `partner`.
+async function renderAttesaPartner(client, me, partner) {
+  const wrap = $('attesaWrap'), box = $('attesaBox');
+  if (!wrap || !box) return;
+  if (partner) { wrap.style.display = 'none'; clear(box); return; } // coppia completa
+  let invito = null;
+  try { invito = await getInvitoAttivo(client, me.couple_id); }
+  catch (e) { console.error('[home] codice invito non disponibile:', e); }
+  if (!invito) { wrap.style.display = 'none'; clear(box); return; }
+
+  clear(box);
+  wrap.style.display = '';
+  const riga = mk('div', 'attesa-riga');
+  add(riga, mk('span', 'led g'), mk('span', 'attesa-txt mono', 'condividi il codice per unire il partner'));
+  const cod = mk('div', 'attesa-cod');
+  add(cod, mk('code', 'attesa-code', invito.codice));
+  const rig = mk('button', 'attesa-rig mono', '↻ rigenera');
+  rig.onclick = async () => {
+    rig.disabled = true;
+    try {
+      const nuovo = await regenInvite(client);
+      toast('Nuovo codice: ' + nuovo, 'ok');
+      await renderAttesaPartner(client, me, partner);
+    } catch (e) { toast(e.message, 'err'); rig.disabled = false; }
+  };
+  add(cod, rig);
+  add(box, riga, cod);
+}
+
 // ============ CALORE (gauge HUD + statusbar + pop-up) ============
 async function caricaItemsCalore(client, coupleId) {
   const [esperienze, desideri, buoni, foto, luoghi, giri, slot] = await Promise.all([
@@ -371,6 +405,7 @@ export async function renderHome({ client, me }) {
 
   if (partner) $('homePartnerAv').textContent = partner.avatar || '🧁';
   aggiornaPresenza(partner);
+  await renderAttesaPartner(client, me, partner);
 
   await aggiornaCalore(client, me);
 
