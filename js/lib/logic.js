@@ -860,9 +860,24 @@ export function riepilogoSezioni(liste, me, now = new Date()) {
 // Alfabeto senza simboli ambigui (esclusi 0 O 1 I L) per codici dettabili a voce.
 export const ALFABETO_CODICE = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 
-// Genera un codice invito di `len` caratteri dall'ALFABETO_CODICE. `rnd` (∈[0,1)) iniettabile.
-// L'unicità è garantita a valle (retry nella RPC); qui è solo formato.
-export function generaCodiceInvito(rnd = Math.random, len = 6) {
+// Sorgente di casualità di default: CSPRNG (Web Crypto), float in [0,1).
+// Il codice invito è un token di accesso (permette di unirsi a una coppia), quindi
+// NON deve usare Math.random. Fallback a Math.random solo se Web Crypto manca.
+// Il bias del mapping su 31 caratteri è trascurabile (2^32 mod 31 → ~9e-10).
+function rndSicuro() {
+  const g = globalThis.crypto;
+  if (g && g.getRandomValues) {
+    const buf = new Uint32Array(1);
+    g.getRandomValues(buf);
+    return buf[0] / 2 ** 32;
+  }
+  return Math.random();
+}
+
+// Genera un codice invito di `len` caratteri dall'ALFABETO_CODICE. `rnd` (∈[0,1)) iniettabile
+// SOLO per i test; in produzione usa il CSPRNG di default. L'unicità è garantita a valle
+// (retry nella RPC). NB: la generazione di produzione vera avviene server-side nella RPC.
+export function generaCodiceInvito(rnd = rndSicuro, len = 6) {
   let out = '';
   for (let i = 0; i < len; i++) out += ALFABETO_CODICE[Math.floor(rnd() * ALFABETO_CODICE.length)];
   return out;
