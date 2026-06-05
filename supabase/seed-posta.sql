@@ -2,6 +2,7 @@
 -- Eseguire nel SQL Editor Supabase DOPO aver sostituito le DUE email (non si committano).
 -- Autore eventi: account "seconda2" (lei). Destinatario buono/giri: account primario.
 -- La polaroid NON si semina qui: si carica dall'app (passa dallo Storage).
+-- ⚠️ Non idempotente: ogni esecuzione crea 5 righe nuove (duplicati se rilanciato).
 
 -- 🔥 fantasia (desideri, stato da_provare)
 with lei as (
