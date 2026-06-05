@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>brace · valida La Posta (card + quiet, dati veri)</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../home.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.107.0"
+        integrity="sha384-o+Hkm/usHFhCEWo1Ae1cLsOLiQQNrD2UfI424QDAaiZR7URnC8v35ey7s2sbGZHB"
+        crossorigin="anonymous"></script>
+<style>
+  html,body{margin:0;min-height:100%;background:#120610;font-family:'Nunito',sans-serif;}
+  .wrap{max-width:420px;margin:0 auto;padding:18px 14px 40px;}
+  .gate{display:flex;flex-direction:column;gap:10px;padding-top:60px;}
+  .gate input{background:#1f0c18;border:1px solid rgba(255,140,110,.18);border-radius:10px;padding:12px;color:#f7e7e2;font-family:inherit;font-size:15px;}
+  .gate button,.bar button{background:#ff6f3c;border:0;border-radius:10px;padding:12px;color:#120610;font-weight:800;font-family:inherit;font-size:15px;cursor:pointer;}
+  .gate .err{color:#f2738f;font-size:13px;min-height:1em;}
+  .bar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:14px;color:#c79aa6;font-size:13px;}
+  .bar button{padding:8px 12px;font-size:13px;}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="gate" class="gate">
+    <input id="email" type="email" placeholder="email" autocomplete="username">
+    <input id="password" type="password" placeholder="password" autocomplete="current-password">
+    <button id="entra">Entra</button>
+    <div id="err" class="err"></div>
+  </div>
+  <div id="vista" class="hidden">
+    <div class="bar"><span id="chi"></span><button id="toggle">◐ pieno / quieto</button></div>
+    <div id="posta" class="posta"></div>
+  </div>
+</div>
+<script type="module">
+import { client } from '../js/supabase.js';
+import { login, currentProfile } from '../js/auth.js';
+import { getPartner, getHomeVistoAt, listDesideri, listFotoGalleria, listEsperienze, listLuoghi, listBuoni, listGiri } from '../js/store.js';
+import { feedEventi, contaNuovi, feedVisibile, calcolaCalore, eventiCalore } from '../js/lib/logic.js';
+import { cardHTML, quietHTML } from '../js/modules/posta-card.js';
+
+const $ = (id) => document.getElementById(id);
+let stato = null;       // { feed, gradi, autoreLabel }
+let forzaQuieto = false;
+
+async function carica() {
+  const me = await currentProfile();
+  if (!me) return null;
+  const cid = me.couple_id;
+  const [desideri, foto, esperienze, luoghi, buoni, giri, partner, vistoAt] = await Promise.all([
+    listDesideri(client, cid), listFotoGalleria(client, cid),
+    listEsperienze(client, cid), listLuoghi(client, cid),
+    listBuoni(client, cid), listGiri(client, cid),
+    getPartner(client, cid, me.id),
+    getHomeVistoAt(client, me.id).catch(() => null),  // best-effort: mai falsi pallini
+  ]);
+  const feed = feedEventi({ desideri, foto, esperienze, luoghi, buoni, giri }, me, vistoAt);
+  // stessi item del calore della home (home.js caricaItemsCalore, senza slot)
+  const rawItems = [
+    ...esperienze.map(e => ({ tipo: 'esperienza', quando: e.data })),
+    ...desideri.map(d => ({ tipo: 'desiderio', quando: d.creato })),
+    ...buoni.map(b => ({ tipo: 'buono', quando: b.creato })),
+    ...foto.map(f => ({ tipo: 'foto', quando: f.creato })),
+    ...luoghi.map(l => ({ tipo: 'luogo', quando: l.data_evento || l.creato })),
+    ...giri.filter(m => m.motivo === 'giro').map(m => ({ tipo: 'gioco', quando: m.creato })),
+  ];
+  // eventiCalore converte { tipo, quando } → { quando, peso } richiesto da calcolaCalore
+  const gradi = calcolaCalore(eventiCalore(rawItems)).gradi;
+  const autoreLabel = partner ? `${partner.avatar || ''} ${partner.display_name || ''}`.trim() : 'partner';
+  return { feed, gradi, autoreLabel, chi: `${me.avatar || ''} ${me.display_name || ''}`.trim() };
+}
+
+function render() {
+  const ctx = { autoreLabel: stato.autoreLabel, now: new Date() };
+  const quieto = forzaQuieto || contaNuovi(stato.feed) === 0;
+  const cards = feedVisibile(stato.feed)
+    .filter(e => !quieto || e.tipo === 'buono' || e.tipo === 'giri');
+  $('posta').innerHTML =
+    (quieto ? quietHTML({ gradi: stato.gradi }) : '') +
+    cards.map(e => cardHTML(e, ctx)).join('');
+}
+
+async function avvia() {
+  stato = await carica();
+  if (!stato) return;                 // nessuna sessione → resta il gate
+  $('gate').classList.add('hidden');
+  $('vista').classList.remove('hidden');
+  $('chi').textContent = stato.chi;
+  render();
+}
+
+$('entra').onclick = async () => {
+  $('err').textContent = '';
+  try { await login($('email').value.trim(), $('password').value); await avvia(); }
+  catch (e) { $('err').textContent = e.message; }
+};
+$('toggle').onclick = () => { forzaQuieto = !forzaQuieto; render(); };
+avvia();
+</script>
+</body>
+</html>
