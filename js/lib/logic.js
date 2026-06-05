@@ -888,7 +888,7 @@ export function feedEventi(liste, me, vistoAt, now = new Date()) {
   for (const f of foto) {
     if (f.autore_id === meId) continue;
     eventi.push(base(f, { tipo: 'polaroid', emoji: '🖼️', sezioneKey: 'galleria',
-      kicker: 'una polaroid', titolo: f.didascalia || '' }));
+      kicker: 'una polaroid', ...(f.didascalia ? { hand: f.didascalia } : {}) }));
   }
   for (const e of esperienze) {
     if (e.autore_id === meId) continue;

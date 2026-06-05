@@ -32,7 +32,7 @@ test('le mie fantasie e quelle non da_provare non entrano', () => {
   assert.equal(feedEventi(liste, ME, null, NOW).length, 0);
 });
 
-test('polaroid: foto della partner entra (galleria), le mie no', () => {
+test('polaroid: foto della partner entra (galleria), le mie no; didascalia in hand', () => {
   const liste = { foto: [
     { id: 'f1', autore_id: 'lei', didascalia: 'ieri sera', creato: oreFa(3) },
     { id: 'f2', autore_id: 'me', didascalia: 'mia', creato: oreFa(1) },
@@ -42,8 +42,16 @@ test('polaroid: foto della partner entra (galleria), le mie no', () => {
   assert.equal(feed[0].tipo, 'polaroid');
   assert.equal(feed[0].emoji, '🖼️');
   assert.equal(feed[0].sezioneKey, 'galleria');
-  assert.equal(feed[0].titolo, 'ieri sera');
+  assert.equal(feed[0].hand, 'ieri sera');   // voce di lei → hand, non titolo
+  assert.equal(feed[0].titolo, '');
   assert.equal(feed[0].refId, 'f1');
+});
+
+test('polaroid senza didascalia → niente hand né titolo (nessuna riga morta)', () => {
+  const liste = { foto: [{ id: 'f1', autore_id: 'lei', creato: oreFa(3) }] };
+  const feed = feedEventi(liste, ME, null, NOW);
+  assert.equal(feed[0].hand, undefined);
+  assert.equal(feed[0].titolo, '');
 });
 
 test('esperienza della partner entra (calendario), la mia no', () => {
