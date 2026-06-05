@@ -598,7 +598,7 @@ Nota sicurezza: supabase-js dal CDN è **pinnato a 2.107.0 con SRI** (`integrity
 import { client } from '../js/supabase.js';
 import { login, currentProfile } from '../js/auth.js';
 import { getPartner, getHomeVistoAt, listDesideri, listFotoGalleria, listEsperienze, listLuoghi, listBuoni, listGiri } from '../js/store.js';
-import { feedEventi, contaNuovi, feedVisibile, calcolaCalore } from '../js/lib/logic.js';
+import { feedEventi, contaNuovi, feedVisibile, calcolaCalore, eventiCalore } from '../js/lib/logic.js';
 import { cardHTML, quietHTML } from '../js/modules/posta-card.js';
 
 const $ = (id) => document.getElementById(id);
@@ -626,7 +626,7 @@ async function carica() {
     ...luoghi.map(l => ({ tipo: 'luogo', quando: l.data_evento || l.creato })),
     ...giri.filter(m => m.motivo === 'giro').map(m => ({ tipo: 'gioco', quando: m.creato })),
   ];
-  const gradi = calcolaCalore(items).gradi;
+  const gradi = calcolaCalore(eventiCalore(items)).gradi;  // eventiCalore: {tipo,quando}→{quando,peso} (fix 2026-06-05: senza, gradi=NaN)
   const autoreLabel = partner ? `${partner.avatar || ''} ${partner.display_name || ''}`.trim() : 'partner';
   return { feed, gradi, autoreLabel, chi: `${me.avatar || ''} ${me.display_name || ''}`.trim() };
 }
@@ -710,15 +710,15 @@ with lei as (
   where u.email = 'EMAIL_SECONDA2_QUI'
 )
 insert into esperienze (couple_id, autore_id, titolo, data, voto)
-select couple_id, id, 'TITOLO_ESPERIENZA_QUI', now(), 0 from lei;
+select couple_id, id, 'TITOLO_ESPERIENZA_QUI', current_date, 0 from lei;
 
 -- 🗺️ luogo (con descrizione → riga in Caveat sulla card)
 with lei as (
   select p.id, p.couple_id from profiles p join auth.users u on u.id = p.id
   where u.email = 'EMAIL_SECONDA2_QUI'
 )
-insert into luoghi (couple_id, autore_id, nome, lat, lng, intimo, voto, descrizione)
-select couple_id, id, 'NOME_LUOGO_QUI', 45.605, 10.640, false, 0, 'DESCRIZIONE_LUOGO_QUI' from lei;
+insert into luoghi (couple_id, autore_id, nome, lat, lng, data_evento, intimo, voto, descrizione)
+select couple_id, id, 'NOME_LUOGO_QUI', 45.605, 10.640, current_date, false, 0, 'DESCRIZIONE_LUOGO_QUI' from lei;
 
 -- 🎟️ buono regalo attivo che scade tra 2 giorni (pill + meta)
 with lei as (
