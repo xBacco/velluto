@@ -428,3 +428,34 @@
   transition:color .2s,border-color .2s;}
 #homeRoot .attesa-rig:hover{color:var(--gold);border-color:var(--gold);}
 #homeRoot .attesa-rig:disabled{opacity:.5;cursor:default;}
+
+/* ============================================================
+   LA POSTA — card del feed + stato quieto (spec 2026-06-05)
+   Scoped sotto .posta; token propri (non dipende da #homeRoot).
+   Riusato da mockups/valida-posta.html e dal port della home.
+   ============================================================ */
+.posta{--card:#1f0c18;--burgundy:#300d1c;--ink:#f7e7e2;--ink-soft:#c79aa6;--ink-dim:#8a5d6a;
+  --ember:#ff6f3c;--gold:#ffb454;--rose:#f2738f;--ivory:#f0e4d8;--line:rgba(255,140,110,.18);
+  --display:'Fraunces',serif;--ui:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace;--corsiva:'Caveat',cursive;
+  font-family:var(--ui);color:var(--ink);display:flex;flex-direction:column;gap:8px;}
+.posta .fc{position:relative;border-radius:13px;padding:11px 13px;background:linear-gradient(165deg,var(--burgundy),var(--card));border:1px solid var(--line);display:flex;align-items:center;gap:11px;}
+.posta .fc.nuova::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:13px 0 0 13px;background:var(--accent,var(--ember));box-shadow:0 0 10px var(--accent,var(--ember));}
+.posta .fc .dot{font-size:12px;color:var(--accent,var(--ember));flex:0 0 auto;}
+.posta .lead{font-size:21px;flex:0 0 auto;}
+.posta .bx{flex:1;min-width:0;}
+.posta .kick{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent,var(--gold));}
+.posta .ttl{font-family:var(--display);font-weight:600;font-size:15px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.posta .hand{font-family:var(--corsiva);font-weight:600;font-size:19px;color:var(--ivory);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.posta .meta{font-family:var(--mono);font-size:10px;color:var(--ink-dim);margin-top:2px;}
+.posta .meta .who{color:var(--rose);}
+.posta .pill{display:inline-flex;gap:4px;margin-top:4px;font-family:var(--mono);font-size:10px;font-weight:700;color:#120610;background:var(--accent,var(--gold));border-radius:999px;padding:2px 8px;}
+
+/* stato quieto */
+.posta .quiet{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:28px 24px 16px;}
+.posta .quiet .emb{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:radial-gradient(circle at 40% 35%,rgba(255,140,60,.3),rgba(48,13,28,.9));border:1px solid var(--line);box-shadow:0 0 30px rgba(255,111,60,.25);animation:posta-breathe 5s ease-in-out infinite;}
+@keyframes posta-breathe{0%,100%{transform:scale(1);opacity:.85;}50%{transform:scale(1.06);opacity:1;}}
+.posta .quiet h3{font-family:var(--display);font-weight:600;font-size:20px;margin:0;}
+.posta .quiet p{font-family:var(--ui);font-size:13px;color:var(--ink-soft);line-height:1.65;max-width:240px;margin:0;}
+.posta .quiet p b{font-family:var(--mono);color:var(--gold);font-weight:700;}
+@media (prefers-reduced-motion:reduce){.posta .quiet .emb{animation:none;}}
+
