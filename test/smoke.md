@@ -118,14 +118,18 @@ Migrazione: `supabase/foto.sql` eseguita dall'utente; tabella `foto` + RLS attiv
 > Prerequisito: aver applicato `supabase/onboarding.sql` nel SQL Editor di Supabase.
 > ✔ Applicata e verificata il 2026-06-05: policy ok (codici_sel, profiles_sel/upd, niente
 > profiles_ins), grant UPDATE solo su display_name/avatar/last_seen, niente INSERT, 4 RPC presenti.
-- [ ] Account A: "Registrati" (email+password) → mail di conferma → conferma → accedi.
-- [ ] Account A: link "Registrati"/"Password dimenticata?" visibili sotto il form di login.
-- [ ] Account A: dopo l'accesso senza profilo parte l'onboarding (non il vecchio reload).
-- [ ] Account A: "Create la vostra coppia" → nome+avatar → appare il codice di 6 caratteri.
-- [ ] Account A: nella Home il banner "$ coppia --attesa" mostra il codice + "↻ rigenera".
-- [ ] Account A: "↻ rigenera" → il codice cambia, il vecchio non funziona più.
-- [ ] Account B (altro device/browser): Registrati → conferma → accedi → "Ho un codice" → codice + nome+avatar → entra.
-- [ ] Account B vede lo storico di A; al refresh la presenza mostra entrambi; il banner attesa sparisce per entrambi.
-- [ ] Account C con un codice già usato/scaduto → errore chiaro, nessuno stato sporco.
-- [ ] Account A prova a unirsi al proprio codice → "Non puoi unirti alla tua stessa coppia".
-- [ ] Doppio tap rapido su "Registrati"/"Password dimenticata?" non invia due richieste (bottone disabilitato).
+- [x] Account A: "Registrati" (email+password) → mail di conferma → conferma → accedi.
+- [x] Account A: link "Registrati"/"Password dimenticata?" visibili sotto il form di login.
+- [x] Account A: dopo l'accesso senza profilo parte l'onboarding (non il vecchio reload).
+- [x] Account A: "Create la vostra coppia" → nome+avatar → appare il codice di 6 caratteri.
+- [x] Account A: nella Home il banner "$ coppia --attesa" mostra il codice + "↻ rigenera".
+- [x] Account A: "↻ rigenera" → il codice cambia, il vecchio non funziona più.
+- [x] Account B (altro device/browser): Registrati → conferma → accedi → "Ho un codice" → codice + nome+avatar → entra.
+- [x] Account B vede lo storico di A; al refresh la presenza mostra entrambi; il banner attesa sparisce per entrambi.
+- [x] Account C con un codice già usato/scaduto → errore chiaro, nessuno stato sporco.
+- [x] Account A prova a unirsi al proprio codice → rifiutato lato server (il guard "Sei già in una coppia" interviene prima del check dedicato; protezione equivalente).
+- [x] Doppio tap rapido su "Registrati"/"Password dimenticata?" non invia due richieste (bottone disabilitato).
+
+> ✔ Smoke completato il 2026-06-05 in locale (http-server :8080, branch onboarding-multicoppia,
+> 3 account reali). Bug trovato e fixato durante lo smoke: search_path della RPC senza schema
+> `extensions` → `gen_random_bytes does not exist` su Supabase (fix in onboarding.sql, ri-applicato).
