@@ -22,3 +22,27 @@ export function tempoRelativo(iso, now) {
   if (t.toDateString() === ieri.toDateString()) return 'ieri';
   return `${Math.floor(diff / 86400e3)} gg fa`;
 }
+
+// Accent per tipo (direzione congelata: ember=novità/azione, oro=buoni, rosa=giochi).
+const ACCENT = {
+  fantasia: 'var(--ember)', polaroid: 'var(--ember)', esperienza: 'var(--ember)',
+  luogo: 'var(--ember)', buono: 'var(--gold)', giri: 'var(--rose)',
+};
+
+// Card "biglietto" (riga unica). Consuma l'Evento di feedEventi così com'è.
+// ctx = { autoreLabel: '🧁 lei', now: Date }. Tipo ignoto → '' (il feed non si rompe).
+export function cardHTML(evento, ctx) {
+  if (!evento || !ACCENT[evento.tipo]) return '';
+  const { autoreLabel = '', now = new Date() } = ctx || {};
+  const righe = [`<div class="kick">${esc(evento.kicker)}</div>`];
+  if (evento.titolo) righe.push(`<div class="ttl">${esc(evento.titolo)}</div>`);
+  if (evento.hand) righe.push(`<div class="hand">"${esc(evento.hand)}"</div>`);
+  if (evento.pill) righe.push(`<div class="pill">${esc(evento.pill)}</div>`);
+  if (evento.daLei && evento.quandoISO) {
+    righe.push(`<div class="meta"><span class="who">${esc(autoreLabel)}</span> · ${esc(tempoRelativo(evento.quandoISO, now))}</div>`);
+  }
+  const dot = evento.nuovo ? '<span class="dot">●</span>' : '';
+  return `<article class="fc${evento.nuovo ? ' nuova' : ''}" style="--accent:${ACCENT[evento.tipo]}"` +
+    ` data-tipo="${esc(evento.tipo)}" data-sezione="${esc(evento.sezioneKey)}">` +
+    `<span class="lead">${esc(evento.emoji)}</span><div class="bx">${righe.join('')}</div>${dot}</article>`;
+}
