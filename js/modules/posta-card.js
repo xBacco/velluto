@@ -10,8 +10,10 @@ export function esc(s) {
 }
 
 // Tempo relativo per la meta (valori in mono): ora / Xm / Xh / ieri / X gg fa.
+// (formato distinto da presence.tempoRelativo, voluto dalla spec; iso assente/invalido → '')
 export function tempoRelativo(iso, now) {
   const t = new Date(iso);
+  if (!iso || Number.isNaN(t.getTime())) return '';
   const diff = now.getTime() - t.getTime();
   if (diff < 60e3) return 'ora';
   if (diff < 3600e3) return `${Math.floor(diff / 60e3)}m`;

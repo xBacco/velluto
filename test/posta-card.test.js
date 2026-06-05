@@ -39,3 +39,17 @@ test('tempoRelativo: ieri (giorno di calendario, oltre 24h) → "ieri"', () => {
 test('tempoRelativo: giorni → "X gg fa"', () => {
   assert.equal(tempoRelativo(giorniFa(3), NOW), '3 gg fa');
 });
+
+test('tempoRelativo: iso nullo o invalido → stringa vuota', () => {
+  assert.equal(tempoRelativo(null, NOW), '');
+  assert.equal(tempoRelativo(undefined, NOW), '');
+  assert.equal(tempoRelativo('non-una-data', NOW), '');
+});
+
+test('tempoRelativo: 24h esatte → "ieri" (confine del bucket ore)', () => {
+  assert.equal(tempoRelativo(oreFa(24), NOW), 'ieri');
+});
+
+test('esc: & si escapa per primo (niente doppio escape)', () => {
+  assert.equal(esc('<&'), '&lt;&amp;');
+});
