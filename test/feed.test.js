@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { feedEventi, contaNuovi } from '../js/lib/logic.js';
+import { feedEventi, contaNuovi, feedVisibile } from '../js/lib/logic.js';
 
 const NOW = new Date('2026-06-01T12:00:00Z');
 const giorniFa = (n) => new Date(NOW.getTime() - n * 864e5).toISOString();
@@ -205,4 +205,29 @@ test('contaNuovi conta solo nuovo && daLei (la card giri non concorre)', () => {
 
 test('contaNuovi su feed vuoto → 0', () => {
   assert.equal(contaNuovi([]), 0);
+});
+
+// ---- feedVisibile: la posta letta si ritira nelle sezioni ----
+
+test('feedVisibile: nuove restano, lette spariscono, buono e giri restano sempre', () => {
+  const vistoAt = giorniFa(2);
+  const liste = {
+    desideri: [
+      { id: 'd-nuova', autore_id: 'lei', stato: 'da_provare', testo: 'a', creato: oreFa(1) },
+      { id: 'd-letta', autore_id: 'lei', stato: 'da_provare', testo: 'b', creato: giorniFa(5) },
+    ],
+    buoni: [{ id: 'b-letto', tipo: 'regalo', stato: 'attivo', da_id: 'lei', a_id: 'me', titolo: 'B', creato: giorniFa(10) }],
+    giri: [{ user_id: 'me', delta: 2 }],
+  };
+  const feed = feedEventi(liste, ME, vistoAt, NOW);
+  const visibili = feedVisibile(feed).map(e => e.refId ?? e.tipo);
+  assert.ok(visibili.includes('d-nuova'));
+  assert.ok(!visibili.includes('d-letta'));
+  assert.ok(visibili.includes('b-letto'));   // azionabile: resta anche se letto
+  assert.ok(visibili.includes('giri'));      // azionabile: resta sempre
+});
+
+test('feedVisibile su feed vuoto/null → []', () => {
+  assert.deepEqual(feedVisibile([]), []);
+  assert.deepEqual(feedVisibile(null), []);
 });

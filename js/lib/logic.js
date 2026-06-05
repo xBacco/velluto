@@ -929,6 +929,12 @@ export function contaNuovi(feed) {
   return feed.filter(e => e.nuovo && e.daLei).length;
 }
 
+// La posta letta si ritira nelle sezioni (spec 2026-06-05): la home mostra solo
+// nuovo + azionabile. Buono attivo e giri restano finché non si esauriscono.
+export function feedVisibile(feed) {
+  return (feed || []).filter(e => e.nuovo || e.tipo === 'buono' || e.tipo === 'giri');
+}
+
 // ---- ONBOARDING / CODICE INVITO (puro) ----
 // Alfabeto senza simboli ambigui (esclusi 0 O 1 I L) per codici dettabili a voce.
 export const ALFABETO_CODICE = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
