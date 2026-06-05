@@ -36,7 +36,7 @@ export function cardHTML(evento, ctx) {
   const { autoreLabel = '', now = new Date() } = ctx || {};
   const righe = [`<div class="kick">${esc(evento.kicker)}</div>`];
   if (evento.titolo) righe.push(`<div class="ttl">${esc(evento.titolo)}</div>`);
-  if (evento.hand) righe.push(`<div class="hand">"${esc(evento.hand)}"</div>`);
+  if (evento.hand) righe.push(`<div class="hand">“${esc(evento.hand)}”</div>`);
   if (evento.pill) righe.push(`<div class="pill">${esc(evento.pill)}</div>`);
   if (evento.daLei && evento.quandoISO) {
     righe.push(`<div class="meta"><span class="who">${esc(autoreLabel)}</span> · ${esc(tempoRelativo(evento.quandoISO, now))}</div>`);

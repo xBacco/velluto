@@ -69,7 +69,7 @@ test('cardHTML fantasia nuova: classe nuova, pallino, accent ember, hand tra vir
   assert.ok(out.includes('--accent:var(--ember)'));
   assert.ok(out.includes('data-sezione="desideri"'));
   assert.ok(out.includes('una fantasia nuova'));
-  assert.ok(out.includes('"stasera scegli tu"'));        // virgolette tipografiche
+  assert.ok(out.includes('“stasera scegli tu”'));        // virgolette tipografiche
   assert.ok(out.includes('🧁 lei'));
   assert.ok(out.includes('2h'));
   assert.ok(!out.includes('class="ttl"'));               // titolo vuoto → nessuna riga
@@ -130,7 +130,7 @@ test('cardHTML luogo: titolo + descrizione in hand', () => {
     kicker: 'ha segnato un posto', titolo: 'B&B sul lago', hand: 'weekend lungo',
     autoreId: 'lei', daLei: true, quandoISO: oreFa(4), nuovo: true, refId: 'l1' }, CTX);
   assert.ok(out.includes('B&amp;B sul lago'));            // titolo escapato
-  assert.ok(out.includes('"weekend lungo"'));
+  assert.ok(out.includes('“weekend lungo”'));
 });
 
 test('cardHTML: XSS nel testo esce escapato', () => {
