@@ -116,6 +116,8 @@ Migrazione: `supabase/foto.sql` eseguita dall'utente; tabella `foto` + RLS attiv
 
 ## Onboarding multi-coppia (smoke a due account) — 2026-06-03
 > Prerequisito: aver applicato `supabase/onboarding.sql` nel SQL Editor di Supabase.
+> ✔ Applicata e verificata il 2026-06-05: policy ok (codici_sel, profiles_sel/upd, niente
+> profiles_ins), grant UPDATE solo su display_name/avatar/last_seen, niente INSERT, 4 RPC presenti.
 - [ ] Account A: "Registrati" (email+password) → mail di conferma → conferma → accedi.
 - [ ] Account A: link "Registrati"/"Password dimenticata?" visibili sotto il form di login.
 - [ ] Account A: dopo l'accesso senza profilo parte l'onboarding (non il vecchio reload).
