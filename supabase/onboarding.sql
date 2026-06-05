@@ -220,3 +220,10 @@ alter table profiles add column if not exists last_seen timestamptz;
 
 revoke update on profiles from authenticated;
 grant update (display_name, avatar, last_seen) on profiles to authenticated;
+
+-- 5. Chiusura INSERT diretto su profiles: i profili nascono SOLO dentro le RPC
+-- security definer (crea_coppia/unisci_coppia), che bypassano grant e RLS.
+-- Nessun flusso client fa insert diretto (verificato: zero .from('profiles').insert in js/).
+-- Doppia cintura: via la policy E via il grant.
+drop policy if exists profiles_ins on profiles;
+revoke insert on profiles from authenticated;
