@@ -29,6 +29,17 @@ const ACCENT = {
   luogo: 'var(--ember)', buono: 'var(--gold)', giri: 'var(--rose)',
 };
 
+// Blocco quiet "brace + cose vive": il chiamante renderizza sotto le card azionabili.
+// Copy umano (Nunito), SOLO i gradi in mono via <b> (stile .posta .quiet p b).
+export function quietHTML({ gradi } = {}) {
+  const frase = Number.isFinite(gradi)
+    ? `La brace tiene <b>${Math.round(gradi)}°</b>. Nessuna nuova traccia — ma il fondo non si spegne.`
+    : 'Nessuna nuova traccia — ma il fondo non si spegne.';
+  return '<div class="quiet"><div class="emb">🔥</div>' +
+    '<h3>Tutto tranquillo, per ora.</h3>' +
+    `<p>${frase}</p></div>`;
+}
+
 // Card "biglietto" (riga unica). Consuma l'Evento di feedEventi così com'è.
 // ctx = { autoreLabel: '🧁 lei', now: Date }. Tipo ignoto → '' (il feed non si rompe).
 export function cardHTML(evento, ctx) {

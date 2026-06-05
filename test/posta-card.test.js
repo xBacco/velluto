@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { esc, tempoRelativo, cardHTML } from '../js/modules/posta-card.js';
+import { esc, tempoRelativo, cardHTML, quietHTML } from '../js/modules/posta-card.js';
 
 const NOW = new Date('2026-06-05T12:00:00Z');
 const oreFa = (n) => new Date(NOW.getTime() - n * 3600e3).toISOString();
@@ -142,4 +142,25 @@ test('cardHTML: XSS nel testo esce escapato', () => {
 test('cardHTML: tipo ignoto o evento nullo → stringa vuota', () => {
   assert.equal(cardHTML({ ...fantasiaNuova, tipo: 'boh' }, CTX), '');
   assert.equal(cardHTML(null, CTX), '');
+});
+
+// ---- quietHTML ----
+
+test('quietHTML con gradi: titolo neutro, gradi arrotondati in <b>', () => {
+  const out = quietHTML({ gradi: 71.6 });
+  assert.ok(out.includes('Tutto tranquillo, per ora.'));
+  assert.ok(out.includes('<b>72°</b>'));
+  assert.ok(out.includes('il fondo non si spegne'));
+  assert.ok(out.includes('class="emb"'));
+});
+
+test('quietHTML senza gradi: frase ridotta, nessun grado', () => {
+  const out = quietHTML({});
+  assert.ok(out.includes('Tutto tranquillo, per ora.'));
+  assert.ok(!out.includes('°'));
+  assert.ok(out.includes('Nessuna nuova traccia'));
+});
+
+test('quietHTML senza argomento → come senza gradi', () => {
+  assert.ok(quietHTML().includes('Tutto tranquillo, per ora.'));
 });
