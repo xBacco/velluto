@@ -856,6 +856,79 @@ export function riepilogoSezioni(liste, me, now = new Date()) {
   return SEZIONI_KEYS.map(k => byKey[k]);
 }
 
+// ---- FEED EVENTI (home "La Posta") — puro ----
+// Fonde le sorgenti in card-evento per il feed della home (spec 2026-06-03-home-fusione-posta).
+// Evento = { tipo, emoji, sezioneKey, kicker, titolo, hand?, pill?, autoreId, daLei, quandoISO, nuovo, refId }
+// `vistoAt` (ISO|null) = profiles.home_visto_at: null ⇒ tutto nuovo (primo accesso).
+// La card "giri" è un contatore persistente (daLei=false, mai nuova): non concorre a
+// contaNuovi e resta visibile anche nello stato quieto. Il calore non c'entra qui.
+
+function etichettaScadenza(giorni) {
+  if (giorni <= 0) return 'scade oggi';
+  if (giorni === 1) return 'scade domani';
+  return `scade in ${giorni} giorni`;
+}
+
+export function feedEventi(liste, me, vistoAt, now = new Date()) {
+  if (!me || !me.id) return [];
+  const { desideri = [], esperienze = [], luoghi = [], buoni = [], foto = [], giri = [] } = liste || {};
+  const meId = me.id;
+  const vistoMs = vistoAt ? msDi(vistoAt) : null;
+  const eNuovo = (iso) => vistoMs === null ? true : msDi(iso) > vistoMs;
+  // Campi comuni alle card "da lei"; `extra` (spread per ultimo) può sovrascrivere.
+  const base = (r, extra) => ({ titolo: '', autoreId: r.autore_id, daLei: true,
+    quandoISO: r.creato, nuovo: eNuovo(r.creato), refId: r.id, ...extra });
+
+  const eventi = [];
+  for (const d of desideri) {
+    if (d.autore_id === meId || d.stato !== 'da_provare') continue;
+    eventi.push(base(d, { tipo: 'fantasia', emoji: '🔥', sezioneKey: 'desideri',
+      kicker: 'una fantasia nuova', hand: d.testo }));
+  }
+  for (const f of foto) {
+    if (f.autore_id === meId) continue;
+    eventi.push(base(f, { tipo: 'polaroid', emoji: '🖼️', sezioneKey: 'galleria',
+      kicker: 'una polaroid', titolo: f.didascalia || '' }));
+  }
+  for (const e of esperienze) {
+    if (e.autore_id === meId) continue;
+    eventi.push(base(e, { tipo: 'esperienza', emoji: '📅', sezioneKey: 'calendario',
+      kicker: 'una nuova esperienza', titolo: e.titolo || '' }));
+  }
+  for (const l of luoghi) {
+    if (l.autore_id === meId) continue;
+    eventi.push(base(l, { tipo: 'luogo', emoji: '🗺️', sezioneKey: 'mappa',
+      kicker: 'ha segnato un posto', titolo: l.nome || '',
+      ...(l.descrizione ? { hand: l.descrizione } : {}) }));
+  }
+  for (const b of buoniRicevuti(buoni, meId)) {
+    if (b.stato !== 'attivo') continue;
+    const giorni = b.scadenza_iso ? Math.ceil((msDi(b.scadenza_iso) - now.getTime()) / 864e5) : null;
+    const inScadenza = giorni !== null && giorni < 3; // stessa soglia di riepilogoSezioni
+    eventi.push(base(b, { tipo: 'buono', emoji: '🎟️', sezioneKey: 'buoni',
+      kicker: inScadenza ? 'un buono sta per scadere' : 'un buono per te',
+      titolo: b.titolo || '', autoreId: b.da_id,
+      ...(giorni !== null ? { pill: `⏳ ${etichettaScadenza(giorni)} · riscuoti` } : {}) }));
+  }
+
+  const saldo = saldoGiri(giri, meId);
+  if (saldo > 0) {
+    eventi.push({ tipo: 'giri', emoji: '🎲', sezioneKey: 'giochi', kicker: 'la brace di stasera',
+      titolo: saldo === 1 ? 'Hai 1 giro da spendere' : `Hai ${saldo} giri da spendere`,
+      pill: 'gira la ruota →', autoreId: null, daLei: false, quandoISO: null, nuovo: false, refId: null });
+  }
+
+  // Nuovi prima, poi più recenti prima; quandoISO null (card giri) in fondo.
+  const ms = (iso) => iso ? msDi(iso) : -Infinity;
+  eventi.sort((a, b) => (b.nuovo - a.nuovo) || (ms(b.quandoISO) - ms(a.quandoISO)));
+  return eventi;
+}
+
+// Quante card non ancora viste ha lasciato il partner (la card giri non concorre).
+export function contaNuovi(feed) {
+  return feed.filter(e => e.nuovo && e.daLei).length;
+}
+
 // ---- ONBOARDING / CODICE INVITO (puro) ----
 // Alfabeto senza simboli ambigui (esclusi 0 O 1 I L) per codici dettabili a voce.
 export const ALFABETO_CODICE = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';

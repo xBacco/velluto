@@ -216,12 +216,14 @@ create policy profiles_upd on profiles for update
   using (id = auth.uid())
   with check (id = auth.uid() and is_member(couple_id));
 
--- last_seen è introdotta da presence.sql; la creiamo qui se assente per rendere
--- questa migrazione autosufficiente (il grant per-colonna sotto la richiede).
+-- last_seen è introdotta da presence.sql, home_visto_at da home.sql; le creiamo qui
+-- se assenti per rendere questa migrazione autosufficiente (il grant per-colonna
+-- sotto le richiede, e il revoke spazzerebbe i grant concessi da quelle migrazioni).
 alter table profiles add column if not exists last_seen timestamptz;
+alter table profiles add column if not exists home_visto_at timestamptz;
 
 revoke update on profiles from authenticated;
-grant update (display_name, avatar, last_seen) on profiles to authenticated;
+grant update (display_name, avatar, last_seen, home_visto_at) on profiles to authenticated;
 
 -- 5. Chiusura INSERT diretto su profiles: i profili nascono SOLO dentro le RPC
 -- security definer (crea_coppia/unisci_coppia), che bypassano grant e RLS.

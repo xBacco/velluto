@@ -318,6 +318,19 @@ export async function updateLastSeen(client, id, nowISO) {
   return check(res);
 }
 
+// Ultimo "visto" della home (feed La Posta): profiles.home_visto_at.
+// La degradazione in caso di errore (tutto "non nuovo" / log) è del chiamante (home.js).
+export async function getHomeVistoAt(client, meId) {
+  const res = await client.from('profiles').select('home_visto_at').eq('id', meId);
+  const rows = check(res) || [];
+  return rows[0]?.home_visto_at ?? null;
+}
+
+export async function setHomeVistoAt(client, meId, iso) {
+  const res = await client.from('profiles').update({ home_visto_at: iso }).eq('id', meId);
+  return check(res);
+}
+
 // ---- LUOGHI (Mappa) ----
 export async function listLuoghi(client, coupleId) {
   const res = await client.from('luoghi').select('*')

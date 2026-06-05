@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { listDesideri, addDesiderio, markRealizzato, deleteDesiderio, listStripPartite, addStripPartita, getPartner, updateLastSeen } from '../js/store.js';
+import { listDesideri, addDesiderio, markRealizzato, deleteDesiderio, listStripPartite, addStripPartita, getPartner, updateLastSeen, getHomeVistoAt, setHomeVistoAt } from '../js/store.js';
 
 // --- fake client supabase ---
 function fakeClient(initialRows = []) {
@@ -123,4 +123,34 @@ test('updateLastSeen scrive last_seen sul profilo per id', async () => {
   assert.equal(upd.table, 'profiles');
   assert.equal(upd.filters.id, 'u1');
   assert.equal(upd.payload.last_seen, '2026-06-01T12:00:00.000Z');
+});
+
+test('getHomeVistoAt legge home_visto_at del profilo per id', async () => {
+  const c = fakeClient([{ id: 'me', home_visto_at: '2026-06-01T08:00:00.000Z' }]);
+  const v = await getHomeVistoAt(c, 'me');
+  assert.equal(v, '2026-06-01T08:00:00.000Z');
+  assert.equal(c._calls[0].table, 'profiles');
+  assert.equal(c._calls[0].filters.id, 'me');
+});
+
+test('getHomeVistoAt → null se mai visto o profilo assente', async () => {
+  const maiVisto = fakeClient([{ id: 'me', home_visto_at: null }]);
+  assert.equal(await getHomeVistoAt(maiVisto, 'me'), null);
+  const assente = fakeClient([]);
+  assert.equal(await getHomeVistoAt(assente, 'me'), null);
+});
+
+test('getHomeVistoAt propaga errore (nessun fallimento silenzioso)', async () => {
+  const bad = { from: () => ({ select() { return this; }, eq() { return this; },
+    then(r){ r({ data: null, error: { message: 'boom' } }); } }) };
+  await assert.rejects(() => getHomeVistoAt(bad, 'me'), /boom/);
+});
+
+test('setHomeVistoAt scrive home_visto_at sul profilo per id', async () => {
+  const c = fakeClient();
+  await setHomeVistoAt(c, 'me', '2026-06-01T12:00:00.000Z');
+  const upd = c._calls.find(x => x.op === 'update');
+  assert.equal(upd.table, 'profiles');
+  assert.equal(upd.filters.id, 'me');
+  assert.equal(upd.payload.home_visto_at, '2026-06-01T12:00:00.000Z');
 });
