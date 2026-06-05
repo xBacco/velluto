@@ -133,3 +133,9 @@ Migrazione: `supabase/foto.sql` eseguita dall'utente; tabella `foto` + RLS attiv
 > ✔ Smoke completato il 2026-06-05 in locale (http-server :8080, branch onboarding-multicoppia,
 > 3 account reali). Bug trovato e fixato durante lo smoke: search_path della RPC senza schema
 > `extensions` → `gen_random_bytes does not exist` su Supabase (fix in onboarding.sql, ri-applicato).
+
+## Home "La Posta" — migrazione home_visto_at — 2026-06-05
+
+> ✔ `supabase/home.sql` applicata nel SQL Editor il 2026-06-05 (colonna `profiles.home_visto_at`
+> + grant per-colonna). Colonna verificata via REST con anon key (select → 200, prima 42703).
+> Il grant UPDATE si smoke-testa su device al passo 7 (cablaggio: setHomeVistoAt all'uscita dalla home).
