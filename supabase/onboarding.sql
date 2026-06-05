@@ -34,10 +34,12 @@ create extension if not exists pgcrypto;
 
 -- Genera 6 caratteri dall'alfabeto senza ambigui usando un CSPRNG, con rejection
 -- sampling per evitare bias: 256 mod 31 = 8, quindi si scartano i byte >= 248 (= 8*31).
+-- search_path include 'extensions': su Supabase pgcrypto vive lì, e il search_path
+-- blindato a solo public la escluderebbe (gen_random_bytes does not exist a runtime).
 create or replace function _genera_codice_invito()
 returns text
 language plpgsql
-set search_path = public, pg_temp
+set search_path = public, extensions, pg_temp
 as $$
 declare
   v_alfabeto text := '23456789ABCDEFGHJKMNPQRSTUVWXYZ';  -- 31 caratteri
