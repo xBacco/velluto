@@ -1,58 +1,37 @@
--- seed-posta.sql — eventi di prova per mockups/valida-posta.html (passo 4, spec 2026-06-05)
--- Eseguire nel SQL Editor Supabase DOPO aver sostituito le DUE email (non si committano).
--- Autore eventi: account "seconda2" (lei). Destinatario buono/giri: account primario.
--- La polaroid NON si semina qui: si carica dall'app (passa dallo Storage).
--- ⚠️ Non idempotente: ogni esecuzione crea 5 righe nuove (duplicati se rilanciato).
+-- seed-posta.sql — eventi di prova per la home "La Posta" (validazione card + quiet, spec 2026-06-05)
+--
+-- Esecuzione: SQL Editor di Supabase. Sostituisci le DUE email placeholder con quelle reali
+-- PRIMA di eseguire (le email vere NON si committano). Run-once.
+--
+-- Forma a prova di copia (lezione 2026-06-10): un solo statement per riga, stringhe in
+-- dollar-quote ($$...$$), niente emoji nello SQL, solo colonne reali dello schema. La copia
+-- dalla chat corrompe virgolette tipografiche e a-capo: questa forma le evita. Niente WITH /
+-- cross-join: l'email vive inline nel WHERE di ogni statement.
+--
+-- Autore eventi: account "seconda2" (lei). Destinatario buono/giri: account primario (io).
+-- La polaroid NON si semina qui: richiede un upload reale dall'app (passa dallo Storage).
+--
+-- /!\ NON idempotente: ogni esecuzione crea righe nuove (rilanci = duplicati).
 
--- 🔥 fantasia (desideri, stato da_provare)
-with lei as (
-  select p.id, p.couple_id from profiles p join auth.users u on u.id = p.id
-  where u.email = 'EMAIL_SECONDA2_QUI'
-)
-insert into desideri (couple_id, autore_id, testo, stato)
-select couple_id, id, 'una notte in una spa, solo noi due', 'da_provare' from lei;
+-- fantasia (desideri, stato da_provare) -> card "una fantasia nuova", testo in Caveat (voce di lei)
+insert into desideri (couple_id, autore_id, testo, stato) select p.couple_id, p.id, $$serata coniglietta$$, $$da_provare$$ from profiles p join auth.users u on u.id = p.id where u.email = $$EMAIL_SECONDA2_QUI$$;
 
--- 📅 esperienza
--- Nota: colonna 'data' è di tipo date (non timestamptz), si usa current_date.
-with lei as (
-  select p.id, p.couple_id from profiles p join auth.users u on u.id = p.id
-  where u.email = 'EMAIL_SECONDA2_QUI'
-)
-insert into esperienze (couple_id, autore_id, titolo, data, voto)
-select couple_id, id, 'Cena al tramonto sul lago', current_date, 0 from lei;
+-- esperienza -> card "una nuova esperienza". Colonna `data` e' di tipo date: current_date.
+insert into esperienze (couple_id, autore_id, titolo, data, voto) select p.couple_id, p.id, $$verona$$, current_date, 0 from profiles p join auth.users u on u.id = p.id where u.email = $$EMAIL_SECONDA2_QUI$$;
 
--- 🗺️ luogo (con descrizione → riga in Caveat sulla card)
--- Nota: colonna 'data_evento date NOT NULL' richiesta dallo schema luoghi.sql, si usa current_date.
-with lei as (
-  select p.id, p.couple_id from profiles p join auth.users u on u.id = p.id
-  where u.email = 'EMAIL_SECONDA2_QUI'
-)
-insert into luoghi (couple_id, autore_id, nome, lat, lng, intimo, voto, descrizione, data_evento)
-select couple_id, id, 'Terrazza sul Garda', 45.605, 10.640, false, 0, 'qui ci siamo promessi di tornare', current_date from lei;
+-- luogo -> card "ha segnato un posto". `descrizione` -> riga in Caveat. `data_evento` NOT NULL: current_date.
+insert into luoghi (couple_id, autore_id, nome, lat, lng, intimo, voto, descrizione, data_evento) select p.couple_id, p.id, $$verona$$, 45.605, 10.640, false, 0, $$una notte di fuoco$$, current_date from profiles p join auth.users u on u.id = p.id where u.email = $$EMAIL_SECONDA2_QUI$$;
 
--- 🎟️ buono regalo attivo che scade tra 2 giorni (pill + meta)
-with lei as (
-  select p.id, p.couple_id from profiles p join auth.users u on u.id = p.id
-  where u.email = 'EMAIL_SECONDA2_QUI'
-), io as (
-  select p.id from profiles p join auth.users u on u.id = p.id
-  where u.email = 'EMAIL_PRIMARIO_QUI'
-)
-insert into buoni (couple_id, da_id, a_id, emoji, titolo, tipo, stato, scadenza_iso)
-select lei.couple_id, lei.id, io.id, '🎟️', 'Una colazione a letto', 'regalo', 'attivo',
-       now() + interval '2 days'
-from lei, io;
+-- buono regalo attivo (da lei -> a me) -> card "un buono per te" (icona ticket, accento oro).
+-- PILL SCADENZA: la pill "scade in N giorni" compare SOLO se imposti scadenza_iso. Quella
+-- colonna esiste sul tuo DB solo dopo la migration supabase/slot.sql (Fase 4b). Lo statement
+-- attivo qui sotto NON la imposta (sempre eseguibile, niente pill: comportamento di default).
+-- Per validare ANCHE la pill: applica slot.sql e usa la variante commentata al posto di questa riga.
+insert into buoni (couple_id, da_id, a_id, titolo, tipo, stato) select p.couple_id, (select id from auth.users where email = $$EMAIL_SECONDA2_QUI$$), p.id, $$una leccata$$, $$regalo$$, $$attivo$$ from profiles p join auth.users u on u.id = p.id where u.email = $$EMAIL_PRIMARIO_QUI$$;
+-- Variante con pill (richiede slot.sql applicata) — usala AL POSTO della riga sopra, non in aggiunta:
+-- insert into buoni (couple_id, da_id, a_id, titolo, tipo, stato, scadenza_iso) select p.couple_id, (select id from auth.users where email = $$EMAIL_SECONDA2_QUI$$), p.id, $$una leccata$$, $$regalo$$, $$attivo$$, now() + interval '2 days' from profiles p join auth.users u on u.id = p.id where u.email = $$EMAIL_PRIMARIO_QUI$$;
 
--- 🎲 due giri per l'account primario (card "la brace di stasera")
--- Motivo 'gioco': accredita giri guadagnati (non spesi). La pipeline calore filtra
--- solo motivo='giro' (spin effettuato), quindi questi giri non alterano il calore
--- ma compaiono nel saldo disponibile, esattamente come premi reali da giochi.
-with lei as (
-  select p.couple_id from profiles p join auth.users u on u.id = p.id
-  where u.email = 'EMAIL_SECONDA2_QUI'
-), io as (
-  select p.id from profiles p join auth.users u on u.id = p.id
-  where u.email = 'EMAIL_PRIMARIO_QUI'
-)
-insert into giri_movimenti (couple_id, user_id, delta, motivo)
-select lei.couple_id, io.id, 2, 'gioco' from lei, io;
+-- due giri per l'account primario -> card "la brace di stasera" + pill "gira la ruota".
+-- motivo 'gioco' accredita giri guadagnati (la pipeline calore filtra solo motivo='giro', cioe' lo
+-- spin effettuato): non altera il calore, ma entra nel saldo disponibile come un premio reale.
+insert into giri_movimenti (couple_id, user_id, delta, motivo) select p.couple_id, p.id, 2, $$gioco$$ from profiles p join auth.users u on u.id = p.id where u.email = $$EMAIL_PRIMARIO_QUI$$;

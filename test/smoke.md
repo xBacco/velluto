@@ -139,3 +139,27 @@ Migrazione: `supabase/foto.sql` eseguita dall'utente; tabella `foto` + RLS attiv
 > ✔ `supabase/home.sql` applicata nel SQL Editor il 2026-06-05 (colonna `profiles.home_visto_at`
 > + grant per-colonna). Colonna verificata via REST con anon key (select → 200, prima 42703).
 > Il grant UPDATE si smoke-testa su device al passo 7 (cablaggio: setHomeVistoAt all'uscita dalla home).
+
+## La Posta — card + quiet (validazione su device) — 2026-06-10
+
+> ✔ Validato su iPhone reale via Cloudflare quick tunnel (server `python -m http.server 5500`),
+> loggato come account primario. Dati seminati con `supabase/seed-posta.sql` (forma robusta).
+> Gate roadmap "feedEventi verde su device" → CHIUSO.
+
+- [x] Feed pieno: le 4 card seminate compaiono tutte, ordine corretto, accenti giusti:
+  - [x] fantasia "serata coniglietta" — kicker `UNA FANTASIA NUOVA`, 🔥, accento ember, testo in Caveat (voce di lei)
+  - [x] esperienza "verona" — kicker `UNA NUOVA ESPERIENZA`, icona calendario
+  - [x] luogo "verona" + "una notte di fuoco" (Caveat) — kicker `HA SEGNATO UN POSTO`, accento ember
+  - [x] buono "una leccata" — kicker `UN BUONO PER TE`, icona ticket, accento oro
+  - [x] card giri "Hai 2 giri da spendere" — kicker `LA BRACE DI STASERA` + pill `gira la ruota →`
+- [x] Buono SENZA pill scadenza: atteso. Il seed base non imposta `scadenza_iso`, quindi
+  `giorni=null` → nessuna pill. NON è un bug: il ramo è corretto e coperto da `feed.test.js`
+  ("buono con scadenza vicina → pill; senza → niente pill"). La pill richiede `scadenza_iso`,
+  colonna aggiunta dalla migration `supabase/slot.sql`; per vederla sul device usare la variante
+  commentata nel seed (e avere slot.sql applicata).
+- [x] Stato quieto (toggle `◐ pieno / quieto`): il feed collassa nello stato calmo
+  ("Tutto tranquillo, per ora.", Fraunces) con i gradi del calore ("La brace tiene 91°", ember);
+  restano solo gli item persistenti azionabili (buoni + ruota). Comportamento corretto.
+
+### DA COMPLETARE — richiede upload reale come Giulia
+- [ ] Card polaroid 🖼️: non seminabile via SQL (richiede una foto caricata dall'app, passa dallo Storage).
