@@ -4,8 +4,17 @@
    TUTTE le regole scoped sotto #homeRoot; @keyframes rinominati hh-*
    ============================================================ */
 
-/* Step 1: variabili CSS (era :root) — scoped a #homeRoot per non uscire */
-#homeRoot{--bg:#120610;--bg2:#1d0a16;--ink:#f7e7e2;--ink-soft:#c79aa6;--ink-dim:#8a5d6a;--ember:#ff6f3c;--red:#e8455f;--rose:#f2738f;--wine:#9c2150;--gold:#ffb454;--green:#7ee0a8;--off:#6b4450;--card:#1f0c18;--burgundy:#300d1c;--line:rgba(255,140,110,.18);--mono:'JetBrains Mono',monospace;}
+/* Step 5.2: i token locali EREDITANO da tokens.css (var --ds-*), non hardcodano più i valori.
+   I nomi locali (--ember, --gold, --mono, …) restano invariati: tutte le regole
+   #homeRoot .x{ … var(--ember) … } continuano a funzionare. Cambia solo la SORGENTE. */
+#homeRoot{
+  --bg:var(--ds-bg);        --bg2:var(--ds-bg-2);
+  --ink:var(--ds-ink);      --ink-soft:var(--ds-ink-soft);   --ink-dim:var(--ds-ink-dim);
+  --ember:var(--ds-ember);  --red:var(--ds-red);             --rose:var(--ds-rose);
+  --wine:var(--ds-wine);    --gold:var(--ds-gold);           --green:var(--ds-green);
+  --off:var(--ds-off);      --card:var(--ds-surface);        --burgundy:var(--ds-surface-deep);
+  --line:var(--ds-line);    --mono:var(--ds-font-mono);
+}
 
 /* ============ STATO 1 · HOME HUD (IDENTICO a h12c) ============ */
 #homeRoot .home{position:absolute;inset:0;display:flex;flex-direction:column;z-index:20;transition:opacity .5s ease;transform-style:preserve-3d;}

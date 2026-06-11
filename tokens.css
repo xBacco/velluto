@@ -1,0 +1,49 @@
+/* ============================================================
+   tokens.css — design system unico di brace  (Passo 5 roadmap)
+   ------------------------------------------------------------
+   FONTE DI VERITÀ dei token visivi. Direzione CONGELATA il
+   2026-06-05 (vedi CLAUDE.md §"Direzione visiva"). Regole:
+     - i blocchi NUOVI consumano questi token: var(--ds-*);
+     - home.css EREDITA via alias (#homeRoot{--ember:var(--ds-ember)});
+     - styles.css (vecchio) migra solo quando una sezione si tocca,
+       MAI con search-and-replace dei 384 hex a parità pixel.
+
+   Namespace --ds-* di proposito: NON collide con i :root storici di
+   styles.css (--ember/--bg/--gold/--rose/--wine), così linkare questo
+   file non altera nulla del vecchio finché un consumatore non lo legge.
+   ============================================================ */
+:root{
+  /* ---- COLORE · AZIONE / NOVITÀ — solo dove si agisce o c'è novità ---- */
+  --ds-ember:#ff6f3c;                   /* bottoni primari, badge, kicker, puntino brand */
+  --ds-ember-glow:rgba(255,111,60,.5);  /* alone / text-shadow dell'ember */
+
+  /* ---- COLORE · STRUTTURA / CORNICE — mai azione ---- */
+  --ds-gold:#ffb454;                    /* bordi, lumi, soglia/threshold */
+
+  /* ---- COLORE · SFONDO & SUPERFICI (palette home) ---- */
+  --ds-bg:#120610;                      /* fondo app */
+  --ds-bg-2:#1d0a16;                    /* fondo alternato */
+  --ds-surface:#1f0c18;                 /* card / chip */
+  --ds-surface-deep:#300d1c;            /* superfici profonde (logbox, burgundy) */
+
+  /* ---- COLORE · INCHIOSTRO ---- */
+  --ds-ink:#f7e7e2;                     /* testo primario */
+  --ds-ink-soft:#c79aa6;                /* testo secondario */
+  --ds-ink-dim:#8a5d6a;                 /* meta / disabilitato */
+
+  /* ---- COLORE · ACCENTI SEMANTICI ---- */
+  --ds-red:#e8455f;                     /* allerta / fiamma calda */
+  --ds-rose:#f2738f;                    /* affettivo */
+  --ds-wine:#9c2150;                    /* profondità */
+  --ds-green:#7ee0a8;                   /* presenza / ok */
+  --ds-off:#6b4450;                     /* offline / spento */
+
+  /* ---- LINEE ---- */
+  --ds-line:rgba(255,140,110,.18);      /* bordi sottili su superfici scure */
+
+  /* ---- FONT · 2 famiglie + 2 ancillari (§2–3 direzione congelata) ---- */
+  --ds-font-display:'Fraunces',Georgia,serif;                 /* titoli, brand, saluti */
+  --ds-font-ui:'Nunito',system-ui,-apple-system,sans-serif;   /* testo, bottoni, label, input */
+  --ds-font-mono:'JetBrains Mono',ui-monospace,monospace;     /* CONFINATO: numeri, date/orari, gradi calore, kicker/meta */
+  --ds-font-script:'Caveat',cursive;                          /* SOLO citazioni "a mano" del partner (la voce di lei) */
+}
