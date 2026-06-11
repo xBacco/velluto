@@ -45,6 +45,12 @@
 
 /* NOTIFICHE */
 #homeRoot .notif{margin:2px 14px 10px;position:relative;z-index:40;}
+/* La Posta: la home è uno schermo fisso (body overflow:hidden) pensato per un log
+   corto. Col feed pieno sfonderebbe e spingerebbe porta + promptbar fuori dal bordo,
+   irraggiungibili. Cappo La Posta a una regione con scroll INTERNO: il feed scorre
+   dentro il suo box e porta/CTA/promptbar restano sempre a schermo. Scoped a #homeRoot
+   per non toccare la regola .posta condivisa col mockup valida-posta.html. */
+#homeRoot .notif .posta{max-height:min(34vh,300px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-right:2px;}
 #homeRoot .notif-head{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11.5px;color:var(--ink-dim);margin-bottom:6px;}
 #homeRoot .notif-head .cmd{color:var(--ink-soft);}
 #homeRoot .notif-head .cmd b{color:var(--ember);font-weight:700;}
