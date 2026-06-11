@@ -114,8 +114,8 @@
   box-shadow:0 0 24px rgba(255,180,84,.3);opacity:0;transition:.4s .3s;}
 #homeRoot .peeknote.show{opacity:1;transform:translateX(-50%) translateY(-118%) scale(1);}
 #homeRoot .enter-cta{position:absolute;bottom:6px;left:0;right:0;z-index:6;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;}
-#homeRoot .enter-cta .hint{font-family:var(--mono);font-size:11px;color:var(--gold);text-shadow:0 0 10px rgba(255,180,84,.5);}
-#homeRoot .enter-cta .btn{pointer-events:auto;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);background:linear-gradient(90deg,var(--ember),var(--wine));padding:9px 18px;border-radius:24px;border:none;cursor:pointer;box-shadow:0 6px 22px rgba(156,33,80,.5);animation:hh-bob 2.4s ease-in-out infinite;}
+#homeRoot .enter-cta .hint{font-family:var(--ds-font-ui);font-size:11px;color:var(--gold);text-shadow:0 0 10px rgba(255,180,84,.5);}
+#homeRoot .enter-cta .btn{pointer-events:auto;font-family:var(--ds-font-ui);font-size:13px;font-weight:700;color:var(--ink);background:linear-gradient(90deg,var(--ember),var(--wine));padding:9px 18px;border-radius:24px;border:none;cursor:pointer;box-shadow:0 6px 22px rgba(156,33,80,.5);animation:hh-bob 2.4s ease-in-out infinite;}
 @keyframes hh-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
 
 /* CALORE gauge (IDENTICO) */
@@ -130,8 +130,8 @@
 
 /* PROMPT BAR (IDENTICA) */
 #homeRoot .promptbar{margin:0 14px 16px;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 8px 8px 12px;position:relative;z-index:40;}
-#homeRoot .promptbar .add{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--green);white-space:nowrap;cursor:pointer;}
-#homeRoot .promptbar .ph{flex:1;font-family:var(--mono);font-size:12px;color:var(--ink-dim);display:flex;align-items:center;gap:1px;overflow:hidden;}
+#homeRoot .promptbar .add{font-family:var(--ds-font-ui);font-size:11.5px;font-weight:700;color:var(--green);white-space:nowrap;cursor:pointer;}
+#homeRoot .promptbar .ph{flex:1;font-family:var(--ds-font-ui);font-size:12px;color:var(--ink-dim);display:flex;align-items:center;gap:1px;overflow:hidden;}
 #homeRoot .promptbar .cur{display:inline-block;width:7px;height:15px;background:var(--ember);animation:hh-blink 1s steps(1) infinite;}
 @keyframes hh-blink{50%{opacity:0;}}
 #homeRoot .promptbar .send{width:34px;height:34px;flex:0 0 auto;border-radius:10px;border:none;display:grid;place-items:center;font-size:16px;font-weight:800;color:var(--ink);background:linear-gradient(135deg,var(--ember),var(--wine));cursor:pointer;box-shadow:0 0 14px rgba(255,111,60,.35);}

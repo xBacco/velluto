@@ -163,3 +163,28 @@ Migrazione: `supabase/foto.sql` eseguita dall'utente; tabella `foto` + RLS attiv
 
 ### DA COMPLETARE — richiede upload reale come Giulia
 - [ ] Card polaroid 🖼️: non seminabile via SQL (richiede una foto caricata dall'app, passa dallo Storage).
+
+## Home — La Posta cablata nella home REALE — 2026-06-11
+
+> Branch: `feat/home-posta-cablaggio` (off master). Suite: `node --test` → **301 pass / 0 fail**.
+> Il 2026-06-10 il feed era validato solo nella preview `mockups/valida-posta.html`; la home
+> viva (`#home`) renderizzava ancora il log terminale. Qui il feed entra nella home reale:
+> `home.js` `buildPosta()` (feedEventi → cardHTML/quietHTML, parità con valida-posta.html) al
+> posto di `buildNotifLog`; `<div id="posta">` in `index.html`; de-terminalizzato il chrome
+> (`$ notifiche --tail`, `$ coppia --attesa`, `❯ entra`, `+fantasia` mono → Nunito); SW v28→v29.
+> Verifica headless (Playwright, non loggato): 0 errori console, `#posta` montato, `notifLog`/
+> `notifBadge` rimossi, bottone "entra nella stanza" in Nunito.
+>
+> ⚠️ STATO: DA ESEGUIRE SU DEVICE (login Supabase richiesto per popolare il feed reale).
+
+- [ ] Aprendo la home (loggato) compare il **feed di card umanizzate**, NON più il log
+      terminale `$ notifiche --tail 3` / `~/fantasie`.
+- [ ] Stato pieno: le card di lei con kicker giusti (`UNA FANTASIA NUOVA`, ecc.), accenti
+      (ember/oro/rosa), voce di lei in Caveat, pallino ● sulle nuove.
+- [ ] Tap su una card → apre la sua sezione (fantasie/esperienze/mappa/buoni/galleria).
+- [ ] Card "giri" presente se hai giri da spendere (kicker `LA BRACE DI STASERA`).
+- [ ] Stato quieto (nessuna novità da lei): blocco "Tutto tranquillo, per ora." (Fraunces) +
+      gradi del calore in ember; restano solo buoni + ruota.
+- [ ] Chrome de-terminalizzato: niente `$ … --flag`, niente `❯`/`~/`; bottone "entra nella
+      stanza" e promptbar in Nunito (non più JetBrains Mono).
+- [ ] La porta "entra nella stanza" funziona ancora (apre l'hub); nessun errore in console.

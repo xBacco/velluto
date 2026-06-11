@@ -6,11 +6,13 @@
 import { mk, add, clear, toast } from '../ui.js';
 import {
   listGiri, listSlotMov, listBuoni, listDesideri, listEsperienze, listLuoghi, listFotoGalleria, getPartner,
-  getInvitoAttivo, regenInvite,
+  getInvitoAttivo, regenInvite, getHomeVistoAt,
 } from '../store.js';
 import {
   calcolaCalore, eventiCalore, PESI_CALORE, CALORE, riepilogoSezioni,
+  feedEventi, contaNuovi, feedVisibile,
 } from '../lib/logic.js';
+import { cardHTML, quietHTML } from './posta-card.js';
 import { isOnline, tempoRelativo, avviaHeartbeat } from '../lib/presence.js';
 
 const $ = (id) => document.getElementById(id);
@@ -37,9 +39,6 @@ const TEASER = {
   galleria:   { hot: "l'ultima polaroid è ancora calda", none: 'i vostri ricordi, tutti qui' },
 };
 function teaserDi(key, nov) { const t = TEASER[key] || {}; return t[nov] || t.none || ''; }
-
-// LED novità → classe della logline HUD.
-const LED_LOG = { hot: 'r', warn: 'g', none: 'n' };
 
 // Etichette/emoji righe del pop-up calore.
 const CALORE_LBL = {
@@ -187,26 +186,22 @@ function applicaRiepilogoAlDock() {
     nv.className = 'nv ' + info.novita;
   });
 }
-function buildNotifLog() {
-  const box = $('notifLog'); clear(box);
-  const badge = $('notifBadge');
-  const attive = riepilogo.filter(r => r.novita !== 'none');
-  if (!attive.length) {
-    box.appendChild(mk('div', 'logline', '> tutto tranquillo, per ora'));
-    badge.style.display = 'none';
-    return;
-  }
-  badge.style.display = ''; badge.textContent = attive.length + (attive.length > 1 ? ' nuove' : ' nuova');
-  const ORD = { hot: 0, warn: 1, none: 2 };
-  attive.sort((a, b) => ORD[a.novita] - ORD[b.novita]).slice(0, 3).forEach(info => {
-    const s = SEC_BY_KEY[info.key];
-    const line = mk('button', 'logline');
-    add(line,
-      mk('span', 'led ' + LED_LOG[info.novita]),
-      mk('span', 'txt', teaserDi(info.key, info.novita) + ' ' + s.em),
-      mk('span', 'src', '~/' + s.nm));
-    line.onclick = () => apriSezione(info.key);
-    box.appendChild(line);
+// La Posta: il feed umanizzato (card biglietto + stato quieto) sostituisce il vecchio
+// log terminale. Stesso wiring validato in mockups/valida-posta.html: feedEventi → card.
+// Tap su una card → apre la sua sezione (goto sezioneKey). gradi: per lo stato quieto.
+function buildPosta(liste, me, partner, vistoAt, gradi) {
+  const box = $('posta'); if (!box) return;
+  const now = new Date();
+  const feed = liste ? feedEventi(liste, me, vistoAt, now) : [];
+  const quieto = contaNuovi(feed) === 0;
+  const autoreLabel = partner ? `${partner.avatar || ''} ${partner.display_name || ''}`.trim() : 'lei';
+  const ctx = { autoreLabel, now };
+  const cards = feedVisibile(feed).filter(e => !quieto || e.tipo === 'buono' || e.tipo === 'giri');
+  box.innerHTML =
+    (quieto ? quietHTML({ gradi }) : '') +
+    cards.map(e => cardHTML(e, ctx)).join('');
+  box.querySelectorAll('.fc[data-sezione]').forEach(el => {
+    el.onclick = () => apriSezione(el.dataset.sezione);
   });
 }
 
@@ -380,10 +375,11 @@ export async function renderHome({ client, me }) {
   $('homeMeAv').textContent = me.avatar || '🐻';
   $('peeknote').classList.add('show');
 
-  // dati reali in parallelo (best-effort)
-  let liste = null, partner = null;
+  // dati reali in parallelo (best-effort). vistoAt = home_visto_at catturato PRIMA
+  // di sovrascriverlo (best-effort: se la lettura fallisce, niente falsi pallini).
+  let liste = null, partner = null, vistoAt = null;
   try {
-    const [desideri, esperienze, buoni, foto, luoghi, giri, slot, p] = await Promise.all([
+    const [desideri, esperienze, buoni, foto, luoghi, giri, slot, p, visto] = await Promise.all([
       listDesideri(client, me.couple_id),
       listEsperienze(client, me.couple_id),
       listBuoni(client, me.couple_id),
@@ -392,22 +388,25 @@ export async function renderHome({ client, me }) {
       listGiri(client, me.couple_id),
       listSlotMov(client, me.couple_id),
       getPartner(client, me.couple_id, me.id).catch(() => null),
+      getHomeVistoAt(client, me.id).catch(() => null),
     ]);
     liste = { desideri, esperienze, buoni, foto, luoghi, giri, slot };
-    partner = p;
+    partner = p; vistoAt = visto;
   } catch (e) {
     console.error('[home] dati non disponibili:', e);
   }
 
   riepilogo = liste ? riepilogoSezioni(liste, me, new Date()) : [];
   applicaRiepilogoAlDock();
-  buildNotifLog();
 
   if (partner) $('homePartnerAv').textContent = partner.avatar || '🧁';
   aggiornaPresenza(partner);
   await renderAttesaPartner(client, me, partner);
 
   await aggiornaCalore(client, me);
+
+  // La Posta dopo il calore: lo stato quieto mostra i gradi correnti.
+  buildPosta(liste, me, partner, vistoAt, calore && calore.r ? calore.r.gradi : undefined);
 
   selectSlot('desideri');
 
