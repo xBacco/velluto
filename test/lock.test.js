@@ -13,7 +13,7 @@ globalThis.localStorage = (() => {
 
 const { isPinValid, setPin, verifyPin, isLockEnabled, disableLock, getPudica, setPudica,
         isBioPrompted, setBioPrompted, getFreq, setFreq, getGraceMin, getLastUnlockAt,
-        touchUnlock } = await import('../js/lib/lock.js');
+        touchUnlock, shouldLock } = await import('../js/lib/lock.js');
 
 beforeEach(() => localStorage.clear());
 
@@ -75,4 +75,34 @@ test('lastUnlockAt: default 0, touchUnlock lo scrive', () => {
   assert.equal(getLastUnlockAt(), 0);
   touchUnlock(1700000000000);
   assert.equal(getLastUnlockAt(), 1700000000000);
+});
+
+test('shouldLock: lock disattivo → sempre false', () => {
+  assert.equal(shouldLock({ enabled: false, freq: 'apertura', coldStart: true, now: 1000 }), false);
+  assert.equal(shouldLock({ enabled: false, freq: 'avvio', coldStart: true, now: 1000 }), false);
+});
+
+test('shouldLock: "apertura" → sempre true se attivo', () => {
+  assert.equal(shouldLock({ enabled: true, freq: 'apertura', coldStart: false, now: 1000 }), true);
+  assert.equal(shouldLock({ enabled: true, freq: 'apertura', coldStart: true, now: 1000 }), true);
+});
+
+test('shouldLock: default (freq mancante) si comporta come "apertura"', () => {
+  assert.equal(shouldLock({ enabled: true, coldStart: false, now: 1000 }), true);
+});
+
+test('shouldLock: "avvio" → true solo a cold start', () => {
+  assert.equal(shouldLock({ enabled: true, freq: 'avvio', coldStart: true, now: 1000 }), true);
+  assert.equal(shouldLock({ enabled: true, freq: 'avvio', coldStart: false, now: 1000 }), false);
+});
+
+test('shouldLock: "grazia" → entro N min false, oltre true, senza lastUnlock true', () => {
+  const T = 10 * 60 * 1000; // "adesso" = 10 min in ms
+  const min = 60 * 1000;
+  // sbloccato 4 min fa (entro la grazia di 5) → non riblocca
+  assert.equal(shouldLock({ enabled: true, freq: 'grazia', graceMin: 5, lastUnlockAt: T - 4 * min, now: T }), false);
+  // sbloccato 6 min fa (oltre la grazia) → riblocca
+  assert.equal(shouldLock({ enabled: true, freq: 'grazia', graceMin: 5, lastUnlockAt: T - 6 * min, now: T }), true);
+  // mai sbloccato (lastUnlockAt falsy) → riblocca
+  assert.equal(shouldLock({ enabled: true, freq: 'grazia', graceMin: 5, lastUnlockAt: 0, now: T }), true);
 });

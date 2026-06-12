@@ -96,3 +96,15 @@ export function getGraceMin() { const g = loadLock().graceMin; return Number.isF
 export function setGraceMin(n) { const st = loadLock(); st.graceMin = n; saveLock(st); }
 export function getLastUnlockAt() { return loadLock().lastUnlockAt || 0; }
 export function touchUnlock(now) { const st = loadLock(); st.lastUnlockAt = now; saveLock(st); }
+
+// ---- shouldLock: il gate va mostrato adesso? (pura, testabile) ----
+// opts: { enabled, freq, lastUnlockAt, graceMin, coldStart, now }
+export function shouldLock({ enabled, freq, lastUnlockAt = 0, graceMin = 5, coldStart = false, now = 0 } = {}) {
+  if (!enabled) return false;
+  if (freq === 'avvio') return !!coldStart;
+  if (freq === 'grazia') {
+    if (!lastUnlockAt) return true;
+    return (now - lastUnlockAt) > graceMin * 60 * 1000;
+  }
+  return true; // 'apertura' e default
+}
