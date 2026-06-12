@@ -26,6 +26,8 @@ const TABS = [
 
 let me = null;     // profilo loggato
 let cur = 'desideri';
+let appReady = false;       // true quando la home è mostrata: abilita il re-lock al rientro
+let resumeWired = false;    // il listener visibilitychange si registra una volta sola
 
 const $ = id => document.getElementById(id);
 
@@ -122,7 +124,7 @@ function refreshChip() {
 async function enterApp() {
   me = await currentProfile();
   if (!me) { showOnboarding(); return; } // sessione valida ma nessun profilo → onboarding
-  if (isLockEnabled()) { await requireUnlock(); await maybeOfferBio(); }
+  if (lockPolicy(isColdStart())) { await requireUnlock(); await maybeOfferBio(); }
   if (getPudica()) document.body.classList.add('pudica');
   $('login').classList.add('gone');
   $('onboardingRoot').style.display = 'none'; // niente onboarding sovrapposto quando si entra in app
@@ -135,6 +137,8 @@ async function enterApp() {
   buildNav();
   go('desideri');   // inizializza il pager (dietro la home)
   showHome();       // la stanza è la schermata d'apertura
+  appReady = true;
+  if (!resumeWired) { document.addEventListener('visibilitychange', onVisibleMaybeLock); resumeWired = true; }
 }
 
 // Registrato senza coppia: mostra la scelta crea/unisci. Al termine rientra in enterApp.
@@ -317,6 +321,33 @@ function maybeOfferBio() {
       }
     };
   });
+}
+
+// Cold start = primo load del runtime di sessione (per la frequenza 'avvio').
+function isColdStart() {
+  try {
+    if (sessionStorage.getItem('brace.runtime')) return false;
+    sessionStorage.setItem('brace.runtime', '1');
+    return true;
+  } catch { return true; }
+}
+
+function lockPolicy(coldStart) {
+  return shouldLock({
+    enabled: isLockEnabled(), freq: getFreq(),
+    lastUnlockAt: getLastUnlockAt(), graceMin: getGraceMin(),
+    coldStart, now: Date.now(),
+  });
+}
+
+// Rientro in foreground: riblocca se la frequenza lo richiede (coldStart=false al rientro).
+let gateBusy = false;
+async function onVisibleMaybeLock() {
+  if (document.visibilityState !== 'visible' || !appReady || gateBusy) return;
+  if (!lockPolicy(false)) return;
+  gateBusy = true;
+  try { await requireUnlock(); await maybeOfferBio(); }
+  finally { gateBusy = false; }
 }
 
 function buildNav() {
