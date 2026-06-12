@@ -188,3 +188,28 @@ Migrazione: `supabase/foto.sql` eseguita dall'utente; tabella `foto` + RLS attiv
 - [ ] Chrome de-terminalizzato: niente `$ … --flag`, niente `❯`/`~/`; bottone "entra nella
       stanza" e promptbar in Nunito (non più JetBrains Mono).
 - [ ] La porta "entra nella stanza" funziona ancora (apre l'hub); nessun errore in console.
+
+## Porta — guscio d'ingresso (lucchetto + biometria) — 2026-06-12
+
+> Branch: `feat/home-posta-cablaggio`. Suite: `node --test` → **316 pass / 0 fail**.
+> Implementati i 9 task del piano `docs/superpowers/plans/2026-06-11-porta-guscio-ingresso.md`
+> (Task 1–8 codice + commit; questo è il Task 9). Server: `python -m http.server 5500 --bind 127.0.0.1`.
+
+### Verificato in HEADLESS (Playwright, non loggato) — 2026-06-12
+- [x] Boot dell'app a `index.html`: **0 errori / 0 warning** in console (gli import nuovi risolvono).
+- [x] Markup `#lockgate` presente e cablato: `lockScene`/`lockLeaf`/`lockPlate`/`lockKeys`/`lockPips`/`lockHint`.
+- [x] `porta.css` applicata e scoped: `#lockgate` z-index 60, var `--brass` risolta (#cda64f).
+- [x] Moduli risolti col path reale del browser: `porta-reducer.js` (`padReduce('12',+'3')→'123'`), `lock.js` (`shouldLock`/`getFreq`/`touchUnlock`/`isBioPrompted`).
+- [x] Render visivo della placca notturna in close-up: porta Sartoriale sfocata, plate stealth con viti, pips, tastierino 1-9 + ✺/⌫ + 0 + ✓, seal «brace.» (Fraunces) + hint. Fedele ai mockup.
+
+### DA ESEGUIRE SU DEVICE (WebAuthn/gesto richiedono telefono reale + contesto sicuro)
+> In app loggata, con PIN attivo. Usa `localhost` o tunnel https (come gli smoke precedenti).
+- [ ] Porta a riposo: anta Sartoriale + spioncino caldo + hint «Tocca la porta per avvicinarti».
+- [ ] Tocco porta → zoom alla serratura (1.55s) + placca al centro + tastierino acceso.
+- [ ] Cifre restano grigie, si accende solo il tasto premuto; `✺`→`⌫` appena ≥1 cifra.
+- [ ] Codice errato → shake + pip rossi → reset; giusto → `✓` → «sei a casa» → battente → home.
+- [ ] Reduce-motion (OS) → gesto degradato a transizione breve, niente crash.
+- [ ] Biometria attiva → tentata in automatico all'avvicinamento; fallback sempre il codice.
+- [ ] Primo ingresso (bio supportata, non attiva): bottom sheet «Entra con un tocco» → Attiva → scansione OS → «Fatto»; Non ora → non re-insiste; annulla → resta sul codice, nessun crash.
+- [ ] Frequenze (Impostazioni → Privacy & blocco → "Quando chiedere il codice"): "A ogni apertura" riblocca al rientro · "Dopo 5 min" entro/oltre la grazia · "Solo all’avvio" solo a cold start.
+- [ ] Device senza biometria (`bioSupported()` false): niente `✺`/bottom sheet, solo codice.
