@@ -122,7 +122,7 @@ function refreshChip() {
 async function enterApp() {
   me = await currentProfile();
   if (!me) { showOnboarding(); return; } // sessione valida ma nessun profilo → onboarding
-  if (isLockEnabled()) { await requireUnlock(); }
+  if (isLockEnabled()) { await requireUnlock(); await maybeOfferBio(); }
   if (getPudica()) document.body.classList.add('pudica');
   $('login').classList.add('gone');
   $('onboardingRoot').style.display = 'none'; // niente onboarding sovrapposto quando si entra in app
@@ -279,6 +279,43 @@ function requireUnlock() {
       drawPips();
       hint.textContent = padView(entry).ready ? 'Premi ✓ per confermare' : 'Tocca un numero, poi ✓';
     });
+  });
+}
+
+// Bottom sheet di attivazione biometrica — secondo punto d'ingresso a enableBio().
+// Mostrato solo al primo ingresso utile; non re-insiste se l'utente sceglie "Non ora".
+function maybeOfferBio() {
+  return new Promise(resolve => {
+    if (!(isLockEnabled() && bioSupported() && !isBioEnabled() && !isBioPrompted())) { resolve(); return; }
+    const scrim = mk('div'); scrim.id = 'bioSheetScrim';
+    const sheet = mk('div'); sheet.id = 'bioSheet';
+    sheet.innerHTML =
+      '<div class="bs-ttl">Entra con un tocco</div>' +
+      '<div class="bs-sub">La prossima volta sblocca con il viso o l\'impronta. Il codice resta la tua riserva.</div>' +
+      '<div class="bs-priv">🔒 Il riconoscimento resta sul tuo telefono.</div>' +
+      '<div class="bs-row"><button class="bs-go" id="bsGo">Attiva</button><button class="bs-no" id="bsNo">Non ora</button></div>';
+    document.body.appendChild(scrim);
+    document.body.appendChild(sheet);
+    requestAnimationFrame(() => { scrim.classList.add('show'); sheet.classList.add('show'); });
+
+    const close = () => {
+      scrim.classList.remove('show'); sheet.classList.remove('show');
+      setTimeout(() => { scrim.remove(); sheet.remove(); resolve(); }, 340);
+    };
+    scrim.onclick = () => { setBioPrompted(true); close(); };
+    sheet.querySelector('#bsNo').onclick = () => { setBioPrompted(true); close(); };
+    sheet.querySelector('#bsGo').onclick = async () => {
+      const go = sheet.querySelector('#bsGo');
+      go.disabled = true; go.textContent = 'Attendi…';
+      try {
+        await enableBio();                       // l'OS disegna la scansione (Face ID / impronta)
+        go.textContent = 'Fatto ✓'; setBioPrompted(true);
+        setTimeout(close, 700);
+      } catch (_) {
+        go.disabled = false; go.textContent = 'Attiva';   // annullata: resta l'invito, niente «Fatto»
+        toast('Riconoscimento annullato');
+      }
+    };
   });
 }
 
