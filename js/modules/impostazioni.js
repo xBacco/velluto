@@ -3,7 +3,7 @@ import { updateProfile, listTipi, addTipo, updateTipo, deleteTipo, seedTipi,
          wipeDesideri, wipeEsperienze, wipeBuoni, wipeGiochi, wipeLuoghi, wipeTipi } from '../store.js';
 import { logout } from '../auth.js';
 import { isLockEnabled, setPin, disableLock, isPinValid, getPudica, setPudica,
-         bioSupported, isBioEnabled, enableBio, disableBio } from '../lib/lock.js';
+         bioSupported, isBioEnabled, enableBio, disableBio, getFreq, setFreq } from '../lib/lock.js';
 import { tipiDefaultRows } from '../lib/logic.js';
 import { getTimbri, addTimbro, removeTimbro, renameTimbro } from '../lib/timbri.js';
 import { renderSlotEditorInto } from './giochi.js';
@@ -124,6 +124,30 @@ function renderPrivacy() {
   if (isLockEnabled()) {
     const rCh = row('🔑', 'Cambia codice'); rCh.classList.add('tap');
     add(rCh, mk('span', 'set-chev', '›')); rCh.onclick = openSetPin; add(c, rCh);
+
+    // quando richiedere il codice (3 opzioni)
+    const FREQ_OPTS = [
+      ['apertura', 'A ogni apertura'],
+      ['grazia',   'Dopo 5 min'],
+      ['avvio',    'Solo all’avvio'],
+    ];
+    const rFreq = mk('div', 'set-row col');
+    const headF = mk('div', 'set-l');
+    add(headF, mk('span', 'set-em', '⏱️'), mk('span', 'set-nm', 'Quando chiedere il codice'));
+    add(rFreq, headF);
+    const seg = mk('div'); seg.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;width:100%;';
+    const curFreq = getFreq();
+    FREQ_OPTS.forEach(([val, lab]) => {
+      const b = mk('button', null, lab);
+      const on = val === curFreq;
+      b.style.cssText = 'flex:1;min-width:84px;font-family:var(--ds-font-ui);font-weight:700;font-size:12px;padding:9px 8px;border-radius:10px;cursor:pointer;'
+        + (on ? 'color:#1a0b06;background:var(--ds-ember);border:1px solid var(--ds-ember);'
+              : 'color:var(--ds-ink-soft);background:transparent;border:1px solid var(--ds-line);');
+      b.onclick = () => { setFreq(val); renderMain(); };
+      add(seg, b);
+    });
+    add(rFreq, seg);
+    add(c, rFreq);
   }
 
   // biometrico (solo se supportato)
