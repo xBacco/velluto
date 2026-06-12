@@ -84,3 +84,15 @@ export async function unlockBio() {
     return true;
   } catch { return false; }
 }
+
+// ---- bioPrompted: il bottom sheet biometrico è già stato proposto? ----
+export function isBioPrompted() { return !!loadLock().bioPrompted; }
+export function setBioPrompted(v) { const st = loadLock(); st.bioPrompted = !!v; saveLock(st); }
+
+// ---- frequenza di sblocco ----
+export function getFreq() { const f = loadLock().freq; return f === 'grazia' || f === 'avvio' ? f : 'apertura'; }
+export function setFreq(freq) { const st = loadLock(); st.freq = freq; saveLock(st); }
+export function getGraceMin() { const g = loadLock().graceMin; return Number.isFinite(g) ? g : 5; }
+export function setGraceMin(n) { const st = loadLock(); st.graceMin = n; saveLock(st); }
+export function getLastUnlockAt() { return loadLock().lastUnlockAt || 0; }
+export function touchUnlock(now) { const st = loadLock(); st.lastUnlockAt = now; saveLock(st); }

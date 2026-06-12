@@ -11,7 +11,9 @@ globalThis.localStorage = (() => {
   };
 })();
 
-const { isPinValid, setPin, verifyPin, isLockEnabled, disableLock, getPudica, setPudica } = await import('../js/lib/lock.js');
+const { isPinValid, setPin, verifyPin, isLockEnabled, disableLock, getPudica, setPudica,
+        isBioPrompted, setBioPrompted, getFreq, setFreq, getGraceMin, getLastUnlockAt,
+        touchUnlock } = await import('../js/lib/lock.js');
 
 beforeEach(() => localStorage.clear());
 
@@ -48,4 +50,29 @@ test('modalità pudica: default off, persiste', () => {
   assert.equal(getPudica(), false);
   setPudica(true);
   assert.equal(getPudica(), true);
+});
+
+test('bioPrompted: default false, persiste', () => {
+  assert.equal(isBioPrompted(), false);
+  setBioPrompted(true);
+  assert.equal(isBioPrompted(), true);
+  setBioPrompted(false);
+  assert.equal(isBioPrompted(), false);
+});
+
+test('freq: default "apertura", persiste i 3 valori', () => {
+  assert.equal(getFreq(), 'apertura');
+  setFreq('grazia'); assert.equal(getFreq(), 'grazia');
+  setFreq('avvio');  assert.equal(getFreq(), 'avvio');
+  setFreq('apertura'); assert.equal(getFreq(), 'apertura');
+});
+
+test('graceMin: default 5', () => {
+  assert.equal(getGraceMin(), 5);
+});
+
+test('lastUnlockAt: default 0, touchUnlock lo scrive', () => {
+  assert.equal(getLastUnlockAt(), 0);
+  touchUnlock(1700000000000);
+  assert.equal(getLastUnlockAt(), 1700000000000);
 });
