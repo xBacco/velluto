@@ -10,7 +10,10 @@ import { renderGalleria } from './modules/galleria.js';
 import { renderGiochi } from './modules/giochi.js';
 import { renderMappa } from './modules/mappa.js';
 import { renderHome } from './modules/home.js';
-import { isLockEnabled, verifyPin, getPudica, isBioEnabled, bioSupported, unlockBio } from './lib/lock.js';
+import { isLockEnabled, verifyPin, getPudica, isBioEnabled, bioSupported, unlockBio,
+         enableBio, isBioPrompted, setBioPrompted,
+         getFreq, getGraceMin, getLastUnlockAt, touchUnlock, shouldLock } from './lib/lock.js';
+import { padReduce, padView } from './lib/porta-reducer.js';
 
 const TABS = [
   ['desideri', '🔥', 'Fantasie'],
@@ -170,36 +173,112 @@ function goHub() {
   document.dispatchEvent(new CustomEvent('gohub'));
 }
 
+const prefersReducedMotion = () => {
+  try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; }
+};
+
+// Guscio d'ingresso: mostra la porta, risolve la Promise allo sblocco (PIN o biometria).
+// Stessa logica del motore (verifyPin/unlockBio); UI a stati portata dai mockup.
 function requireUnlock() {
   return new Promise(resolve => {
-    const gate = $('lockgate'); gate.style.display = '';
-    let pin = '';
-    const dots = $('pinDots'); const pad = $('pinPad');
-    const draw = () => { clear(dots); for (let i = 0; i < 6; i++) { const d = mk('span', i < pin.length ? 'd on' : 'd'); dots.appendChild(d); } };
-    const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
-    clear(pad);
-    keys.forEach(k => {
-      const b = mk('button', k === '' ? 'empty' : null, k);
-      if (k === '') { pad.appendChild(b); return; }
-      b.onclick = async () => {
-        if (k === '⌫') { pin = pin.slice(0, -1); draw(); return; }
-        if (pin.length >= 6) return;
-        $('lockErr').textContent = '';
-        pin += k; draw();
-        if (pin.length >= 4) {
-          if (await verifyPin(pin)) { gate.style.display = 'none'; resolve(); }
-          else if (pin.length === 6) { $('lockErr').textContent = 'Codice errato'; pin = ''; draw(); }
-        }
-      };
-      pad.appendChild(b);
+    const gate = $('lockgate');
+    gate.style.display = '';
+    gate.classList.remove('zoom', 'solved', 'opening', 'dolly');
+    $('lockLeaf').classList.remove('unlocked');
+
+    const scene = $('lockScene');
+    const plate = $('lockPlate');
+    const hint  = $('lockHint');
+    const pips  = $('lockPips');
+    const keys  = $('lockKeys');
+    let entry = '';
+    let busy = false;
+
+    // costruisci il tastierino: 1-9, tasto duale ✺/⌫, 0, ✓
+    clear(keys);
+    ['1','2','3','4','5','6','7','8','9'].forEach(n => {
+      const k = mk('div', 'key', n); k.dataset.n = n; keys.appendChild(k);
     });
-    draw();
-    const bio = $('pinBio');
-    if (isBioEnabled() && bioSupported()) {
-      bio.style.display = '';
-      bio.onclick = async () => { if (await unlockBio()) { gate.style.display = 'none'; resolve(); } };
-      bio.click();   // tenta subito la biometria all'apertura
-    } else { bio.style.display = 'none'; }
+    const dual = mk('div', 'key fn dual'); dual.dataset.fn = 'bio';
+    dual.innerHTML = '<span class="g g-bio">✺</span><span class="g g-del">⌫</span>';
+    keys.appendChild(dual);
+    const zero = mk('div', 'key', '0'); zero.dataset.n = '0'; keys.appendChild(zero);
+    const ok = mk('div', 'key fn', '✓'); ok.dataset.fn = 'ok'; keys.appendChild(ok);
+
+    const drawPips = () => {
+      clear(pips);
+      for (let i = 0; i < 6; i++) pips.appendChild(mk('span', i < entry.length ? 'pip on' : 'pip'));
+      const v = padView(entry);
+      plate.classList.toggle('ready', v.ready);
+      plate.classList.toggle('has-entry', v.len > 0);
+    };
+    drawPips();
+
+    const flash = el => { el.classList.add('lit'); setTimeout(() => el.classList.remove('lit'), 180); };
+
+    const finish = () => {
+      touchUnlock(Date.now());
+      const done = () => { gate.style.display = 'none'; gate.classList.remove('zoom','solved','opening','dolly'); resolve(); };
+      if (prefersReducedMotion()) { done(); return; }
+      gate.classList.add('solved');
+      setTimeout(() => $('lockLeaf').classList.add('unlocked'), 360);
+      setTimeout(() => { gate.classList.remove('zoom'); gate.classList.add('opening'); }, 360 + 480);
+      setTimeout(() => gate.classList.add('dolly'), 360 + 480 + 520);
+      setTimeout(done, 360 + 480 + 520 + 1000);
+    };
+
+    const tryBio = async () => {
+      if (busy || !(isBioEnabled() && bioSupported())) return;
+      if (await unlockBio()) { busy = true; plate.classList.add('ok'); hint.textContent = ''; finish(); }
+    };
+
+    const approach = () => {
+      if (gate.classList.contains('zoom') || busy) return;
+      gate.classList.add('zoom');
+      plate.classList.add('awake');
+      hint.textContent = 'Tocca un numero, poi ✓';
+      tryBio();                       // biometria automatica all'avvicinamento (se attiva)
+    };
+    scene.addEventListener('pointerdown', approach);
+
+    plate.addEventListener('pointerdown', async e => {
+      if (busy) return;
+      const k = e.target.closest('.key'); if (!k) return;
+      e.preventDefault();
+      plate.classList.add('awake');
+
+      if (k.dataset.fn === 'bio') {
+        if (entry.length > 0) {       // ⌫ : cancella l'ultima
+          entry = padReduce(entry, { type: 'del' }); drawPips(); flash(k);
+          hint.textContent = 'Tocca un numero, poi ✓';
+        } else {                      // ✺ : scorciatoia biometrica
+          tryBio();
+        }
+        return;
+      }
+      if (k.dataset.fn === 'ok') {    // ✓ : conferma
+        if (entry.length < 4) { hint.textContent = 'Prima il codice, poi ✓'; return; }
+        busy = true;
+        if (await verifyPin(entry)) {
+          plate.classList.add('ok'); hint.innerHTML = '<span class="casa">sei a casa</span>';
+          setTimeout(finish, 520);
+        } else {
+          plate.classList.add('no', 'shake'); hint.textContent = 'Codice errato';
+          setTimeout(() => {
+            entry = padReduce(entry, { type: 'clear' }); drawPips();
+            plate.classList.remove('no', 'shake'); busy = false;
+            hint.textContent = 'Tocca un numero, poi ✓';
+          }, 760);
+        }
+        return;
+      }
+      if (k.dataset.n === undefined) return;   // cifra
+      const before = entry;
+      entry = padReduce(entry, { type: 'digit', n: k.dataset.n });
+      if (entry !== before) flash(k);
+      drawPips();
+      hint.textContent = padView(entry).ready ? 'Premi ✓ per confermare' : 'Tocca un numero, poi ✓';
+    });
   });
 }
 

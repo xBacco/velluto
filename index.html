@@ -58,15 +58,36 @@
   <!-- GATE ONBOARDING (registrato senza coppia) -->
   <div id="onboardingRoot" style="display:none"></div>
 
-  <!-- GATE LOCK PIN -->
-  <div id="lockgate" class="lockgate" style="display:none">
-    <div class="candle">🔥</div>
-    <div class="lock-title">brace<span class="wm-dot">.</span></div>
-    <div class="lock-sub">Inserisci il codice</div>
-    <div class="pin-dots" id="pinDots"></div>
-    <div class="pin-pad" id="pinPad"></div>
-    <button class="pin-bio" id="pinBio" style="display:none">👆 Sblocca con Face ID / impronta</button>
-    <div id="lockErr" class="login-err"></div>
+  <!-- GATE LOCK — guscio d'ingresso (porta Sartoriale + tastierino notturno) -->
+  <div id="lockgate" style="display:none">
+    <div class="scene" id="lockScene">
+      <div class="jamb">
+        <div class="strike"></div><div class="threshold"></div>
+        <div class="leaf" id="lockLeaf">
+          <span class="hinge t"></span><span class="hinge m"></span><span class="hinge b"></span>
+          <div class="panel up"></div><div class="panel lo"></div>
+          <div class="peep"></div>
+          <div class="lockzone">
+            <div class="lockbadge"><span class="lb-led"></span><span class="lb-keys"></span></div>
+            <div class="lever"></div>
+          </div>
+          <div class="bolt"></div>
+        </div>
+      </div>
+    </div>
+    <div class="closeup">
+      <div class="recess">
+        <div class="plate stealth" id="lockPlate">
+          <span class="vit tl"></span><span class="vit tr"></span><span class="vit bl"></span><span class="vit br"></span>
+          <div class="head"><div class="seed"></div><div class="pips" id="lockPips"></div></div>
+          <div class="keys" id="lockKeys"></div>
+        </div>
+      </div>
+    </div>
+    <div class="panelui">
+      <div class="seal">brace<span class="d">.</span></div>
+      <div class="hint" id="lockHint">Tocca la porta per avvicinarti</div>
+    </div>
   </div>
 
   <!-- HOME DEFINITIVA · porta-zoom (HUD) → hub 7 porte → sezioni -->
