@@ -1,0 +1,131 @@
+/* porta.css — guscio d'ingresso (lucchetto). UI della porta per #lockgate.
+   Portato da mockups/lib/porta.css (sole parti porta) + estetica Sartoriale (est-1)
+   + spioncino piccolo, tutto scoped sotto #lockgate. Token: --ds-* (tokens.css) + --brass-*.
+   Vincolo WebView noto: niente calc() negli angoli dei conic-gradient (qui non se ne usano). */
+
+#lockgate{
+  --brass-hi:#f3d896; --brass:#cda64f; --brass-mid:#9c7c33; --brass-lo:#5d4318;
+  --brass-face:linear-gradient(150deg,var(--brass-hi) 0%,var(--brass) 28%,var(--brass-mid) 60%,var(--brass-lo) 100%);
+  --brass-radial:radial-gradient(circle at 38% 30%,var(--brass-hi),var(--brass) 36%,var(--brass-mid) 68%,var(--brass-lo) 100%);
+  --wood:linear-gradient(98deg,#5c1b32,#451228 46%,#350f1f);
+  position:fixed;inset:0;z-index:60;overflow:hidden;
+  display:grid;place-items:center;perspective:1200px;perspective-origin:50% 45%;
+  background:radial-gradient(120% 72% at 72% 48%,#2a0c18,#160409 70%,#0c0207);
+}
+
+#lockgate .scene{position:relative;width:166px;height:362px;transform-origin:76% 47%;cursor:zoom-in;
+  will-change:transform,filter;transition:transform 1.55s cubic-bezier(.25,.5,.15,1),filter 1.55s cubic-bezier(.25,.5,.15,1);}
+#lockgate .scene::before{content:"";position:absolute;left:50%;top:50%;width:160%;height:124%;transform:translate(-50%,-50%);
+  background:radial-gradient(closest-side,rgba(255,140,60,.20),rgba(156,33,80,.07) 55%,transparent 78%);filter:blur(9px);animation:peep-halo 4.4s ease-in-out infinite;}
+@keyframes peep-halo{0%,100%{opacity:.42}50%{opacity:.82}}
+#lockgate.zoom .scene{transform:translateX(-34px) scale(2.45);filter:blur(2.4px) brightness(.55);cursor:default;}
+
+/* telaio + battuta + soglia */
+#lockgate .jamb{position:absolute;inset:0;border-radius:11px 11px 4px 4px;padding:8px;background:linear-gradient(180deg,#3a1226,#2a0c18 60%,#1a0610);
+  border:1px solid var(--ds-line);box-shadow:0 28px 56px rgba(0,0,0,.6),inset 0 0 0 5px rgba(16,5,14,.62),inset 0 0 40px rgba(0,0,0,.55);}
+#lockgate .strike{position:absolute;right:2px;top:48%;transform:translateY(-50%);width:6px;height:40px;border-radius:2px;background:var(--brass-face);box-shadow:inset 0 0 0 1px rgba(46,32,8,.4),0 1px 3px rgba(0,0,0,.5);z-index:1;}
+#lockgate .strike::after{content:"";position:absolute;left:1px;top:50%;transform:translateY(-50%);width:4px;height:14px;border-radius:2px;background:#180e05;}
+#lockgate .threshold{position:absolute;left:8px;right:8px;bottom:8px;height:14px;border-radius:0 0 3px 3px;background:linear-gradient(0deg,rgba(255,150,70,.5),rgba(255,120,60,.10) 60%,transparent);filter:blur(2px);opacity:.5;transition:opacity .4s,height .9s;}
+
+/* anta — Sartoriale (est-1): saturazione calda */
+#lockgate .leaf{position:relative;width:100%;height:100%;border-radius:6px 6px 3px 3px;transform-origin:left center;transform-style:preserve-3d;
+  background:repeating-linear-gradient(91deg,rgba(0,0,0,.08) 0 2px,transparent 2px 9px),linear-gradient(180deg,rgba(255,180,84,.10),transparent 22%),var(--wood);
+  border:1px solid rgba(255,140,110,.30);box-shadow:inset 0 0 0 1px rgba(255,180,84,.08),inset 0 14px 30px rgba(0,0,0,.42),inset 0 -8px 18px rgba(0,0,0,.4);
+  filter:saturate(1.06) brightness(1.02);}
+#lockgate .panel{position:absolute;left:13px;right:24px;border-radius:4px;background:linear-gradient(180deg,rgba(0,0,0,.16),rgba(255,180,84,.04));
+  box-shadow:inset 0 2px 7px rgba(0,0,0,.55),inset 0 -1px 0 rgba(255,180,84,.08),inset 0 0 0 1px rgba(0,0,0,.25);}
+#lockgate .panel.up{top:13px;height:152px;} #lockgate .panel.lo{bottom:13px;height:132px;}
+#lockgate .hinge{position:absolute;left:-2px;width:8px;height:22px;border-radius:2px;background:var(--brass-face);box-shadow:0 1px 3px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.35);z-index:3;}
+#lockgate .hinge.t{top:34px;} #lockgate .hinge.m{top:50%;transform:translateY(-50%);} #lockgate .hinge.b{bottom:34px;}
+
+/* spioncino A, piccolo (in scala con l'anta) */
+#lockgate .peep{position:absolute;left:50%;top:23%;transform:translateX(-50%);width:15px;height:15px;border-radius:50%;z-index:2;animation:peepwarm 3.6s ease-in-out infinite;
+  background:radial-gradient(circle at 50% 45%,rgba(255,224,172,.98) 0 12%,rgba(255,150,80,.72) 28%,rgba(120,45,22,.6) 54%,#160a06 82%),var(--brass-radial);
+  box-shadow:0 1px 2px rgba(0,0,0,.55),inset 0 0 0 1px rgba(40,28,8,.85),inset 0 0 0 2px rgba(255,222,150,.22),inset 0 1px 3px rgba(0,0,0,.6),0 0 8px var(--ds-ember-glow);}
+#lockgate .peep::before{content:"";position:absolute;inset:2px;border-radius:50%;box-shadow:inset 0 0 3px 1px rgba(0,0,0,.6);}
+#lockgate .peep::after{content:"";position:absolute;left:26%;top:18%;width:30%;height:24%;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.75),transparent 70%);}
+@keyframes peepwarm{0%,100%{filter:brightness(.92)}50%{filter:brightness(1.14)}}
+
+/* zona serratura */
+#lockgate .lockzone{position:absolute;right:6px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:4;}
+#lockgate .lever{position:relative;width:24px;height:7px;border-radius:4px;background:var(--brass-face);box-shadow:0 2px 4px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.4);transform-origin:right center;transition:transform .35s;}
+#lockgate .lever::after{content:"";position:absolute;right:-2px;top:50%;transform:translate(0,-50%);width:8px;height:11px;border-radius:3px;background:var(--brass-radial);box-shadow:inset 0 1px 0 rgba(255,255,255,.4);}
+#lockgate .bolt{position:absolute;right:-6px;top:46%;transform:translateY(-50%);width:11px;height:7px;border-radius:1px;background:var(--brass-face);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 1px 2px rgba(0,0,0,.5);z-index:2;transition:transform .4s cubic-bezier(.5,0,.3,1);}
+#lockgate .leaf.unlocked .bolt{transform:translate(-10px,-50%);}
+#lockgate .leaf.unlocked .lever{transform:rotate(22deg);}
+
+/* mini smart-lock (vista da lontano) */
+#lockgate .lockbadge{width:27px;border-radius:5px;padding:5px 3px;background:linear-gradient(160deg,#241019,#0c0509);box-shadow:inset 0 0 0 1px rgba(255,180,84,.18),0 2px 6px rgba(0,0,0,.55);display:flex;flex-direction:column;align-items:center;gap:4px;transition:opacity .4s,transform .4s;}
+#lockgate .lb-led{width:5px;height:5px;border-radius:50%;background:var(--ds-ember);box-shadow:0 0 6px var(--ds-ember-glow);animation:breathe 2.6s ease-in-out infinite;}
+#lockgate .lb-keys{width:17px;height:15px;border-radius:2px;opacity:.55;background:repeating-linear-gradient(0deg,rgba(255,180,84,.30) 0 1px,transparent 1px 5px),repeating-linear-gradient(90deg,rgba(255,180,84,.30) 0 1px,transparent 1px 5px);}
+#lockgate.zoom .lockbadge{opacity:0;}
+@keyframes breathe{0%,100%{opacity:.4;transform:scale(.85)}50%{opacity:1;transform:scale(1.1)}}
+
+/* close-up: la placca */
+#lockgate .closeup{position:absolute;inset:0;display:grid;place-items:center;z-index:6;opacity:0;pointer-events:none;
+  will-change:transform,opacity;transform:translate(40px,2px) scale(.55);transition:opacity .55s ease .15s,transform 1.55s cubic-bezier(.25,.5,.15,1);}
+#lockgate.zoom .closeup{opacity:1;pointer-events:auto;transform:translate(0,0) scale(1);}
+#lockgate.solved .closeup{opacity:0;transform:scale(1.05);transition:opacity .42s,transform .42s;}
+#lockgate .recess{position:relative;border-radius:20px;box-shadow:0 2px 0 rgba(255,180,84,.10),0 18px 34px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.4);}
+#lockgate .plate{position:relative;border-radius:18px;padding:14px 13px 15px;display:flex;flex-direction:column;align-items:center;gap:9px;-webkit-tap-highlight-color:transparent;}
+#lockgate .vit{position:absolute;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffe9b0,#7a5a22 75%,#3a2a0c);box-shadow:inset 0 0 0 .5px rgba(0,0,0,.4),0 1px 1px rgba(0,0,0,.5);}
+#lockgate .vit::after{content:"";position:absolute;left:1px;top:2.4px;width:4px;height:1px;background:rgba(40,28,8,.8);}
+#lockgate .vit.tl{left:7px;top:7px;} #lockgate .vit.tr{right:7px;top:7px;} #lockgate .vit.bl{left:7px;bottom:7px;} #lockgate .vit.br{right:7px;bottom:7px;}
+#lockgate .head{display:flex;flex-direction:column;align-items:center;gap:5px;}
+#lockgate .pips{display:flex;gap:6px;}
+#lockgate .pip{width:7px;height:7px;border-radius:50%;transition:all .18s;}
+#lockgate .keys{display:grid;grid-template-columns:repeat(3,42px);gap:7px;}
+#lockgate .key{height:42px;border-radius:50%;display:grid;place-items:center;cursor:pointer;position:relative;font-family:var(--ds-font-mono);font-weight:500;font-size:18px;user-select:none;transition:transform .08s,box-shadow .12s,color .12s,background .12s;}
+#lockgate .key:active{transform:scale(.93);}
+#lockgate .key.fn{font-size:15px;}
+#lockgate .key.dual .g-del{display:none;}
+#lockgate .plate.has-entry .key.dual .g-bio{display:none;}
+#lockgate .plate.has-entry .key.dual .g-del{display:block;font-size:17px;}
+
+/* placca notturna (stealth) */
+#lockgate .plate.stealth{background:linear-gradient(100deg,#4a142a,#3a0f22 50%,#2c0c1a);box-shadow:inset 0 1px 0 rgba(255,180,84,.06),inset 0 0 0 1px rgba(0,0,0,.4),0 8px 22px rgba(0,0,0,.5);}
+#lockgate .plate.stealth .seed{width:7px;height:7px;border-radius:50%;background:var(--ds-ember);box-shadow:0 0 10px var(--ds-ember-glow);animation:breathe 2.6s ease-in-out infinite;}
+#lockgate .plate.stealth .pip{background:rgba(255,180,84,.10);} #lockgate .plate.stealth .pip.on{background:var(--ds-ember);box-shadow:0 0 8px var(--ds-ember-glow);}
+#lockgate .plate.stealth .key{background:rgba(0,0,0,.16);color:rgba(247,231,226,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);font-weight:400;transition:all .25s;}
+#lockgate .plate.stealth.awake .key{color:rgba(247,231,226,.5);}
+#lockgate .plate.stealth .key.lit{color:#fff;text-shadow:0 0 16px var(--ds-ember);background:radial-gradient(circle,rgba(255,111,60,.30),rgba(0,0,0,.16) 70%);box-shadow:inset 0 0 0 1px rgba(255,111,60,.5),0 0 20px var(--ds-ember-glow);}
+#lockgate .plate.stealth.ok .key{color:var(--ds-green);} #lockgate .plate.stealth.ok .pip.on{background:var(--ds-green);box-shadow:0 0 8px var(--ds-green);}
+#lockgate .plate.stealth.ready .key.fn[data-fn="ok"]{color:var(--ds-ember);text-shadow:0 0 12px var(--ds-ember-glow);animation:okpulse 1.15s ease-in-out infinite;}
+@keyframes okpulse{0%,100%{box-shadow:inset 0 0 0 1px rgba(255,111,60,.30)}50%{box-shadow:inset 0 0 0 1px rgba(255,111,60,.75),0 0 13px var(--ds-ember-glow)}}
+#lockgate .plate.shake{animation:shk .42s;} @keyframes shk{0%,100%{transform:translateX(0)}18%,58%{transform:translateX(-6px)}38%,78%{transform:translateX(6px)}}
+#lockgate .plate.no .pip.on{background:var(--ds-red)!important;box-shadow:0 0 8px var(--ds-red)!important;}
+
+/* pannello UI in basso */
+#lockgate .panelui{position:absolute;left:0;right:0;bottom:0;z-index:20;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 14px 18px;background:linear-gradient(0deg,rgba(12,4,8,.93),rgba(12,4,8,.55) 60%,transparent);}
+#lockgate .seal{font-family:var(--ds-font-display);font-weight:600;font-size:17px;color:var(--ds-ink);} #lockgate .seal .d{color:var(--ds-ember);text-shadow:0 0 12px var(--ds-ember-glow);}
+#lockgate .hint{font-size:12px;color:var(--ds-ink-soft);text-align:center;min-height:15px;line-height:1.4;}
+#lockgate .hint .casa{font-family:var(--ds-font-display);font-weight:600;font-size:15px;color:var(--ds-ember);}
+
+/* apertura a battente + dolly verso la home */
+#lockgate.opening .leaf{transform:rotateY(-92deg);transition:transform 1s cubic-bezier(.6,0,.22,1);}
+#lockgate.opening .threshold{opacity:1;height:54px;}
+#lockgate.dolly{animation:dolly 1.05s cubic-bezier(.55,0,.3,1) forwards;}
+@keyframes dolly{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(2.6) translateZ(420px)}}
+
+/* reduce-motion: degrada zoom/battente/dolly e spegne i loop decorativi */
+@media (prefers-reduced-motion: reduce){
+  #lockgate .scene,#lockgate .closeup{transition-duration:.2s;}
+  #lockgate.opening .leaf{transition-duration:.2s;}
+  #lockgate.dolly{animation-duration:.2s;}
+  #lockgate .peep,#lockgate .lb-led,#lockgate .plate.stealth .seed,#lockgate .scene::before{animation:none;}
+}
+
+/* ===== bottom sheet biometria (primo ingresso) ===== */
+#bioSheetScrim{position:fixed;inset:0;z-index:70;background:rgba(8,3,6,.6);opacity:0;pointer-events:none;transition:opacity .3s;}
+#bioSheetScrim.show{opacity:1;pointer-events:auto;}
+#bioSheet{position:fixed;left:0;right:0;bottom:0;z-index:71;transform:translateY(100%);transition:transform .34s cubic-bezier(.17,.67,.18,1);
+  background:linear-gradient(180deg,var(--ds-surface),var(--ds-bg-2));border-top:1px solid var(--ds-line);border-radius:18px 18px 0 0;
+  padding:20px 18px 24px;padding-bottom:calc(24px + env(safe-area-inset-bottom));}
+#bioSheet.show{transform:translateY(0);}
+#bioSheet .bs-ttl{font-family:var(--ds-font-display);font-weight:600;font-size:19px;color:var(--ds-ink);margin:0 0 6px;}
+#bioSheet .bs-sub{font-family:var(--ds-font-ui);font-size:13.5px;color:var(--ds-ink-soft);line-height:1.5;margin:0 0 4px;}
+#bioSheet .bs-priv{font-family:var(--ds-font-ui);font-size:12px;color:var(--ds-ink-soft);margin:8px 0 16px;}
+#bioSheet .bs-row{display:flex;gap:10px;}
+#bioSheet .bs-go{flex:1;font-family:var(--ds-font-ui);font-weight:800;font-size:14px;color:#1a0b06;background:var(--ds-ember);border:none;border-radius:12px;padding:13px;cursor:pointer;}
+#bioSheet .bs-go:disabled{opacity:.7;}
+#bioSheet .bs-no{font-family:var(--ds-font-ui);font-weight:700;font-size:14px;color:var(--ds-ink-soft);background:transparent;border:1px solid var(--ds-line);border-radius:12px;padding:13px 18px;cursor:pointer;}
